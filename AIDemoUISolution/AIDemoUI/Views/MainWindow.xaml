@@ -4,10 +4,35 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AIDemoUI"
+        xmlns:views="clr-namespace:AIDemoUI.Views"
+        xmlns:sd="clr-namespace:AIDemoUI.SampleData"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         Loaded="MainWindow_OnLoaded">
-    <Grid>
 
+    <d:Window.DataContext>
+        <sd:MainWindowVMSampleData/>
+    </d:Window.DataContext>
+
+    <Window.Resources>
+        <DataTemplate x:Key="NetParametersView">
+            <views:NetParametersView/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <ContentControl Name="NetParametersCC"
+                        Content="{Binding Path=NetParametersVM}"
+                        ContentTemplate="{StaticResource NetParametersView}"
+                        Grid.Column="1"/>
     </Grid>
 </Window>
