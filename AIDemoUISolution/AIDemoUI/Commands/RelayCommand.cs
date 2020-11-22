@@ -8,21 +8,23 @@ namespace AIDemoUI.Commands
     {
         #region Fields
 
-        readonly Action<object> _execute = null;
-        readonly Predicate<object> _canExecute = null;
+        object model;
+        readonly Action<object> execute = null;
+        readonly Predicate<object> canExecute = null;
 
         #endregion
 
         #region Constructors
 
-        public RelayCommand(Action<object> execute)
-            : this(execute, null)
+        //public RelayCommand(object model, Action<object> execute)
+        //    : this(model, execute, null)
+        //{
+        //}
+        public RelayCommand(object model, Action<object> execute, Predicate<object> canExecute = default)
         {
-        }
-        public RelayCommand(Action<object> execute, Predicate<object> canExecute)
-        {
-            _execute = execute ?? throw new ArgumentNullException("execute");
-            _canExecute = canExecute;
+            this.model = model;
+            this.execute = execute ?? throw new ArgumentNullException("execute");
+            this.canExecute = canExecute;
         }
 
         #endregion
@@ -32,7 +34,7 @@ namespace AIDemoUI.Commands
         [DebuggerStepThrough]
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null ? true : _canExecute(parameter);
+            return canExecute == null ? true : canExecute(parameter);
         }
         public event EventHandler CanExecuteChanged
         {
@@ -41,7 +43,7 @@ namespace AIDemoUI.Commands
         }
         public void Execute(object parameter)
         {
-            _execute(parameter);
+            execute(parameter);
         }
 
         #endregion

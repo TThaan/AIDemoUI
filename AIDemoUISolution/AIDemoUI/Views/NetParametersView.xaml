@@ -6,7 +6,8 @@
              xmlns:local="clr-namespace:AIDemoUI.Views"
              xmlns:sd="clr-namespace:AIDemoUI.SampleData"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="600" d:DesignWidth="600"
+             Name="NetParametersUserControl">
 
     <d:Window.DataContext>
         <sd:NetParametersVMSampleData/>
@@ -26,8 +27,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="5*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
@@ -38,13 +38,12 @@
         <TextBlock Grid.Row="4" Text="BiasMax"/>
         <TextBlock Grid.Row="5" Text="CostType (DropDown)"/>
         <TextBlock Grid.Row="6" Text="WeightInitType (DropDown)"/>
-        <TextBlock Grid.Row="7" Text="Create/DeleteLayers"/>
 
-        <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding Path=IsWithBias}">
-            <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}"/>
-            </TextBox.InputBindings>
-        </TextBox>
+        <CheckBox Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding IsWithBias}">
+            <CheckBox.LayoutTransform>
+                <ScaleTransform ScaleX="2" ScaleY="2"/>
+            </CheckBox.LayoutTransform>
+        </CheckBox>
         <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Path=WeightMin}">
             <TextBox.InputBindings>
                 <KeyBinding Key="Return" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}"/>
@@ -65,18 +64,59 @@
                 <KeyBinding Key="Return" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}"/>
             </TextBox.InputBindings>
         </TextBox>
-        <TextBox Grid.Column="1" Grid.Row="5" Text="{Binding Path=CostType}">
-            <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}"/>
-            </TextBox.InputBindings>
-        </TextBox>
-        <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding Path=WeightInitType}">
-            <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}"/>
-            </TextBox.InputBindings>
-        </TextBox>
-        <Button Grid.Column="1" Grid.Row="8" Content="AddLayer" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
-        <Button Grid.Column="1" Grid.Row="9" Content="DeleteLayer" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
-        <Button Grid.Column="1" Grid.Row="109" Content="Ok" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
+        <ComboBox Grid.Column="1" Grid.Row="5" ItemsSource="{Binding CostTypes}" SelectedItem="{Binding CostType}"/> <!--, Mode=TwoWay (for debugging?)-->
+        <ComboBox Grid.Column="1" Grid.Row="6" ItemsSource="{Binding WeightInitTypes}" SelectedItem="{Binding WeightInitType}"/> <!--, Mode=TwoWay (for debugging?)-->
+
+        <TextBlock Grid.Row="7" Grid.ColumnSpan="2" TextAlignment="Center" VerticalAlignment="Center" FontSize="20" Text="L a y e r s"/>
+        
+        <ListBox Grid.Row="8" Grid.ColumnSpan="2"  HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                 ItemsSource="{Binding Layers, Mode=TwoWay}" >
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid HorizontalAlignment="Stretch" Width="{Binding ActualWidth, ElementName=NetParametersUserControl}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="3*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <Button Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" MinWidth="50" Content="  -  " 
+                                DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
+                                Command="{Binding DeleteCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                        
+                        <TextBox Grid.Column="1" VerticalAlignment="Center" Margin="20,0,10,0" 
+                                 Name="N_Textbox" Text="{Binding N}">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Return" 
+                                            Command="{Binding ElementName=NetParametersUserControl, Path=DataContext.NCommand}" 
+                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        
+                        <TextBox Grid.Column="2" VerticalAlignment="Center" Margin="0,0,20,0" 
+                                 Name="ActivationType_Textbox" Text="{Binding ActivationType}">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Return" 
+                                            Command="{Binding ElementName=NetParametersUserControl, Path=DataContext.ActivationTypeCommand}" 
+                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}"/>
+                            </TextBox.InputBindings>
+                        </TextBox>
+                        
+                        <Button Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="50" FontSize="20"  Content="  +  " 
+                                DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
+                                Command="{Binding AddCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                        
+                        <Button Grid.Column="4" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  ^  " 
+                                DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
+                                Command="{Binding MoveUpCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                    </Grid>                    
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Button Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="2" FontSize="20" Content="O K"
+                Command="{Binding NetParametersCommand}"/>
     </Grid>
 </UserControl>
