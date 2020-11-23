@@ -16,10 +16,6 @@ namespace AIDemoUI.Commands
 
         #region Constructors
 
-        //public RelayCommand(object model, Action<object> execute)
-        //    : this(model, execute, null)
-        //{
-        //}
         public RelayCommand(object model, Action<object> execute, Predicate<object> canExecute = default)
         {
             this.model = model;

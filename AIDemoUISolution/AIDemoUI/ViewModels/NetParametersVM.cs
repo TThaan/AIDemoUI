@@ -15,7 +15,8 @@ namespace AIDemoUI.ViewModels
         #region ctor & fields
 
         NetParameters netParameters;
-        RelayCommand netParametersCommand, addCommand, deleteCommand, moveUpCommand, nCommand, activationTypeCommand;
+        RelayCommand addCommand, deleteCommand, moveUpCommand, okCommand, unfocusCommand;
+        IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
 
@@ -127,6 +128,8 @@ namespace AIDemoUI.ViewModels
             }
         }
 
+        public IEnumerable<ActivationType> ActivationTypes => activationTypes ??
+            (activationTypes = Enum.GetValues(typeof(ActivationType)).ToList<ActivationType>().Skip(1));
         public IEnumerable<CostType> CostTypes => costTypes ?? 
             (costTypes = Enum.GetValues(typeof(CostType)).ToList<CostType>().Skip(1));
         public IEnumerable<WeightInitType> WeightInitTypes => weightInitTypes ??
@@ -134,27 +137,7 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region RelayCommand (unused sofar..)
-
-        public RelayCommand NetParametersCommand
-        {
-            get
-            {
-                if (netParametersCommand == null)
-                {
-                    netParametersCommand = new RelayCommand(this, NetParametersCommand_Execute, NetParametersCommand_CanExecute);
-                }
-                return netParametersCommand;
-            }
-        }
-        void NetParametersCommand_Execute(object parameter)
-        {
-            MessageBox.Show("Not implemented yet.");
-        }
-        bool NetParametersCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
+        #region RelayCommand
 
         public RelayCommand AddCommand
         {
@@ -220,66 +203,44 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
-        public RelayCommand NCommand
+        public RelayCommand UnfocusCommand
         {
             get
             {
-                if (nCommand == null)
+                if (unfocusCommand == null)
                 {
-                    nCommand = new RelayCommand(Layers, NCommand_Execute, NCommand_CanExecute);
+                    unfocusCommand = new RelayCommand(Layers, UnfocusCommand_Execute, UnfocusCommand_CanExecute);
                 }
-                return nCommand;
+                return unfocusCommand;
             }
         }
-        void NCommand_Execute(object parameter)
-        {
-            IInputElement focusedElement = Keyboard.FocusedElement;
-            TextBox tb = focusedElement as TextBox;
-
-            if (tb != null)
-            {
-                // Grid grid = parameter as Grid;
-                ListBoxItem lbItem = parameter as ListBoxItem;
-
-                // cp provides current 'Layer' item
-                // var contentPresenter = grid.TemplatedParent;
-
-                // var currentLayer = lb.Items.OfType<Layer>().SingleOrDefault(x => x.Id == );
-                
-                //
-                if (tb.Name == "N_Textbox")
-                {
-                    
-                }
-                else if (tb.Name == "ActivationType_Textbox")
-                {
-
-                }
-            }
+        void UnfocusCommand_Execute(object parameter)
+        {            
+            var netParametersView = parameter as UserControl;
+            netParametersView.FocusVisualStyle = null;
+            netParametersView.Focusable = true;
+            netParametersView.Focus();
         }
-        bool NCommand_CanExecute(object parameter)
+        bool UnfocusCommand_CanExecute(object parameter)
         {
             return true;
         }
-        public RelayCommand ActivationTypeCommand
+        public RelayCommand OkCommand
         {
             get
             {
-                if (activationTypeCommand == null)
+                if (okCommand == null)
                 {
-                    activationTypeCommand = new RelayCommand(Layers, ActivationTypeCommand_Execute, ActivationTypeCommand_CanExecute);
+                    okCommand = new RelayCommand(Layers, OkCommand_Execute, OkCommand_CanExecute);
                 }
-                return activationTypeCommand;
+                return okCommand;
             }
         }
-        void ActivationTypeCommand_Execute(object parameter)
+        void OkCommand_Execute(object parameter)
         {
-            ContentPresenter cp = parameter as ContentPresenter;
-            Layer layer = cp.Content as Layer;
-            int currentIndex = Layers.IndexOf(layer);
-            Layers.Move(currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
+            MessageBox.Show("Not implemented yet.");
         }
-        bool ActivationTypeCommand_CanExecute(object parameter)
+        bool OkCommand_CanExecute(object parameter)
         {
             return true;
         }

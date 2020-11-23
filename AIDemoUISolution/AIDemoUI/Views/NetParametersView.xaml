@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:AIDemoUI.Views"
              xmlns:sd="clr-namespace:AIDemoUI.SampleData"
+             xmlns:conv="clr-namespace:AIDemoUI.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="600"
              Name="NetParametersUserControl">
@@ -13,6 +14,10 @@
         <sd:NetParametersVMSampleData/>
     </d:Window.DataContext>
 
+    <!--<UserControl.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </UserControl.Resources>-->
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -44,24 +49,24 @@
                 <ScaleTransform ScaleX="2" ScaleY="2"/>
             </CheckBox.LayoutTransform>
         </CheckBox>
-        <TextBox Grid.Column="1" Grid.Row="1" Text="{Binding Path=WeightMin}">
+        <TextBox Name="WeightMinField" Grid.Column="1" Grid.Row="1" Text="{Binding Path=WeightMin}">
             <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}"/>
+                <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
             </TextBox.InputBindings>
         </TextBox>
-        <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding Path=WeightMax}">
+        <TextBox Name="WeightMaxField" Grid.Column="1" Grid.Row="2" Text="{Binding Path=WeightMax}">
             <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}"/>
+                <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
             </TextBox.InputBindings>
         </TextBox>
-        <TextBox Grid.Column="1" Grid.Row="3" Text="{Binding Path=BiasMin}">
+        <TextBox Name="BiasMinField" Grid.Column="1" Grid.Row="3" Text="{Binding Path=BiasMin}" IsEnabled="{Binding IsWithBias}">
             <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}"/>
+                <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
             </TextBox.InputBindings>
         </TextBox>
-        <TextBox Grid.Column="1" Grid.Row="4" Text="{Binding Path=BiasMax}">
+        <TextBox Name="BiasMaxField" Grid.Column="1" Grid.Row="4" Text="{Binding Path=BiasMax}" IsEnabled="{Binding IsWithBias}">
             <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding NetParametersCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type TextBox}}}"/>
+                <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
             </TextBox.InputBindings>
         </TextBox>
         <ComboBox Grid.Column="1" Grid.Row="5" ItemsSource="{Binding CostTypes}" SelectedItem="{Binding CostType}"/> <!--, Mode=TwoWay (for debugging?)-->
@@ -90,19 +95,14 @@
                                  Name="N_Textbox" Text="{Binding N}">
                             <TextBox.InputBindings>
                                 <KeyBinding Key="Return" 
-                                            Command="{Binding ElementName=NetParametersUserControl, Path=DataContext.NCommand}" 
-                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}"/>
+                                            Command="{Binding ElementName=NetParametersUserControl, Path=DataContext.UnfocusCommand}" 
+                                            CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
                             </TextBox.InputBindings>
                         </TextBox>
                         
-                        <TextBox Grid.Column="2" VerticalAlignment="Center" Margin="0,0,20,0" 
-                                 Name="ActivationType_Textbox" Text="{Binding ActivationType}">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Return" 
-                                            Command="{Binding ElementName=NetParametersUserControl, Path=DataContext.ActivationTypeCommand}" 
-                                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}}"/>
-                            </TextBox.InputBindings>
-                        </TextBox>
+                        <ComboBox Grid.Column="2" VerticalAlignment="Center" Margin="0,0,20,0" 
+                                  ItemsSource="{Binding ElementName=NetParametersUserControl, Path=DataContext.ActivationTypes}" SelectedItem="{Binding ActivationType}">
+                        </ComboBox>
                         
                         <Button Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="50" FontSize="20"  Content="  +  " 
                                 DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
@@ -117,6 +117,6 @@
         </ListBox>
 
         <Button Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="2" FontSize="20" Content="O K"
-                Command="{Binding NetParametersCommand}"/>
+                Command="{Binding OkCommand}"/>
     </Grid>
 </UserControl>
