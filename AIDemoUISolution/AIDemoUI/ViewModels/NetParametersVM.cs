@@ -4,12 +4,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace AIDemoUI.ViewModels
 {
+    public delegate void OkBtnEventHandler(NetParameters netParameters);
+
     public class NetParametersVM : BaseVM
     {
         #region ctor & fields
@@ -22,8 +23,8 @@ namespace AIDemoUI.ViewModels
 
         public NetParametersVM(NetParameters netParameters)
         {
-            this.netParameters = netParameters ?? 
-                throw new NullReferenceException($"{GetType().Name}.ctor");    
+            this.netParameters = netParameters ??
+                throw new NullReferenceException($"{GetType().Name}.ctor");
         }
 
         #endregion
@@ -215,7 +216,7 @@ namespace AIDemoUI.ViewModels
             }
         }
         void UnfocusCommand_Execute(object parameter)
-        {            
+        {
             var netParametersView = parameter as UserControl;
             netParametersView.FocusVisualStyle = null;
             netParametersView.Focusable = true;
@@ -238,7 +239,11 @@ namespace AIDemoUI.ViewModels
         }
         void OkCommand_Execute(object parameter)
         {
-            MessageBox.Show("Not implemented yet.");
+            var netParametersView = parameter as UserControl;
+            if (netParametersView != null)
+            {
+                OnOkBtnPressed();
+            }
         }
         bool OkCommand_CanExecute(object parameter)
         {
@@ -250,6 +255,16 @@ namespace AIDemoUI.ViewModels
         #region Dedicated Commands
 
 
+
+        #endregion
+
+        #region OkBtnPressed
+
+        public event OkBtnEventHandler OkBtnPressed;
+        void OnOkBtnPressed()
+        {
+            OkBtnPressed?.Invoke(netParameters);
+        }
 
         #endregion
     }
