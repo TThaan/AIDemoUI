@@ -1,5 +1,6 @@
 ﻿using FourPixCam;
 using System;
+using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
 {
@@ -9,13 +10,16 @@ namespace AIDemoUI.ViewModels
         {
             NetParametersVM = netParametersVM ?? 
                 throw new NullReferenceException($"{GetType().Name}.ctor");
-            NetParametersVM.OkBtnPressed += OnOkButtonPressed;
+            NetParametersVM.OkBtnPressed += OnOkButtonPressedAsync;
         }
 
         public NetParametersVM NetParametersVM { get; }
-        void OnOkButtonPressed(NetParameters netParameters)
+        async Task OnOkButtonPressedAsync(NetParameters netParameters)
         {
-            new Initializer(netParameters).Run();
+            await Task.Run(() =>
+            {
+                new Initializer(netParameters).Run();
+            });
         }
     }
 }

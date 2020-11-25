@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Windows.Input;
 
 namespace AIDemoUI.Commands
 {
-    public class DedicatedCommand : ICommand
+    public class AsyncDedicatedCommand //: IAsyncCommand
     {
         public event EventHandler CanExecuteChanged;
 

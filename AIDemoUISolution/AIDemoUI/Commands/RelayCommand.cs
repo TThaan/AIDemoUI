@@ -4,11 +4,10 @@ using System.Windows.Input;
 
 namespace AIDemoUI.Commands
 {
-    public class RelayCommand : ICommand
+    public class RelayCommand : IRelayCommand
     {
         #region Fields
 
-        object model;
         readonly Action<object> execute = null;
         readonly Predicate<object> canExecute = null;
 
@@ -16,9 +15,8 @@ namespace AIDemoUI.Commands
 
         #region Constructors
 
-        public RelayCommand(object model, Action<object> execute, Predicate<object> canExecute = default)
+        public RelayCommand(Action<object> execute, Predicate<object> canExecute = default)
         {
-            this.model = model;
             this.execute = execute ?? throw new ArgumentNullException("execute");
             this.canExecute = canExecute;
         }

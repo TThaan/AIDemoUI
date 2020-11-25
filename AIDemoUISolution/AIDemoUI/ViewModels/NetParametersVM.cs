@@ -4,19 +4,20 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Controls;
-using System.Windows.Input;
 
 namespace AIDemoUI.ViewModels
 {
-    public delegate void OkBtnEventHandler(NetParameters netParameters);
+    public delegate Task OkBtnEventHandler(NetParameters netParameters);
 
     public class NetParametersVM : BaseVM
     {
         #region ctor & fields
 
         NetParameters netParameters;
-        RelayCommand addCommand, deleteCommand, moveUpCommand, okCommand, unfocusCommand;
+        IRelayCommand addCommand, deleteCommand, moveUpCommand, unfocusCommand;
+        IAsyncCommand okCommandAsync;
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
@@ -140,13 +141,13 @@ namespace AIDemoUI.ViewModels
 
         #region RelayCommand
 
-        public RelayCommand AddCommand
+        public IRelayCommand AddCommand
         {
             get
             {
                 if (addCommand == null)
                 {
-                    addCommand = new RelayCommand(Layers, AddCommand_Execute, AddCommand_CanExecute);
+                    addCommand = new RelayCommand(AddCommand_Execute, AddCommand_CanExecute);
                 }
                 return addCommand;
             }
@@ -161,13 +162,13 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
-        public RelayCommand DeleteCommand
+        public IRelayCommand DeleteCommand
         {
             get
             {
                 if (deleteCommand == null)
                 {
-                    deleteCommand = new RelayCommand(Layers, DeleteCommand_Execute, DeleteCommand_CanExecute);
+                    deleteCommand = new RelayCommand(DeleteCommand_Execute, DeleteCommand_CanExecute);
                 }
                 return deleteCommand;
             }
@@ -182,13 +183,13 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
-        public RelayCommand MoveUpCommand
+        public IRelayCommand MoveUpCommand
         {
             get
             {
                 if (moveUpCommand == null)
                 {
-                    moveUpCommand = new RelayCommand(Layers, MoveUpCommand_Execute, MoveUpCommand_CanExecute);
+                    moveUpCommand = new RelayCommand(MoveUpCommand_Execute, MoveUpCommand_CanExecute);
                 }
                 return moveUpCommand;
             }
@@ -204,13 +205,13 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
-        public RelayCommand UnfocusCommand
+        public IRelayCommand UnfocusCommand
         {
             get
             {
                 if (unfocusCommand == null)
                 {
-                    unfocusCommand = new RelayCommand(Layers, UnfocusCommand_Execute, UnfocusCommand_CanExecute);
+                    unfocusCommand = new RelayCommand(UnfocusCommand_Execute, UnfocusCommand_CanExecute);
                 }
                 return unfocusCommand;
             }
@@ -226,23 +227,23 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
-        public RelayCommand OkCommand
+        public IAsyncCommand OkCommandAsync
         {
             get
             {
-                if (okCommand == null)
+                if (okCommandAsync == null)
                 {
-                    okCommand = new RelayCommand(Layers, OkCommand_Execute, OkCommand_CanExecute);
+                    okCommandAsync = new AsyncRelayCommand(OkCommand_Execute, OkCommand_CanExecute);
                 }
-                return okCommand;
+                return okCommandAsync;
             }
         }
-        void OkCommand_Execute(object parameter)
+        async Task OkCommand_Execute(object parameter)
         {
             var netParametersView = parameter as UserControl;
             if (netParametersView != null)
             {
-                OnOkBtnPressed();
+                await OnOkBtnPressedAsync();
             }
         }
         bool OkCommand_CanExecute(object parameter)
@@ -252,18 +253,12 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region Dedicated Commands
-
-
-
-        #endregion
-
         #region OkBtnPressed
 
         public event OkBtnEventHandler OkBtnPressed;
-        void OnOkBtnPressed()
+        async Task OnOkBtnPressedAsync()
         {
-            OkBtnPressed?.Invoke(netParameters);
+            await OkBtnPressed?.Invoke(netParameters);
         }
 
         #endregion
