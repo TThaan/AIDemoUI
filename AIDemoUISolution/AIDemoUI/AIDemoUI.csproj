@@ -10,6 +10,9 @@
     <Reference Include="FourPixCam">
       <HintPath>..\..\..\FourPixCam\FourPixCamSolution\FourPixCam\bin\Debug\netcoreapp3.1\FourPixCam.dll</HintPath>
     </Reference>
+    <Reference Include="MatrixHelper">
+      <HintPath>..\..\..\MatrixHelper\MatrixHelperSolution\MatrixHelper\bin\Debug\netcoreapp3.1\MatrixHelper.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

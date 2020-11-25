@@ -1,8 +1,10 @@
 ﻿using AIDemoUI.Commands;
 using FourPixCam;
+using MatrixHelper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -21,11 +23,18 @@ namespace AIDemoUI.ViewModels
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
+        ObservableCollection<float> inputLayer;
+        ObservableCollection<int> neuronsPerLayer;
 
         public NetParametersVM(NetParameters netParameters)
         {
             this.netParameters = netParameters ??
                 throw new NullReferenceException($"{GetType().Name}.ctor");
+
+            InputLayer = netParameters.Layers[0].Processed.Input.Columns[0].ToObservableCollection();
+            NeuronsPerLayer.CollectionChanged += OnNeuronsPerLayerChanged;
+            Layers.CollectionChanged += OnLayersChanged;
+            InputLayer.CollectionChanged += OnInputLayerChanged;
         }
 
         #endregion
@@ -44,7 +53,28 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-
+        // no connx to Layers.First()..
+        // When I change Layer.N in view I only change an unobserved variable in the Layer class.
+        // I.e. no event fires.
+        // OnBtnPressed though passes the 'netParameters' incl 'Layers' incl 'N' to the back end.
+        public ObservableCollection<int> NeuronsPerLayer => neuronsPerLayer == null 
+            ? (neuronsPerLayer = netParameters.Layers.Select(x => x.N).ToObservableCollection()) 
+            : neuronsPerLayer;
+        public ObservableCollection<float> InputLayer   
+        {
+            get
+            {
+                return inputLayer;
+            }
+            set
+            {
+                if (inputLayer != value)
+                {
+                    inputLayer = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public bool IsWithBias
         {
             get { return netParameters.IsWithBias; }
@@ -136,6 +166,20 @@ namespace AIDemoUI.ViewModels
             (costTypes = Enum.GetValues(typeof(CostType)).ToList<CostType>().Skip(1));
         public IEnumerable<WeightInitType> WeightInitTypes => weightInitTypes ??
             (weightInitTypes = Enum.GetValues(typeof(WeightInitType)).ToList<WeightInitType>().Skip(1));
+
+        public Matrix Input
+        {
+            get { return netParameters.Layers.First().Processed.Input; }
+            set
+            {
+                Matrix newInput = new Matrix(value.ToArray());
+                if (netParameters.Layers.First().Processed.Input != newInput)
+                {
+                    netParameters.Layers.First().Processed.Input = newInput;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         #endregion
 
@@ -250,6 +294,76 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
+
+        #endregion
+
+        #region OnLayersChanged
+
+        void OnLayersChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    // Check if input layer has changed.
+                    // If 'yes': Notify 'InputValues'.
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    // Check if input layer has changed.
+                    // If 'yes': Notify 'InputValues'.
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    // Check if input layer has changed.
+                    // If 'yes': Notify 'InputValues'.
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    // Check if input layer has changed.
+                    // If 'yes': Notify 'InputValues'.
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    // Check if input layer has changed.
+                    // If 'yes': Notify 'InputValues'.
+                    break;
+                default:
+                    break;
+            }
+        }
+        void OnNeuronsPerLayerChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    break;
+                default:
+                    break;
+            }
+        }
+        void OnInputLayerChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    break;
+                default:
+                    break;
+            }
+        }
+
 
         #endregion
 

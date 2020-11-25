@@ -33,6 +33,6 @@
         <ContentControl Name="NetParametersCC"
                         Content="{Binding Path=NetParametersVM}"
                         ContentTemplate="{StaticResource NetParametersView}"
-                        Grid.Column="1" Grid.RowSpan="2"/>
+                        Grid.Column="0" Grid.RowSpan="2"/>
     </Grid>
 </Window>

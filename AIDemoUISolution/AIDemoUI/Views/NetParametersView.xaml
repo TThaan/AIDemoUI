@@ -7,7 +7,7 @@
              xmlns:sd="clr-namespace:AIDemoUI.SampleData"
              xmlns:conv="clr-namespace:AIDemoUI.Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="600"
+             d:DesignHeight="600" d:DesignWidth="1200"
              Name="NetParametersUserControl">
 
     <d:Window.DataContext>
@@ -21,102 +21,152 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="7*"/>
         </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="5*"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
-        <TextBlock Grid.Row="0" Text="IsWithBias"/>
-        <TextBlock Grid.Row="1" Text="WeightMin"/>
-        <TextBlock Grid.Row="2" Text="WeightMax"/>
-        <TextBlock Grid.Row="3" Text="BiasMin"/>
-        <TextBlock Grid.Row="4" Text="BiasMax"/>
-        <TextBlock Grid.Row="5" Text="CostType (DropDown)"/>
-        <TextBlock Grid.Row="6" Text="WeightInitType (DropDown)"/>
 
-        <CheckBox Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding IsWithBias}">
-            <CheckBox.LayoutTransform>
-                <ScaleTransform ScaleX="2" ScaleY="2"/>
-            </CheckBox.LayoutTransform>
-        </CheckBox>
-        <TextBox Name="WeightMinField" Grid.Column="1" Grid.Row="1" Text="{Binding Path=WeightMin}">
-            <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
-            </TextBox.InputBindings>
-        </TextBox>
-        <TextBox Name="WeightMaxField" Grid.Column="1" Grid.Row="2" Text="{Binding Path=WeightMax}">
-            <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
-            </TextBox.InputBindings>
-        </TextBox>
-        <TextBox Name="BiasMinField" Grid.Column="1" Grid.Row="3" Text="{Binding Path=BiasMin}" IsEnabled="{Binding IsWithBias}">
-            <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
-            </TextBox.InputBindings>
-        </TextBox>
-        <TextBox Name="BiasMaxField" Grid.Column="1" Grid.Row="4" Text="{Binding Path=BiasMax}" IsEnabled="{Binding IsWithBias}">
-            <TextBox.InputBindings>
-                <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
-            </TextBox.InputBindings>
-        </TextBox>
-        <ComboBox Grid.Column="1" Grid.Row="5" ItemsSource="{Binding CostTypes}" SelectedItem="{Binding CostType}"/> <!--, Mode=TwoWay (for debugging?)-->
-        <ComboBox Grid.Column="1" Grid.Row="6" ItemsSource="{Binding WeightInitTypes}" SelectedItem="{Binding WeightInitType}"/> <!--, Mode=TwoWay (for debugging?)-->
+        <!-- First two columns -->
+        <Grid Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="7" Grid.ColumnSpan="2" TextAlignment="Center" VerticalAlignment="Center" FontSize="20" Text="L a y e r s"/>
+            <TextBlock Grid.Row="0" Text="IsWithBias" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="1" Text="WeightMin" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="2" Text="WeightMax" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="3" Text="BiasMin" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="4" Text="BiasMax" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="5" Text="CostType" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="6" Text="WeightInitType" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+
+            <CheckBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding IsWithBias}">
+                <CheckBox.LayoutTransform>
+                    <ScaleTransform ScaleX="2" ScaleY="2"/>
+                </CheckBox.LayoutTransform>
+            </CheckBox>
+            <TextBox Name="WeightMinField" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"
+                     Text="{Binding Path=WeightMin}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <TextBox Name="WeightMaxField" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                     Text="{Binding Path=WeightMax}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <TextBox Name="BiasMinField" Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center"
+                     Text="{Binding Path=BiasMin}" IsEnabled="{Binding IsWithBias}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <TextBox Name="BiasMaxField" Grid.Column="1" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center"
+                     Text="{Binding Path=BiasMax}" IsEnabled="{Binding IsWithBias}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <ComboBox Grid.Column="1" Grid.Row="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
+                      ItemsSource="{Binding CostTypes}" SelectedItem="{Binding CostType}"/>
+            <ComboBox Grid.Column="1" Grid.Row="6" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                      ItemsSource="{Binding WeightInitTypes}" SelectedItem="{Binding WeightInitType}"/>
+            <Button Grid.Column="0" Grid.Row="9" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" FontSize="20" 
+                    Content="O K"
+                    Command="{Binding OkCommandAsync}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+
+        </Grid>
         
-        <ListBox Grid.Row="8" Grid.ColumnSpan="2"  HorizontalAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                 ItemsSource="{Binding Layers, Mode=TwoWay}" >
+        <!-- Detailed Layers View (third column)-->
+        <ListBox Grid.Column="2" VerticalAlignment="Stretch"
+                 ItemsSource="{Binding Layers, Mode=TwoWay}" VerticalContentAlignment="Stretch">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Grid HorizontalAlignment="Stretch" Width="{Binding ActualWidth, ElementName=NetParametersUserControl}">
+                    <Grid>  <!--{Binding ActualWidth, ElementName=NetParametersUserControl}-->
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="2*"/>
-                            <ColumnDefinition Width="3*"/>
-                            <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        
-                        <Button Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" MinWidth="50" Content="  -  " 
-                                DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
-                                Command="{Binding DeleteCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
-                        
-                        <TextBox Grid.Column="1" VerticalAlignment="Center" Margin="20,0,10,0" 
-                                 Name="N_Textbox" Text="{Binding N}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="6*"/>
+                        </Grid.RowDefinitions>
+                            
+                        <!-- Row 0 -->
+                        <Button Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &lt;  " 
+                            DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
+                            Command="{Binding MoveLeftCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                            
+                        <Button Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" FontSize="20" MinWidth="50" Content="  -  " 
+                            DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
+                            Command="{Binding DeleteCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+
+                        <Button Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &gt;  " 
+                            DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
+                            Command="{Binding MoveRightCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+
+                        <Button Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" MinWidth="50" FontSize="20"  Content="  +  " 
+                            DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
+                            Command="{Binding AddCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+
+                        <!-- Row 1 -->
+                        <TextBlock Grid.Row="1" Text="Neurons" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,5,0,5" 
+                                Name="N_Textbox" Text="{Binding N}">
                             <TextBox.InputBindings>
                                 <KeyBinding Key="Return" 
-                                            Command="{Binding ElementName=NetParametersUserControl, Path=DataContext.UnfocusCommand}" 
-                                            CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                                        Command="{Binding ElementName=NetParametersUserControl, Path=DataContext.UnfocusCommand}" 
+                                        CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
                             </TextBox.InputBindings>
                         </TextBox>
-                        
-                        <ComboBox Grid.Column="2" VerticalAlignment="Center" Margin="0,0,20,0" 
-                                  ItemsSource="{Binding ElementName=NetParametersUserControl, Path=DataContext.ActivationTypes}" SelectedItem="{Binding ActivationType}">
+
+                        <!-- Row 2 -->
+                        <TextBlock Grid.Row="2" Text="Activation" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,5,0,5" 
+                                ItemsSource="{Binding ElementName=NetParametersUserControl, Path=DataContext.ActivationTypes}" SelectedItem="{Binding ActivationType}">
                         </ComboBox>
-                        
-                        <Button Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="50" FontSize="20"  Content="  +  " 
-                                DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
-                                Command="{Binding AddCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
-                        
-                        <Button Grid.Column="4" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  ^  " 
-                                DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
-                                Command="{Binding MoveUpCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
-                    </Grid>                    
+
+                        <!-- Row 3 -->
+                        <ListBox Grid.Row="3" Grid.ColumnSpan="4" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                 ItemsSource="{Binding N}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBox VerticalAlignment="Center" Margin="20,0,10,0" 
+                                             Name="tb_InputNeuron" Text="{Binding RelativeSource={RelativeSource Mode=Self}}">
+                                        <TextBox.InputBindings>
+                                            <KeyBinding Key="Return" 
+                                                        Command="{Binding ElementName=NetParametersUserControl, Path=DataContext.UnfocusCommand}" 
+                                                        CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                                        </TextBox.InputBindings>
+                                    </TextBox>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                   
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-
-        <Button Grid.Column="0" Grid.Row="9" Grid.ColumnSpan="2" FontSize="20" Content="O K"
-                Command="{Binding OkCommandAsync}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+    
     </Grid>
 </UserControl>
