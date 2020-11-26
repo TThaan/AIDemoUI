@@ -182,7 +182,7 @@ namespace AIDemoUI.ViewModels
 
             LayerVM newLayerVM = new LayerVM(new Layer() { ActivationType = ActivationType.ReLU });
             int newIndex = (LayerVMs.IndexOf(layerVM));
-            LayerVMs.Insert(newIndex, newLayerVM);
+            LayerVMs.Insert(newIndex+1, newLayerVM);
         }
         bool AddCommand_CanExecute(object parameter)
         {

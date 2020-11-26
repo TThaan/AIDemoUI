@@ -15,7 +15,7 @@
     </d:Window.DataContext>
 
     <UserControl.Resources>
-        <conv:LayerVMToBoolConverter x:Key="LayerVMToBoolConverter"/>
+        <conv:IntToBoolConverter x:Key="IntToBoolConverter"/>
     </UserControl.Resources>
 
     <Grid>
@@ -25,68 +25,89 @@
         </Grid.ColumnDefinitions>
 
         <!-- Column 1: Grid with multiple rows for NeuralNets' parameters and 'OK' button-->
-        <Grid Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <StackPanel>
 
-            <TextBlock Grid.Row="0" Text="IsWithBias" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Row="1" Text="WeightMin" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Row="2" Text="WeightMax" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Row="3" Text="BiasMin" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Row="4" Text="BiasMax" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Row="5" Text="CostType" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            <TextBlock Grid.Row="6" Text="WeightInitType" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <Border BorderBrush="LightGray" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="WeightMin" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                    <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
+                         Text="{Binding Path=WeightMin}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                </StackPanel>
+            </Border>
 
-            <CheckBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="{Binding IsWithBias}">
-                <CheckBox.LayoutTransform>
-                    <ScaleTransform ScaleX="2" ScaleY="2"/>
-                </CheckBox.LayoutTransform>
-            </CheckBox>
-            <TextBox Name="WeightMinField" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"
-                     Text="{Binding Path=WeightMin}">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
-                </TextBox.InputBindings>
-            </TextBox>
-            <TextBox Name="WeightMaxField" Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
-                     Text="{Binding Path=WeightMax}">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
-                </TextBox.InputBindings>
-            </TextBox>
-            <TextBox Name="BiasMinField" Grid.Column="1" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center"
+            <Border BorderBrush="LightGray" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="WeightMax" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                    <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
+                         Text="{Binding Path=WeightMax}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                </StackPanel>
+            </Border>
+
+            <Border BorderBrush="LightGray" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Using a Bias" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                    <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
+                              IsChecked="{Binding IsWithBias}">
+                        <CheckBox.LayoutTransform>
+                            <ScaleTransform ScaleX="2" ScaleY="2"/>
+                        </CheckBox.LayoutTransform>
+                    </CheckBox>
+                </StackPanel>
+            </Border>
+
+            <Border BorderBrush="LightGray" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="BiasMin" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                    <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
                      Text="{Binding Path=BiasMin}" IsEnabled="{Binding IsWithBias}">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
-                </TextBox.InputBindings>
-            </TextBox>
-            <TextBox Name="BiasMaxField" Grid.Column="1" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Center"
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                </StackPanel>
+            </Border>
+
+            <Border BorderBrush="LightGray" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="BiasMax" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                    <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
                      Text="{Binding Path=BiasMax}" IsEnabled="{Binding IsWithBias}">
-                <TextBox.InputBindings>
-                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
-                </TextBox.InputBindings>
-            </TextBox>
-            <ComboBox Grid.Column="1" Grid.Row="5" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                </StackPanel>
+            </Border>
+
+            <Border BorderBrush="LightGray" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="CostType" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                    <ComboBox MinHeight="35" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  Margin="0,5,0,10"
                       ItemsSource="{Binding CostTypes}" SelectedItem="{Binding CostType}"/>
-            <ComboBox Grid.Column="1" Grid.Row="6" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                </StackPanel>
+            </Border>
+
+            <Border BorderBrush="LightGray" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="WeightInitType" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                    <ComboBox MinHeight="35" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="0,5,0,10"
                       ItemsSource="{Binding WeightInitTypes}" SelectedItem="{Binding WeightInitType}"/>
-            <Button Grid.Column="0" Grid.Row="9" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.ColumnSpan="2" FontSize="20" 
+                </StackPanel>
+            </Border>
+
+            <Button MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
                     Content="O K"
                     Command="{Binding OkCommandAsync}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
 
-        </Grid>
+        </StackPanel>
 
         <!-- Column 2: 'Layers', 'Inputs' and 'Outputs' -->
         <Grid Grid.Column="2">
@@ -158,7 +179,10 @@
 
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <TextBox Text="{Binding Path=.}" IsEnabled="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}, Path=DataContext.Id, Converter={StaticResource LayerVMToBoolConverter}}">
+                                        <TextBox Text="{Binding Path=.}" IsEnabled="{
+                                            Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}, 
+                                            Path=DataContext.Id, 
+                                            Converter={StaticResource IntToBoolConverter}}">
                                             
                                         </TextBox>
                                     </DataTemplate>

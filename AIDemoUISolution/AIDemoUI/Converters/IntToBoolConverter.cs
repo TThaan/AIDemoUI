@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace AIDemoUI.Converters
 {
-    public class LayerVMToBoolConverter : IValueConverter
+    public class IntToBoolConverter : IValueConverter
     {
         #region IValueConverter
 
