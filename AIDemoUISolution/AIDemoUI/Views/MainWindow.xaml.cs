@@ -9,9 +9,9 @@ namespace AIDemoUI.Views
             InitializeComponent();
         }
 
-        private async void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
-        {
+        //private async void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        //{
             
-        }
+        //}
     }
 }

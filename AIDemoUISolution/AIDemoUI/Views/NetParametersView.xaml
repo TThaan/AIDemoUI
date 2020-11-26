@@ -14,17 +14,17 @@
         <sd:NetParametersVMSampleData/>
     </d:Window.DataContext>
 
-    <!--<UserControl.Resources>
-        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </UserControl.Resources>-->
-    
+    <UserControl.Resources>
+        <conv:LayerVMToBoolConverter x:Key="LayerVMToBoolConverter"/>
+    </UserControl.Resources>
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="7*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- First two columns -->
+        <!-- Column 1: Grid with multiple rows for NeuralNets' parameters and 'OK' button-->
         <Grid Grid.Column="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -87,86 +87,93 @@
                     Command="{Binding OkCommandAsync}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
 
         </Grid>
-        
-        <!-- Detailed Layers View (third column)-->
-        <ListBox Grid.Column="2" VerticalAlignment="Stretch"
-                 ItemsSource="{Binding Layers, Mode=TwoWay}" VerticalContentAlignment="Stretch">
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal"/>
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Grid>  <!--{Binding ActualWidth, ElementName=NetParametersUserControl}-->
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="2*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="6*"/>
-                        </Grid.RowDefinitions>
-                            
-                        <!-- Row 0 -->
-                        <Button Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &lt;  " 
+
+        <!-- Column 2: 'Layers', 'Inputs' and 'Outputs' -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <ListBox Grid.Row="0" VerticalAlignment="Stretch"
+                 ItemsSource="{Binding LayerVMs}" VerticalContentAlignment="Stretch">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <!-- Grid with 4 rows -->
+                        <Grid>
+                            <!--{Binding ActualWidth, ElementName=NetParametersUserControl}-->
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="2*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="6*"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Row 0: Left, Delete, Right, Add -->
+                            <Button Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &lt;  " 
                             DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
                             Command="{Binding MoveLeftCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
-                            
-                        <Button Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" FontSize="20" MinWidth="50" Content="  -  " 
+
+                            <Button Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" FontSize="20" MinWidth="50" Content="  -  " 
                             DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
                             Command="{Binding DeleteCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
 
-                        <Button Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &gt;  " 
+                            <Button Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &gt;  " 
                             DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
                             Command="{Binding MoveRightCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
 
-                        <Button Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" MinWidth="50" FontSize="20"  Content="  +  " 
+                            <Button Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" MinWidth="50" FontSize="20"  Content="  +  " 
                             DataContext="{Binding ElementName=NetParametersUserControl, Path=DataContext}" 
                             Command="{Binding AddCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
 
-                        <!-- Row 1 -->
-                        <TextBlock Grid.Row="1" Text="Neurons" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,5,0,5" 
+                            <!-- Row 1: N -->
+                            <TextBlock Grid.Row="1" Text="Neurons" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,5,0,5" 
                                 Name="N_Textbox" Text="{Binding N}">
-                            <TextBox.InputBindings>
-                                <KeyBinding Key="Return" 
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Return" 
                                         Command="{Binding ElementName=NetParametersUserControl, Path=DataContext.UnfocusCommand}" 
                                         CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
-                            </TextBox.InputBindings>
-                        </TextBox>
+                                </TextBox.InputBindings>
+                            </TextBox>
 
-                        <!-- Row 2 -->
-                        <TextBlock Grid.Row="2" Text="Activation" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,5,0,5" 
+                            <!-- Row 2: Activation -->
+                            <TextBlock Grid.Row="2" Text="Activation" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,5,0,5" 
                                 ItemsSource="{Binding ElementName=NetParametersUserControl, Path=DataContext.ActivationTypes}" SelectedItem="{Binding ActivationType}">
-                        </ComboBox>
+                            </ComboBox>
 
-                        <!-- Row 3 -->
-                        <ListBox Grid.Row="3" Grid.ColumnSpan="4" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                 ItemsSource="{Binding N}">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBox VerticalAlignment="Center" Margin="20,0,10,0" 
-                                             Name="tb_InputNeuron" Text="{Binding RelativeSource={RelativeSource Mode=Self}}">
-                                        <TextBox.InputBindings>
-                                            <KeyBinding Key="Return" 
-                                                        Command="{Binding ElementName=NetParametersUserControl, Path=DataContext.UnfocusCommand}" 
-                                                        CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
-                                        </TextBox.InputBindings>
-                                    </TextBox>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </Grid>
-                   
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-    
+                            <!-- Row 3: ins/outs -->
+                            <ListBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding Inputs}">
+
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Path=.}" IsEnabled="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}, Path=DataContext.Id, Converter={StaticResource LayerVMToBoolConverter}}">
+                                            
+                                        </TextBox>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <ListBox Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" ItemsSource="{Binding Outputs}">
+                            </ListBox>
+
+                        </Grid>
+
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </Grid>
+        
     </Grid>
 </UserControl>

@@ -1,6 +1,5 @@
 ﻿using AIDemoUI.Commands;
 using FourPixCam;
-using MatrixHelper;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,144 +16,138 @@ namespace AIDemoUI.ViewModels
     {
         #region ctor & fields
 
-        NetParameters netParameters;
-        IRelayCommand addCommand, deleteCommand, moveUpCommand, unfocusCommand;
+        NetParameters _netParameters;
+        IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand, unfocusCommand;
         IAsyncCommand okCommandAsync;
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
-        ObservableCollection<float> inputLayer;
-        ObservableCollection<int> neuronsPerLayer;
+        ObservableCollection<LayerVM> layerVMs;
 
-        public NetParametersVM(NetParameters netParameters)
+        public NetParametersVM()
         {
-            this.netParameters = netParameters ??
-                throw new NullReferenceException($"{GetType().Name}.ctor");
-
-            InputLayer = netParameters.Layers[0].Processed.Input.Columns[0].ToObservableCollection();
-            NeuronsPerLayer.CollectionChanged += OnNeuronsPerLayerChanged;
-            Layers.CollectionChanged += OnLayersChanged;
-            InputLayer.CollectionChanged += OnInputLayerChanged;
+            _netParameters = new NetParameters();
+            SetDefaultValues();
+            LayerVMs.CollectionChanged += OnLayerVMsChanged;
         }
+
+        #region helpers
+
+        void SetDefaultValues()
+        {
+            IsWithBias = false;
+            WeightMin = -1;
+            WeightMax = 1;
+            BiasMin = -1;
+            BiasMax = 1;
+            CostType = CostType.SquaredMeanError;
+            WeightInitType = WeightInitType.Xavier;
+            LayerVMs = new ObservableCollection<LayerVM>
+            {
+                new LayerVM(new Layer(){ Id = 0}), 
+                new LayerVM(new Layer(){ Id = 1}), 
+                new LayerVM(new Layer(){ Id = 2})
+            };
+        }
+
+        #endregion
 
         #endregion
 
         #region public
 
-        public ObservableCollection<Layer> Layers
+        public ObservableCollection<LayerVM> LayerVMs
         {
-            get { return netParameters.Layers; }
+            get { return layerVMs; }
             set
             {
-                if (netParameters.Layers != value)
+                if (layerVMs != value)
                 {
-                    netParameters.Layers = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        // no connx to Layers.First()..
-        // When I change Layer.N in view I only change an unobserved variable in the Layer class.
-        // I.e. no event fires.
-        // OnBtnPressed though passes the 'netParameters' incl 'Layers' incl 'N' to the back end.
-        public ObservableCollection<int> NeuronsPerLayer => neuronsPerLayer == null 
-            ? (neuronsPerLayer = netParameters.Layers.Select(x => x.N).ToObservableCollection()) 
-            : neuronsPerLayer;
-        public ObservableCollection<float> InputLayer   
-        {
-            get
-            {
-                return inputLayer;
-            }
-            set
-            {
-                if (inputLayer != value)
-                {
-                    inputLayer = value;
+                    layerVMs = value;
                     OnPropertyChanged();
                 }
             }
         }
         public bool IsWithBias
         {
-            get { return netParameters.IsWithBias; }
+            get { return _netParameters.IsWithBias; }
             set
             {
-                if (netParameters.IsWithBias != value)
+                if (_netParameters.IsWithBias != value)
                 {
-                    netParameters.IsWithBias = value;
+                    _netParameters.IsWithBias = value;
                     OnPropertyChanged();
                 }
             }
         }
         public float WeightMin
         {
-            get { return netParameters.WeightMin; }
+            get { return _netParameters.WeightMin; }
             set
             {
-                if (netParameters.WeightMin != value)
+                if (_netParameters.WeightMin != value)
                 {
-                    netParameters.WeightMin = value;
+                    _netParameters.WeightMin = value;
                     OnPropertyChanged();
                 }
             }
         }
         public float WeightMax
         {
-            get { return netParameters.WeightMax; }
+            get { return _netParameters.WeightMax; }
             set
             {
-                if (netParameters.WeightMax != value)
+                if (_netParameters.WeightMax != value)
                 {
-                    netParameters.WeightMax = value;
+                    _netParameters.WeightMax = value;
                     OnPropertyChanged();
                 }
             }
         }
         public float BiasMin
         {
-            get { return netParameters.BiasMin; }
+            get { return _netParameters.BiasMin; }
             set
             {
-                if (netParameters.BiasMin != value)
+                if (_netParameters.BiasMin != value)
                 {
-                    netParameters.BiasMin = value;
+                    _netParameters.BiasMin = value;
                     OnPropertyChanged();
                 }
             }
         }
         public float BiasMax
         {
-            get { return netParameters.BiasMax; }
+            get { return _netParameters.BiasMax; }
             set
             {
-                if (netParameters.BiasMax != value)
+                if (_netParameters.BiasMax != value)
                 {
-                    netParameters.BiasMax = value;
+                    _netParameters.BiasMax = value;
                     OnPropertyChanged();
                 }
             }
         }
         public CostType CostType
         {
-            get { return netParameters.CostType; }
+            get { return _netParameters.CostType; }
             set
             {
-                if (netParameters.CostType != value)
+                if (_netParameters.CostType != value)
                 {
-                    netParameters.CostType = value;
+                    _netParameters.CostType = value;
                     OnPropertyChanged();
                 }
             }
         }
         public WeightInitType WeightInitType
         {
-            get { return netParameters.WeightInitType; }
+            get { return _netParameters.WeightInitType; }
             set
             {
-                if (netParameters.WeightInitType != value)
+                if (_netParameters.WeightInitType != value)
                 {
-                    netParameters.WeightInitType = value;
+                    _netParameters.WeightInitType = value;
                     OnPropertyChanged();
                 }
             }
@@ -166,20 +159,6 @@ namespace AIDemoUI.ViewModels
             (costTypes = Enum.GetValues(typeof(CostType)).ToList<CostType>().Skip(1));
         public IEnumerable<WeightInitType> WeightInitTypes => weightInitTypes ??
             (weightInitTypes = Enum.GetValues(typeof(WeightInitType)).ToList<WeightInitType>().Skip(1));
-
-        public Matrix Input
-        {
-            get { return netParameters.Layers.First().Processed.Input; }
-            set
-            {
-                Matrix newInput = new Matrix(value.ToArray());
-                if (netParameters.Layers.First().Processed.Input != newInput)
-                {
-                    netParameters.Layers.First().Processed.Input = newInput;
-                    OnPropertyChanged();
-                }
-            }
-        }
 
         #endregion
 
@@ -199,8 +178,11 @@ namespace AIDemoUI.ViewModels
         void AddCommand_Execute(object parameter)
         {
             ContentPresenter cp = parameter as ContentPresenter;
-            Layer layer = cp.Content as Layer;
-            Layers.Add(new Layer { N = 0, ActivationType = ActivationType.ReLU });
+            LayerVM layerVM = cp.Content as LayerVM;
+
+            LayerVM newLayerVM = new LayerVM(new Layer() { ActivationType = ActivationType.ReLU });
+            int newIndex = (LayerVMs.IndexOf(layerVM));
+            LayerVMs.Insert(newIndex, newLayerVM);
         }
         bool AddCommand_CanExecute(object parameter)
         {
@@ -220,32 +202,54 @@ namespace AIDemoUI.ViewModels
         void DeleteCommand_Execute(object parameter)
         {
             ContentPresenter cp = parameter as ContentPresenter;
-            Layer layer = cp.Content as Layer;
-            Layers.Remove(layer);
+            LayerVM layerVM = cp.Content as LayerVM;
+            LayerVMs.Remove(layerVM);
         }
         bool DeleteCommand_CanExecute(object parameter)
         {
             return true;
         }
-        public IRelayCommand MoveUpCommand
+        public IRelayCommand MoveLeftCommand
         {
             get
             {
-                if (moveUpCommand == null)
+                if (moveLeftCommand == null)
                 {
-                    moveUpCommand = new RelayCommand(MoveUpCommand_Execute, MoveUpCommand_CanExecute);
+                    moveLeftCommand = new RelayCommand(MoveLeftCommand_Execute, MoveLeftCommand_CanExecute);
                 }
-                return moveUpCommand;
+                return moveLeftCommand;
             }
         }
-        void MoveUpCommand_Execute(object parameter)
+        void MoveLeftCommand_Execute(object parameter)
         {
             ContentPresenter cp = parameter as ContentPresenter;
-            Layer layer = cp.Content as Layer;
-            int currentIndex = Layers.IndexOf(layer);
-            Layers.Move(currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
+            LayerVM layerVM = cp.Content as LayerVM;
+            int currentIndex = LayerVMs.IndexOf(layerVM);
+            LayerVMs.Move(currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
         }
-        bool MoveUpCommand_CanExecute(object parameter)
+        bool MoveLeftCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+        public IRelayCommand MoveRightCommand
+        {
+            get
+            {
+                if (moveRightCommand == null)
+                {
+                    moveRightCommand = new RelayCommand(MoveRightCommand_Execute, MoveRightCommand_CanExecute);
+                }
+                return moveRightCommand;
+            }
+        }
+        void MoveRightCommand_Execute(object parameter)
+        {
+            ContentPresenter cp = parameter as ContentPresenter;
+            LayerVM layerVM = cp.Content as LayerVM;
+            int currentIndex = LayerVMs.IndexOf(layerVM);
+            LayerVMs.Move(currentIndex, currentIndex < LayerVMs.Count - 1 ? currentIndex + 1 : 0);
+        }
+        bool MoveRightCommand_CanExecute(object parameter)
         {
             return true;
         }
@@ -299,7 +303,7 @@ namespace AIDemoUI.ViewModels
 
         #region OnLayersChanged
 
-        void OnLayersChanged(object sender, NotifyCollectionChangedEventArgs e)
+        void OnLayerVMsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)
             {
@@ -326,44 +330,24 @@ namespace AIDemoUI.ViewModels
                 default:
                     break;
             }
-        }
-        void OnNeuronsPerLayerChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    break;
-                default:
-                    break;
-            }
-        }
-        void OnInputLayerChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    break;
-                default:
-                    break;
-            }
+            UpdateIndeces();
         }
 
+        #region helpers
+
+        void UpdateIndeces()
+        {
+            for (int i = 0; i < LayerVMs.Count; i++)
+            {
+                LayerVMs.ElementAt(i).Id = i;
+                for (int k = 0; k < LayerVMs.ElementAt(i).Inputs.Count; k++)
+                {
+                    LayerVMs.ElementAt(i).Inputs[k] = 0f;
+                }
+            }            
+        }
+
+        #endregion
 
         #endregion
 
@@ -372,7 +356,10 @@ namespace AIDemoUI.ViewModels
         public event OkBtnEventHandler OkBtnPressed;
         async Task OnOkBtnPressedAsync()
         {
-            await OkBtnPressed?.Invoke(netParameters);
+            _netParameters.Layers = LayerVMs
+                .Select(x => x.Layer)
+                .ToArray();
+            await OkBtnPressed?.Invoke(_netParameters);
         }
 
         #endregion

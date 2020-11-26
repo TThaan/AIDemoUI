@@ -1,31 +1,22 @@
 ﻿using System;
 using System.Globalization;
-using System.Windows;
 using System.Windows.Data;
 
 namespace AIDemoUI.Converters
 {
-    public class BoolToVisibilityConverter : IValueConverter
+    public class LayerVMToBoolConverter : IValueConverter
     {
         #region IValueConverter
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var isVisible = (bool)value;
-            var hiddenOrCollapsed = (string)parameter;
-
-            if (isVisible)
+            try
             {
-                return Visibility.Visible;
+                return (int)value == 0 ? true : false;
             }
-
-            if (hiddenOrCollapsed == "hidden")
+            catch (Exception)
             {
-                return Visibility.Hidden;
-            }
-            else
-            {
-                return Visibility.Collapsed;
+                return false;
             }
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

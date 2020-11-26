@@ -13,9 +13,10 @@ namespace AIDemoUI
 
             #region Viewmodels and MainView
 
-            var netParameters = new NetParameters();
+            // var netParameters = new NetParameters();
 
-            NetParametersVM netParametersVM = new NetParametersVM(netParameters);
+            // Create in MWVM!
+            NetParametersVM netParametersVM = new NetParametersVM();
             MainWindowVM mainWindowVM = new MainWindowVM(netParametersVM);
 
             MainWindow = new MainWindow() { DataContext = mainWindowVM };

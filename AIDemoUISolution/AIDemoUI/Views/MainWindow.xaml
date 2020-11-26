@@ -7,8 +7,8 @@
         xmlns:views="clr-namespace:AIDemoUI.Views"
         xmlns:sd="clr-namespace:AIDemoUI.SampleData"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="1200"
-        Loaded="MainWindow_OnLoaded">
+        Title="MainWindow" Height="600" Width="1200">
+        <!--Loaded="MainWindow_OnLoaded"-->
 
     <d:Window.DataContext>
         <sd:MainWindowVMSampleData/>
@@ -33,6 +33,6 @@
         <ContentControl Name="NetParametersCC"
                         Content="{Binding Path=NetParametersVM}"
                         ContentTemplate="{StaticResource NetParametersView}"
-                        Grid.Column="0" Grid.RowSpan="2"/>
+                        Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2"/>
     </Grid>
 </Window>
