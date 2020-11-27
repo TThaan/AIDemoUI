@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:AIDemoUI"
         xmlns:views="clr-namespace:AIDemoUI.Views"
         xmlns:sd="clr-namespace:AIDemoUI.SampleData"
+        xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
         mc:Ignorable="d"
         Title="MainWindow" Height="600" Width="1200">
         <!--Loaded="MainWindow_OnLoaded"-->
@@ -14,6 +15,10 @@
         <sd:MainWindowVMSampleData/>
     </d:Window.DataContext>
 
+    <Window.DataContext>
+        <vm:MainWindowVM/>
+    </Window.DataContext>
+    
     <Window.Resources>
         <DataTemplate x:Key="NetParametersView">
             <views:NetParametersView/>

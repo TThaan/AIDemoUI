@@ -1,10 +1,16 @@
 ﻿using AIDemoUI.Commands;
 using FourPixCam;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
@@ -18,7 +24,7 @@ namespace AIDemoUI.ViewModels
 
         NetParameters _netParameters;
         IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand, unfocusCommand;
-        IAsyncCommand okCommandAsync;
+        IAsyncCommand okCommandAsync, loadTrainingDataCommandAsync, loadTestingDataCommandAsync, loadNetCommandAsync, saveNetCommandAsync;
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
@@ -160,9 +166,19 @@ namespace AIDemoUI.ViewModels
         public IEnumerable<WeightInitType> WeightInitTypes => weightInitTypes ??
             (weightInitTypes = Enum.GetValues(typeof(WeightInitType)).ToList<WeightInitType>().Skip(1));
 
+        #region I/O
+
+        public Stream LoadedTrainingData { get; set; }
+        public Byte[] TrainingData_ByteArray { get; set; }
+        public Stream LoadedTestingData { get; set; }
+
+        #endregion
+
         #endregion
 
         #region RelayCommand
+
+        #region ...
 
         public IRelayCommand AddCommand
         {
@@ -298,6 +314,197 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
+
+        #endregion
+
+        #region I/O
+
+        public IAsyncCommand LoadTrainingDataCommandAsync
+        {
+            get
+            {
+                if (loadTrainingDataCommandAsync == null)
+                {
+                    loadTrainingDataCommandAsync = new AsyncRelayCommand(LoadTrainingDataCommand_Execute, LoadTrainingDataCommand_CanExecute);
+                }
+                return loadTrainingDataCommandAsync;
+            }
+        }
+        async Task LoadTrainingDataCommand_Execute(object parameter)
+        {
+            using (var client = new WebClient())
+            {
+                client.DownloadFile("http://yann.lecun.com/exdb/mnist/t10k-images.idx3-ubyte.gz", "abc.gz");
+            }
+
+            // debug (Read from URL)
+            IEnumerable<MNISTImage> A = MNISTReader.ReadTestData();
+            List<MNISTImage> A2 = A.ToList();
+
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                await Task.Run(() =>
+                {
+                    LoadedTrainingData = openFileDialog.OpenFile();
+
+                    // debug (Read from File)
+                    IEnumerable<MNISTImage>  B = MNISTReader.ReadTestData(LoadedTrainingData);
+                    List<MNISTImage> B2 = B.ToList();
+
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        LoadedTrainingData.CopyTo(ms);
+                        TrainingData_ByteArray = ms.ToArray();
+                    }
+
+                    // var imgData = File.ReadAllBytes();
+                    var header = TrainingData_ByteArray.Take(16).Reverse().ToArray();
+                    int imgCount = BitConverter.ToInt32(header, 8);
+                    int rows = BitConverter.ToInt32(header, 4);
+                    int cols = BitConverter.ToInt32(header, 0);
+                });
+            }
+        }
+        bool LoadTrainingDataCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+        
+
+        public IAsyncCommand LoadTestingDataCommandAsync
+        {
+            get
+            {
+                if (loadTestingDataCommandAsync == null)
+                {
+                    loadTestingDataCommandAsync = new AsyncRelayCommand(LoadTestingDataCommand_Execute, LoadTestingDataCommand_CanExecute);
+                }
+                return loadTestingDataCommandAsync;
+            }
+        }
+        async Task LoadTestingDataCommand_Execute(object parameter)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                await Task.Run(() =>
+                {
+                    LoadedTestingData = openFileDialog.OpenFile();
+                });
+            }
+        }
+        bool LoadTestingDataCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public IAsyncCommand LoadNetCommandAsync
+        {
+            get
+            {
+                if (loadNetCommandAsync == null)
+                {
+                    loadNetCommandAsync = new AsyncRelayCommand(LoadNetCommand_Execute, LoadNetCommand_CanExecute);
+                }
+                return loadNetCommandAsync;
+            }
+        }
+        async Task LoadNetCommand_Execute(object parameter)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                await Task.Run(() =>
+                {
+                    Stream stream = openFileDialog.OpenFile();
+                    BinaryFormatter b = new BinaryFormatter();
+                    NetParameters np = (NetParameters)b.Deserialize(stream);
+                    SetLoadedValues(np);
+                });
+            }
+        }
+        bool LoadNetCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+        public IAsyncCommand SaveNetCommandAsync
+        {
+            get
+            {
+                if (saveNetCommandAsync == null)
+                {
+                    saveNetCommandAsync = new AsyncRelayCommand(SaveNetCommand_Execute, SaveNetCommand_CanExecute);
+                }
+                return saveNetCommandAsync;
+            }
+        }
+        async Task SaveNetCommand_Execute(object parameter)
+        {
+            _netParameters.Layers = LayerVMs
+                .Select(x => x.Layer)
+                .ToArray();
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Title = "Save this Template";
+            saveFileDialog.DefaultExt = ".txt";
+            // saveFileDialog.Filter = "Text| *.txt";
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                if (!string.IsNullOrEmpty(saveFileDialog.FileName))
+                {
+                    await Task.Run(() =>
+                    {
+                        Stream stream = saveFileDialog.OpenFile();
+                        BinaryFormatter b = new BinaryFormatter();
+                        b.Serialize(stream, _netParameters);
+                        stream.Close();
+                    });
+                }
+            }
+        }
+        bool SaveNetCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        #region helpers
+
+        // in NP class:
+        void SerializeNetParameters()
+        {
+            _netParameters.Layers = LayerVMs
+                .Select(x => x.Layer)
+                .ToArray();
+            Stream stream = File.Open("temp.dat", FileMode.Create);
+            BinaryFormatter b = new BinaryFormatter();
+            b.Serialize(stream, _netParameters);
+            stream.Close();
+        }
+        void DeSerializeNetParameters()
+        {
+            Stream stream = File.Open("temp.dat", FileMode.Open);
+            BinaryFormatter b = new BinaryFormatter();
+            _netParameters = (NetParameters)b.Deserialize(stream);
+            stream.Close();
+        }
+        void SetLoadedValues(NetParameters np)
+        {
+            IsWithBias = np.IsWithBias;
+            WeightMin = np.WeightMin;
+            WeightMax = np.WeightMax;
+            BiasMin = np.BiasMin;
+            BiasMax = np.BiasMax;
+            CostType = np.CostType;
+            WeightInitType = np.WeightInitType;
+            LayerVMs = new ObservableCollection<LayerVM>(
+                np.Layers.Select(x => new LayerVM(x)));
+        }
+
+        #endregion
+
+        #endregion
 
         #endregion
 

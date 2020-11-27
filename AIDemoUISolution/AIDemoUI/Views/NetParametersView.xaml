@@ -5,14 +5,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:AIDemoUI.Views"
              xmlns:sd="clr-namespace:AIDemoUI.SampleData"
+             xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
              xmlns:conv="clr-namespace:AIDemoUI.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1200"
              Name="NetParametersUserControl">
 
-    <d:Window.DataContext>
+    <d:UserControl.DataContext>
         <sd:NetParametersVMSampleData/>
-    </d:Window.DataContext>
+    </d:UserControl.DataContext>
+
+    <UserControl.DataContext>
+        <vm:NetParametersVM/>
+    </UserControl.DataContext>
 
     <UserControl.Resources>
         <conv:IntToBoolConverter x:Key="IntToBoolConverter"/>
@@ -27,6 +32,9 @@
         <!-- Column 1: Grid with multiple rows for NeuralNets' parameters and 'OK' button-->
         <StackPanel>
 
+            <Button Name="btnLoadNet" Command="{Binding LoadNetCommandAsync}" Content="Load Net"/>
+            <Button Name="btnSaveNet" Command="{Binding SaveNetCommandAsync}" Content="Save Net"/>
+            
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="WeightMin" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
@@ -103,6 +111,11 @@
                 </StackPanel>
             </Border>
 
+            <Button Command="{Binding LoadTrainingDataCommandAsync}" CommandParameter="{Binding ElementName=tb_TrainingData}" Content="Load Training Data"/>
+            <TextBox Name="tb_TrainingData"/>
+            <Button Command="{Binding LoadTestingDataCommandAsync}" CommandParameter="{Binding ElementName=tb_TestingData}" Content="Load Testing Data"/>
+            <TextBox Name="tb_TestingData"/>
+            
             <Button MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
                     Content="O K"
                     Command="{Binding OkCommandAsync}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>

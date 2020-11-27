@@ -25,15 +25,15 @@ namespace AIDemoUI.ViewModels
                 throw new NullReferenceException($"" +
                 $"{typeof(Layer).Name} {nameof(layer)} ({GetType().Name}.ctor)");
 
-            SetDefaultValues();
+            SetDefaultValues(layer);
         }
 
         #region helpers
 
-        void SetDefaultValues()
+        void SetDefaultValues(Layer layer)
         {
-            N = 4;
-            ActivationType = ActivationType.ReLU;
+            N = layer.N == 0 ? 4 : layer.N;
+            ActivationType = layer.ActivationType == default ? ActivationType.ReLU : layer.ActivationType;
             Inputs = Enumerable.Range(0, N).Select(x => 0f).ToObservableCollection();
             Outputs = Enumerable.Range(0, N).Select(x => 0f).ToObservableCollection();
         }

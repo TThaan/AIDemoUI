@@ -1,15 +1,13 @@
 ﻿using FourPixCam;
-using System;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
 {
     public class MainWindowVM : BaseVM
     {
-        public MainWindowVM(NetParametersVM netParametersVM)
+        public MainWindowVM()
         {
-            NetParametersVM = netParametersVM ?? 
-                throw new NullReferenceException($"{GetType().Name}.ctor");
+            NetParametersVM = new NetParametersVM();
             NetParametersVM.OkBtnPressed += OnOkButtonPressedAsync;
         }
 

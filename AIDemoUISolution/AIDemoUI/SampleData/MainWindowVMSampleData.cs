@@ -7,7 +7,6 @@ namespace AIDemoUI.SampleData
         #region ctor
 
         public MainWindowVMSampleData()
-            : base(new NetParametersVMSampleData())
         {
 
         }
