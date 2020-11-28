@@ -39,7 +39,7 @@ namespace AIDemoUI.Commands
                 }
                 catch(Exception e)
                 {
-
+                    
                 }
                 finally
                 {

@@ -9,14 +9,13 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
 namespace AIDemoUI.ViewModels
 {
-    public delegate Task OkBtnEventHandler(NetParameters netParameters);
+    public delegate Task OkBtnEventHandler(NetParameters netParameters, Stream trainingData, Stream testingData);
 
     public class NetParametersVM : BaseVM
     {
@@ -24,7 +23,7 @@ namespace AIDemoUI.ViewModels
 
         NetParameters _netParameters;
         IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand, unfocusCommand;
-        IAsyncCommand okCommandAsync, loadTrainingDataCommandAsync, loadTestingDataCommandAsync, loadNetCommandAsync, saveNetCommandAsync;
+        IAsyncCommand okCommandAsync, loadTrainingDataCommandAsync, loadTestingDataCommandAsync, loadNetCommandAsync, saveNetCommandAsync, loadTrainingDataFromUrlCommandAsync, loadTestingDataFromUrlCommandAsync;
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
@@ -169,7 +168,6 @@ namespace AIDemoUI.ViewModels
         #region I/O
 
         public Stream LoadedTrainingData { get; set; }
-        public Byte[] TrainingData_ByteArray { get; set; }
         public Stream LoadedTestingData { get; set; }
 
         #endregion
@@ -178,7 +176,7 @@ namespace AIDemoUI.ViewModels
 
         #region RelayCommand
 
-        #region ...
+        #region unspecified Commands
 
         public IRelayCommand AddCommand
         {
@@ -319,6 +317,8 @@ namespace AIDemoUI.ViewModels
 
         #region I/O
 
+        #region from local file
+
         public IAsyncCommand LoadTrainingDataCommandAsync
         {
             get
@@ -332,37 +332,12 @@ namespace AIDemoUI.ViewModels
         }
         async Task LoadTrainingDataCommand_Execute(object parameter)
         {
-            using (var client = new WebClient())
-            {
-                client.DownloadFile("http://yann.lecun.com/exdb/mnist/t10k-images.idx3-ubyte.gz", "abc.gz");
-            }
-
-            // debug (Read from URL)
-            IEnumerable<MNISTImage> A = MNISTReader.ReadTestData();
-            List<MNISTImage> A2 = A.ToList();
-
             OpenFileDialog openFileDialog = new OpenFileDialog();
             if (openFileDialog.ShowDialog() == true)
             {
                 await Task.Run(() =>
                 {
                     LoadedTrainingData = openFileDialog.OpenFile();
-
-                    // debug (Read from File)
-                    IEnumerable<MNISTImage>  B = MNISTReader.ReadTestData(LoadedTrainingData);
-                    List<MNISTImage> B2 = B.ToList();
-
-                    using (MemoryStream ms = new MemoryStream())
-                    {
-                        LoadedTrainingData.CopyTo(ms);
-                        TrainingData_ByteArray = ms.ToArray();
-                    }
-
-                    // var imgData = File.ReadAllBytes();
-                    var header = TrainingData_ByteArray.Take(16).Reverse().ToArray();
-                    int imgCount = BitConverter.ToInt32(header, 8);
-                    int rows = BitConverter.ToInt32(header, 4);
-                    int cols = BitConverter.ToInt32(header, 0);
                 });
             }
         }
@@ -370,8 +345,6 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
-        
-
         public IAsyncCommand LoadTestingDataCommandAsync
         {
             get
@@ -398,6 +371,67 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
+
+        #endregion
+
+        #region from url
+
+        public IAsyncCommand LoadTrainingDataFromUrlCommandAsync
+        {
+            get
+            {
+                if (loadTrainingDataFromUrlCommandAsync == null)
+                {
+                    loadTrainingDataFromUrlCommandAsync = new AsyncRelayCommand(LoadTrainingDataFromUrlCommand_Execute, LoadTrainingDataFromUrlCommand_CanExecute);
+                }
+                return loadTrainingDataFromUrlCommandAsync;
+            }
+        }
+        async Task LoadTrainingDataFromUrlCommand_Execute(object parameter)
+        {
+            // Either download from url
+            using (var client = new WebClient())
+            {
+                client.DownloadFile("http://yann.lecun.com/exdb/mnist/t10k-images.idx3-ubyte.gz", "abc.gz");
+            }
+            // or use stream directly...
+
+            throw new NotImplementedException();
+        }
+        bool LoadTrainingDataFromUrlCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+        public IAsyncCommand LoadTestingDataFromUrlCommandAsync
+        {
+            get
+            {
+                if (loadTestingDataFromUrlCommandAsync == null)
+                {
+                    loadTestingDataFromUrlCommandAsync = new AsyncRelayCommand(LoadTestingDataFromUrlCommand_Execute, LoadTestingDataFromUrlCommand_CanExecute);
+                }
+                return loadTestingDataFromUrlCommandAsync;
+            }
+        }
+        async Task LoadTestingDataFromUrlCommand_Execute(object parameter)
+        {
+            // Either download from url
+            using (var client = new WebClient())
+            {
+                client.DownloadFile("http://yann.lecun.com/exdb/mnist/t10k-images.idx3-ubyte.gz", "abc.gz");
+            }
+            // or use stream directly...
+
+            throw new NotImplementedException();
+        }
+        bool LoadTestingDataFromUrlCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        #endregion
+
+        #region load/save net templates
 
         public IAsyncCommand LoadNetCommandAsync
         {
@@ -508,6 +542,8 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
+        #endregion
+
         #region OnLayersChanged
 
         void OnLayerVMsChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -563,10 +599,26 @@ namespace AIDemoUI.ViewModels
         public event OkBtnEventHandler OkBtnPressed;
         async Task OnOkBtnPressedAsync()
         {
+            //// debug (Read from File)
+            //IEnumerable<MNISTImage> B = MNISTReader.ReadTestData(LoadedTrainingData);
+            //List<MNISTImage> B2 = B.ToList();
+            //
+            //using (MemoryStream ms = new MemoryStream())
+            //{
+            //    LoadedTrainingData.CopyTo(ms);
+            //    TrainingData_ByteArray = ms.ToArray();
+            //}
+            //
+            //// var imgData = File.ReadAllBytes();
+            //var header = TrainingData_ByteArray.Take(16).Reverse().ToArray();
+            //int imgCount = BitConverter.ToInt32(header, 8);
+            //int rows = BitConverter.ToInt32(header, 4);
+            //int cols = BitConverter.ToInt32(header, 0);
+
             _netParameters.Layers = LayerVMs
                 .Select(x => x.Layer)
                 .ToArray();
-            await OkBtnPressed?.Invoke(_netParameters);
+            await OkBtnPressed?.Invoke(_netParameters, LoadedTrainingData, LoadedTestingData);
         }
 
         #endregion
