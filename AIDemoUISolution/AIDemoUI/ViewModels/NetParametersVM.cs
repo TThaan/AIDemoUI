@@ -1,21 +1,21 @@
 ﻿using AIDemoUI.Commands;
 using FourPixCam;
 using Microsoft.Win32;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Net;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 
 namespace AIDemoUI.ViewModels
 {
-    public delegate Task OkBtnEventHandler(NetParameters netParameters, Stream trainingData, Stream testingData);
+    public delegate Task OkBtnEventHandler(NetParameters netParameters,
+        string Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages);
 
     public class NetParametersVM : BaseVM
     {
@@ -23,16 +23,19 @@ namespace AIDemoUI.ViewModels
 
         NetParameters _netParameters;
         IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand, unfocusCommand;
-        IAsyncCommand okCommandAsync, loadTrainingDataCommandAsync, loadTestingDataCommandAsync, loadNetCommandAsync, saveNetCommandAsync, loadTrainingDataFromUrlCommandAsync, loadTestingDataFromUrlCommandAsync;
+        IAsyncCommand okCommandAsync, loadNetCommandAsync, saveNetCommandAsync, setSamplesLocationCommandAsync;
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
         ObservableCollection<LayerVM> layerVMs;
+        ObservableCollection<string> sampleSetTemplates;
+        string selectedSampleSet, url_TrainingLabels, url_TrainingImages, url_TestingImages, url_TestingLabels;
 
         public NetParametersVM()
         {
             _netParameters = new NetParameters();
             SetDefaultValues();
+            // SampleSetChanged += OnSampleSetChanged;
             LayerVMs.CollectionChanged += OnLayerVMsChanged;
         }
 
@@ -49,10 +52,17 @@ namespace AIDemoUI.ViewModels
             WeightInitType = WeightInitType.Xavier;
             LayerVMs = new ObservableCollection<LayerVM>
             {
-                new LayerVM(new Layer(){ Id = 0}), 
-                new LayerVM(new Layer(){ Id = 1}), 
+                new LayerVM(new Layer(){ Id = 0}),
+                new LayerVM(new Layer(){ Id = 1}),
                 new LayerVM(new Layer(){ Id = 2})
             };
+
+            SampleSets = new ObservableCollection<string>(
+                new[]
+                {
+                    "No Sample Selected", "Four Pixel Camera", "MNIST"
+                });
+            SelectedSampleSet = sampleSetTemplates.First();
         }
 
         #endregion
@@ -61,6 +71,83 @@ namespace AIDemoUI.ViewModels
 
         #region public
 
+        public ObservableCollection<string> SampleSets
+        {
+            get { return sampleSetTemplates; }
+            set
+            {
+                if (sampleSetTemplates != value)
+                {
+                    sampleSetTemplates = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public string SelectedSampleSet
+        {
+            get { return selectedSampleSet; }
+            set
+            {
+                if (selectedSampleSet != value)
+                {
+                    selectedSampleSet = value;
+                    OnSampleSetChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public string Url_TrainingLabels
+        {
+            get { return url_TrainingLabels; }
+            set
+            {
+                if (url_TrainingLabels != value)
+                {
+                    url_TrainingLabels = value;
+                    // OnSampleSetChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public string Url_TrainingImages
+        {
+            get { return url_TrainingImages; }
+            set
+            {
+                if (url_TrainingImages != value)
+                {
+                    url_TrainingImages = value;
+                    // OnSampleSetChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public string Url_TestingLabels
+        {
+            get { return url_TestingLabels; }
+            set
+            {
+                if (url_TestingLabels != value)
+                {
+                    url_TestingLabels = value;
+                    // OnSampleSetChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public string Url_TestingImages
+        {
+            get { return url_TestingImages; }
+            set
+            {
+                if (url_TestingImages != value)
+                {
+                    url_TestingImages = value;
+                    // OnSampleSetChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
         public ObservableCollection<LayerVM> LayerVMs
         {
             get { return layerVMs; }
@@ -160,17 +247,10 @@ namespace AIDemoUI.ViewModels
 
         public IEnumerable<ActivationType> ActivationTypes => activationTypes ??
             (activationTypes = Enum.GetValues(typeof(ActivationType)).ToList<ActivationType>().Skip(1));
-        public IEnumerable<CostType> CostTypes => costTypes ?? 
+        public IEnumerable<CostType> CostTypes => costTypes ??
             (costTypes = Enum.GetValues(typeof(CostType)).ToList<CostType>().Skip(1));
         public IEnumerable<WeightInitType> WeightInitTypes => weightInitTypes ??
             (weightInitTypes = Enum.GetValues(typeof(WeightInitType)).ToList<WeightInitType>().Skip(1));
-
-        #region I/O
-
-        public Stream LoadedTrainingData { get; set; }
-        public Stream LoadedTestingData { get; set; }
-
-        #endregion
 
         #endregion
 
@@ -196,7 +276,7 @@ namespace AIDemoUI.ViewModels
 
             LayerVM newLayerVM = new LayerVM(new Layer() { ActivationType = ActivationType.ReLU });
             int newIndex = (LayerVMs.IndexOf(layerVM));
-            LayerVMs.Insert(newIndex+1, newLayerVM);
+            LayerVMs.Insert(newIndex + 1, newLayerVM);
         }
         bool AddCommand_CanExecute(object parameter)
         {
@@ -310,6 +390,13 @@ namespace AIDemoUI.ViewModels
         }
         bool OkCommand_CanExecute(object parameter)
         {
+            if (string.IsNullOrEmpty(Url_TrainingLabels) ||
+                string.IsNullOrEmpty(Url_TrainingImages) ||
+                string.IsNullOrEmpty(Url_TestingLabels) ||
+                string.IsNullOrEmpty(Url_TestingImages))
+            {
+                return false;
+            }
             return true;
         }
 
@@ -317,121 +404,85 @@ namespace AIDemoUI.ViewModels
 
         #region I/O
 
-        #region from local file
+        #region Change SampleSet
 
-        public IAsyncCommand LoadTrainingDataCommandAsync
+        public IAsyncCommand SetSamplesLocationCommandAsync
         {
             get
             {
-                if (loadTrainingDataCommandAsync == null)
+                if (setSamplesLocationCommandAsync == null)
                 {
-                    loadTrainingDataCommandAsync = new AsyncRelayCommand(LoadTrainingDataCommand_Execute, LoadTrainingDataCommand_CanExecute);
+                    setSamplesLocationCommandAsync = new AsyncRelayCommand(SetSamplesLocationCommand_Execute, SetSamplesLocationCommand_CanExecute);
                 }
-                return loadTrainingDataCommandAsync;
+                return setSamplesLocationCommandAsync;
             }
         }
-        async Task LoadTrainingDataCommand_Execute(object parameter)
+        async Task SetSamplesLocationCommand_Execute(object parameter)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
+            string url = parameter as string;
+
+            if (!string.IsNullOrEmpty(url))
             {
-                await Task.Run(() =>
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                if (openFileDialog.ShowDialog() == true)
                 {
-                    LoadedTrainingData = openFileDialog.OpenFile();
-                });
+                    await Task.Run(() =>
+                    {
+                        switch (url)
+                        {
+                            case nameof(Url_TrainingLabels):
+                                Url_TrainingLabels = openFileDialog.FileName;
+                                break;
+                            case nameof(Url_TrainingImages):
+                                Url_TrainingImages = openFileDialog.FileName;
+                                break;
+                            case nameof(Url_TestingLabels):
+                                Url_TestingLabels = openFileDialog.FileName;
+                                break;
+                            case nameof(Url_TestingImages):
+                                Url_TestingImages = openFileDialog.FileName;
+                                break;
+                            default:
+                                break;
+                        }
+                    });
+                }
             }
         }
-        bool LoadTrainingDataCommand_CanExecute(object parameter)
+        bool SetSamplesLocationCommand_CanExecute(object parameter)
         {
             return true;
         }
-        public IAsyncCommand LoadTestingDataCommandAsync
-        {
-            get
-            {
-                if (loadTestingDataCommandAsync == null)
-                {
-                    loadTestingDataCommandAsync = new AsyncRelayCommand(LoadTestingDataCommand_Execute, LoadTestingDataCommand_CanExecute);
-                }
-                return loadTestingDataCommandAsync;
-            }
-        }
-        async Task LoadTestingDataCommand_Execute(object parameter)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-            {
-                await Task.Run(() =>
-                {
-                    LoadedTestingData = openFileDialog.OpenFile();
-                });
-            }
-        }
-        bool LoadTestingDataCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
+        //public IAsyncCommand LoadTestingDataFromUrlCommandAsync
+        //{
+        //    get
+        //    {
+        //        if (loadTestingDataFromUrlCommandAsync == null)
+        //        {
+        //            loadTestingDataFromUrlCommandAsync = new AsyncRelayCommand(LoadTestingDataFromUrlCommand_Execute, LoadTestingDataFromUrlCommand_CanExecute);
+        //        }
+        //        return loadTestingDataFromUrlCommandAsync;
+        //    }
+        //}
+        //async Task LoadTestingDataFromUrlCommand_Execute(object parameter)
+        //{
+        //    // Either download from url
+        //    using (var client = new WebClient())
+        //    {
+        //        client.DownloadFile("http://yann.lecun.com/exdb/mnist/t10k-images.idx3-ubyte.gz", "abc.gz");
+        //    }
+        //    // or use stream directly...
+
+        //    throw new NotImplementedException();
+        //}
+        //bool LoadTestingDataFromUrlCommand_CanExecute(object parameter)
+        //{
+        //    return true;
+        //}
 
         #endregion
 
-        #region from url
-
-        public IAsyncCommand LoadTrainingDataFromUrlCommandAsync
-        {
-            get
-            {
-                if (loadTrainingDataFromUrlCommandAsync == null)
-                {
-                    loadTrainingDataFromUrlCommandAsync = new AsyncRelayCommand(LoadTrainingDataFromUrlCommand_Execute, LoadTrainingDataFromUrlCommand_CanExecute);
-                }
-                return loadTrainingDataFromUrlCommandAsync;
-            }
-        }
-        async Task LoadTrainingDataFromUrlCommand_Execute(object parameter)
-        {
-            // Either download from url
-            using (var client = new WebClient())
-            {
-                client.DownloadFile("http://yann.lecun.com/exdb/mnist/t10k-images.idx3-ubyte.gz", "abc.gz");
-            }
-            // or use stream directly...
-
-            throw new NotImplementedException();
-        }
-        bool LoadTrainingDataFromUrlCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        public IAsyncCommand LoadTestingDataFromUrlCommandAsync
-        {
-            get
-            {
-                if (loadTestingDataFromUrlCommandAsync == null)
-                {
-                    loadTestingDataFromUrlCommandAsync = new AsyncRelayCommand(LoadTestingDataFromUrlCommand_Execute, LoadTestingDataFromUrlCommand_CanExecute);
-                }
-                return loadTestingDataFromUrlCommandAsync;
-            }
-        }
-        async Task LoadTestingDataFromUrlCommand_Execute(object parameter)
-        {
-            // Either download from url
-            using (var client = new WebClient())
-            {
-                client.DownloadFile("http://yann.lecun.com/exdb/mnist/t10k-images.idx3-ubyte.gz", "abc.gz");
-            }
-            // or use stream directly...
-
-            throw new NotImplementedException();
-        }
-        bool LoadTestingDataFromUrlCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        #endregion
-
-        #region load/save net templates
+        #region Load/Save Net
 
         public IAsyncCommand LoadNetCommandAsync
         {
@@ -587,7 +638,60 @@ namespace AIDemoUI.ViewModels
                 {
                     LayerVMs.ElementAt(i).Inputs[k] = 0f;
                 }
-            }            
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #region SampleSetChanged
+
+        void OnSampleSetChanged([CallerMemberName] string propertyName = null)
+        {
+            switch (propertyName)
+            {
+                case nameof(SelectedSampleSet):
+                    SelectAmpleSet();
+                    break;
+                default:
+                    break;
+            }
+
+            OnPropertyChanged(propertyName);
+        }
+
+        #region helpers
+
+        void SelectAmpleSet()
+        {
+            switch (SelectedSampleSet)
+            {
+                case "No Sample Selected":
+                    Url_TrainingLabels = default;
+                    Url_TrainingImages = default;
+                    Url_TestingLabels = default;
+                    Url_TestingImages = default;
+                    break;
+                case "Four Pixel Camera":
+                    Url_TrainingLabels = new NNet_InputProvider.FourPixCam.DataFactory().Url_TrainLabels;
+                    Url_TrainingImages = new NNet_InputProvider.FourPixCam.DataFactory().Url_TrainImages;
+                    Url_TestingLabels = new NNet_InputProvider.FourPixCam.DataFactory().Url_TestLabels;
+                    Url_TestingImages = new NNet_InputProvider.FourPixCam.DataFactory().Url_TestImages;
+                    break;
+                case "MNIST":
+                    Url_TrainingLabels = new NNet_InputProvider.MNIST.DataFactory().Url_TrainLabels;
+                    Url_TrainingImages = new NNet_InputProvider.MNIST.DataFactory().Url_TrainImages;
+                    Url_TestingLabels = new NNet_InputProvider.MNIST.DataFactory().Url_TestLabels;
+                    Url_TestingImages = new NNet_InputProvider.MNIST.DataFactory().Url_TestImages;
+                    break;
+                default:
+                    Url_TrainingLabels = default;
+                    Url_TrainingImages = default;
+                    Url_TestingLabels = default;
+                    Url_TestingImages = default;
+                    break;
+            }
         }
 
         #endregion
@@ -599,26 +703,10 @@ namespace AIDemoUI.ViewModels
         public event OkBtnEventHandler OkBtnPressed;
         async Task OnOkBtnPressedAsync()
         {
-            //// debug (Read from File)
-            //IEnumerable<MNISTImage> B = MNISTReader.ReadTestData(LoadedTrainingData);
-            //List<MNISTImage> B2 = B.ToList();
-            //
-            //using (MemoryStream ms = new MemoryStream())
-            //{
-            //    LoadedTrainingData.CopyTo(ms);
-            //    TrainingData_ByteArray = ms.ToArray();
-            //}
-            //
-            //// var imgData = File.ReadAllBytes();
-            //var header = TrainingData_ByteArray.Take(16).Reverse().ToArray();
-            //int imgCount = BitConverter.ToInt32(header, 8);
-            //int rows = BitConverter.ToInt32(header, 4);
-            //int cols = BitConverter.ToInt32(header, 0);
-
             _netParameters.Layers = LayerVMs
                 .Select(x => x.Layer)
                 .ToArray();
-            await OkBtnPressed?.Invoke(_netParameters, LoadedTrainingData, LoadedTestingData);
+            await OkBtnPressed?.Invoke(_netParameters, Url_TrainingLabels, Url_TrainingImages, Url_TestingLabels, Url_TestingImages);
         }
 
         #endregion

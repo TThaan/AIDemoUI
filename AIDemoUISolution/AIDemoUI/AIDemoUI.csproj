@@ -17,6 +17,9 @@
     <Reference Include="MatrixHelper">
       <HintPath>..\..\..\MatrixHelper\MatrixHelperSolution\MatrixHelper\bin\Debug\netcoreapp3.1\MatrixHelper.dll</HintPath>
     </Reference>
+    <Reference Include="NNet_InputProvider">
+      <HintPath>..\..\..\NNet_InputProvider\NNet_InputProviderSolution\NNet_InputProvider\bin\Debug\netcoreapp3.1\NNet_InputProvider.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

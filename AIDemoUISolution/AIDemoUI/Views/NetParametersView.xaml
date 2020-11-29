@@ -8,7 +8,7 @@
              xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
              xmlns:conv="clr-namespace:AIDemoUI.Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="600" d:DesignWidth="1200"
+             d:DesignHeight="900" d:DesignWidth="1600"
              Name="NetParametersUserControl">
 
     <d:UserControl.DataContext>
@@ -111,11 +111,65 @@
                 </StackPanel>
             </Border>
 
-            <Button Command="{Binding LoadTrainingDataCommandAsync}" CommandParameter="{Binding ElementName=tb_TrainingData}" Content="Load Training Data"/>
-            <TextBox Name="tb_TrainingData"/>
-            <Button Command="{Binding LoadTestingDataCommandAsync}" CommandParameter="{Binding ElementName=tb_TestingData}" Content="Load Testing Data"/>
-            <TextBox Name="tb_TestingData"/>
+            <!-- Import Sample Set -->
             
+            <ComboBox Name="SampleTemplates" Grid.Row="0" 
+                      ItemsSource="{Binding SampleSets}" SelectedItem="{Binding SelectedSampleSet}" 
+                      SelectionChanged="SampleTemplates_SelectionChanged"/>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>                
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="5*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Url for Training Labels" HorizontalAlignment="Center"/>
+                <TextBox Grid.Row="1" Grid.Column="0" Text="{Binding Url_TrainingLabels}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Grid.Row="1" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TrainingLabel"
+                        Content="File"/>
+
+                <TextBlock Grid.Row="2" Text="Url for Training Images" HorizontalAlignment="Center"/>
+                <TextBox Grid.Row="3" Grid.Column="0" Text="{Binding Url_TrainingImages}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Grid.Row="3" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TrainingImages"
+                        Content="File"/>
+
+                <TextBlock Grid.Row="4" Text="Url for Testing Labels" HorizontalAlignment="Center"/>
+                <TextBox Grid.Row="5" Grid.Column="0" Text="{Binding Url_TestingLabels}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Grid.Row="5" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TestingLabels"
+                        Content="File"/>
+
+                <TextBlock Grid.Row="6" Text="Url for Testing Images" HorizontalAlignment="Center"/>
+                <TextBox Grid.Row="7" Grid.Column="0" Text="{Binding Url_TestingImages}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+                <Button Grid.Row="7" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TestingImages"
+                        Content="File"/>
+            </Grid>
+
             <Button MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
                     Content="O K"
                     Command="{Binding OkCommandAsync}" CommandParameter="{Binding ElementName=NetParametersUserControl}"/>
