@@ -14,7 +14,7 @@ using System.Windows.Controls;
 
 namespace AIDemoUI.ViewModels
 {
-    public delegate Task OkBtnEventHandler(NetParameters netParameters,
+    public delegate Task OkBtnEventHandler(NetParameters netParameters, bool isTurnBased, 
         string Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages);
 
     public class NetParametersVM : BaseVM
@@ -28,7 +28,7 @@ namespace AIDemoUI.ViewModels
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
         ObservableCollection<LayerVM> layerVMs;
-        ObservableCollection<string> sampleSetTemplates;
+        ObservableCollection<string> sampleSets;
         string selectedSampleSet, url_TrainingLabels, url_TrainingImages, url_TestingImages, url_TestingLabels;
 
         public NetParametersVM()
@@ -62,7 +62,7 @@ namespace AIDemoUI.ViewModels
                 {
                     "No Sample Selected", "Four Pixel Camera", "MNIST"
                 });
-            SelectedSampleSet = sampleSetTemplates.First();
+            SelectedSampleSet = sampleSets.First();
         }
 
         #endregion
@@ -73,12 +73,12 @@ namespace AIDemoUI.ViewModels
 
         public ObservableCollection<string> SampleSets
         {
-            get { return sampleSetTemplates; }
+            get { return sampleSets; }
             set
             {
-                if (sampleSetTemplates != value)
+                if (sampleSets != value)
                 {
-                    sampleSetTemplates = value;
+                    sampleSets = value;
                     OnPropertyChanged();
                 }
             }
@@ -382,10 +382,19 @@ namespace AIDemoUI.ViewModels
         }
         async Task OkCommand_Execute(object parameter)
         {
-            var netParametersView = parameter as UserControl;
-            if (netParametersView != null)
+            var okBtn = parameter as Button;
+            // var netParametersView = parameter as UserControl;
+            if (okBtn != null)
             {
-                await OnOkBtnPressedAsync();
+                string isTurnBased = okBtn.Content as string;
+                if ((isTurnBased?.ToLower()).Contains("step"))
+                {
+                    await OnOkBtnPressedAsync(true);
+                }
+                else
+                {
+                    await OnOkBtnPressedAsync(false);
+                }
             }
         }
         bool OkCommand_CanExecute(object parameter)
@@ -652,7 +661,7 @@ namespace AIDemoUI.ViewModels
             switch (propertyName)
             {
                 case nameof(SelectedSampleSet):
-                    SelectAmpleSet();
+                    SelectSampleSet();
                     break;
                 default:
                     break;
@@ -663,7 +672,7 @@ namespace AIDemoUI.ViewModels
 
         #region helpers
 
-        void SelectAmpleSet()
+        void SelectSampleSet()
         {
             switch (SelectedSampleSet)
             {
@@ -701,12 +710,12 @@ namespace AIDemoUI.ViewModels
         #region OkBtnPressed
 
         public event OkBtnEventHandler OkBtnPressed;
-        async Task OnOkBtnPressedAsync()
+        async Task OnOkBtnPressedAsync(bool isTurnBased)
         {
             _netParameters.Layers = LayerVMs
                 .Select(x => x.Layer)
                 .ToArray();
-            await OkBtnPressed?.Invoke(_netParameters, Url_TrainingLabels, Url_TrainingImages, Url_TestingLabels, Url_TestingImages);
+            await OkBtnPressed?.Invoke(_netParameters, isTurnBased, Url_TrainingLabels, Url_TrainingImages, Url_TestingLabels, Url_TestingImages);
         }
 
         #endregion

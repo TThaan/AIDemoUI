@@ -1,5 +1,4 @@
-﻿using AIDemoUI.ViewModels;
-using AIDemoUI.Views;
+﻿using AIDemoUI.Views;
 using System.Windows;
 
 namespace AIDemoUI
@@ -24,8 +23,7 @@ namespace AIDemoUI
 
             #endregion
 
-            MainWindowVM mainWindowVM = new MainWindowVM();
-            MainWindow = new MainWindow() { DataContext = mainWindowVM };
+            MainWindow = new MainWindow();
             MainWindow.Show();
 
             #endregion

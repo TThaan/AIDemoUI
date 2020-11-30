@@ -1,5 +1,4 @@
 ﻿using FourPixCam;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
@@ -13,12 +12,20 @@ namespace AIDemoUI.ViewModels
         }
 
         public NetParametersVM NetParametersVM { get; }
-        async Task OnOkButtonPressedAsync(NetParameters netParameters, 
+
+        async Task OnOkButtonPressedAsync(NetParameters netParameters, bool TurnBased, 
             string Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages)
         {
             await Task.Run(() =>
             {
-                new Initializer(netParameters).Run(Url_TrainingLabels, Url_TrainingImages, Url_TestingLabels, Url_TestingImages);
+                if (TurnBased)
+                {
+                    new Initializer(netParameters).RunTurnBased(Url_TrainingLabels, Url_TrainingImages, Url_TestingLabels, Url_TestingImages);
+                }
+                else
+                { 
+                    new Initializer(netParameters).Run(Url_TrainingLabels, Url_TrainingImages, Url_TestingLabels, Url_TestingImages); 
+                }
             });
         }
     }
