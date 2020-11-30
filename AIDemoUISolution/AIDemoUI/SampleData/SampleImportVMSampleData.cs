@@ -2,12 +2,12 @@
 
 namespace AIDemoUI.SampleData
 {
-    public class NetParametersVMSampleData : NetParametersVM
+    public class SampleImportVMSampleData : SampleImportVM
     {
         #region ctor
 
-        public NetParametersVMSampleData()
-            :base()
+        public SampleImportVMSampleData()
+            : base()
         {
         }
 

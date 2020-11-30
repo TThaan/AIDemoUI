@@ -37,9 +37,9 @@ namespace AIDemoUI.Commands
                     _isExecuting = true;
                     await _execute(parameter);
                 }
-                catch(Exception e)
+                catch(Exception)
                 {
-                    
+                    throw;
                 }
                 finally
                 {

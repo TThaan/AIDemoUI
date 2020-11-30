@@ -8,10 +8,5 @@ namespace AIDemoUI.Views
         {
             InitializeComponent();
         }
-
-        private void SampleTemplates_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
     }
 }

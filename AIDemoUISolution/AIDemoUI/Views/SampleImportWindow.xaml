@@ -1,0 +1,150 @@
+﻿<Window x:Class="AIDemoUI.Views.SampleImportWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AIDemoUI.Views"
+        xmlns:sd="clr-namespace:AIDemoUI.SampleData"
+        xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
+        xmlns:conv="clr-namespace:AIDemoUI.Converters"
+        mc:Ignorable="d"
+        Title="                                                                     S a m p l e   I m p o r t" 
+        Height="450" Width="600"
+        Name="thisWindow">
+
+    <d:Window.DataContext>
+        <sd:SampleImportVMSampleData/>
+    </d:Window.DataContext>
+
+    <Window.DataContext>
+        <vm:SampleImportVM/>
+    </Window.DataContext>
+
+    <Window.Resources>
+        <conv:BoolReversingConverter x:Key="BoolReversingConverter"/>
+    </Window.Resources>
+
+    <StackPanel Name="thisRootElement">
+        
+        <!-- Import Sample Set -->
+
+        <ComboBox Name="SampleTemplates" Grid.Row="0" MinHeight="50"
+                  ItemsSource="{Binding SampleSets}" SelectedItem="{Binding SelectedSampleSet}"/>
+
+        <!-- Amount of Samples -->
+
+        <Border BorderBrush="LightGray" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" 
+                           Text="Training Samples"/>
+                <TextBox Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="50" Margin="0,5,0,10"
+                         Text="{Binding Path=TrainingSamples}" IsEnabled="{Binding UseAllAvailableTrainingSamples, Converter={StaticResource BoolReversingConverter}}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+
+                <TextBlock Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" 
+                           Text="(All)"/>
+                <CheckBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,-1,0,5"
+                          IsChecked="{Binding UseAllAvailableTrainingSamples}">
+                    <CheckBox.LayoutTransform>
+                        <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
+                    </CheckBox.LayoutTransform>
+                </CheckBox>
+
+                <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" 
+                           Text="Testing Samples"/>
+                <TextBox Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="50" Margin="0,5,0,10"
+                         Text="{Binding Path=TestingSamples}" IsEnabled="{Binding UseAllAvailableTestingSamples, Converter={StaticResource BoolReversingConverter}}">
+                    <TextBox.InputBindings>
+                        <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
+                    </TextBox.InputBindings>
+                </TextBox>
+
+                <TextBlock Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" 
+                               Text="(All)"/>
+                <CheckBox Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,-1,0,5"
+                              IsChecked="{Binding UseAllAvailableTestingSamples}">
+                    <CheckBox.LayoutTransform>
+                        <ScaleTransform ScaleX="1.2" ScaleY="1.2"/>
+                    </CheckBox.LayoutTransform>
+                </CheckBox>
+
+            </Grid>
+        </Border>
+
+        <!-- Input Sample Paths -->
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="5*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Url/Path for Training Labels" HorizontalAlignment="Center"/>
+            <TextBox Grid.Row="1" Grid.Column="0" Text="{Binding Url_TrainingLabels}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Grid.Row="1" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TrainingLabel"
+                        Content="File"/>
+
+            <TextBlock Grid.Row="2" Text="Url/Path for Training Images" HorizontalAlignment="Center"/>
+            <TextBox Grid.Row="3" Grid.Column="0" Text="{Binding Url_TrainingImages}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Grid.Row="3" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TrainingImages"
+                        Content="File"/>
+
+            <TextBlock Grid.Row="4" Text="Url/Path for Testing Labels" HorizontalAlignment="Center"/>
+            <TextBox Grid.Row="5" Grid.Column="0" Text="{Binding Url_TestingLabels}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Grid.Row="5" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TestingLabels"
+                        Content="File"/>
+
+            <TextBlock Grid.Row="6" Text="Url/Path for Testing Images" HorizontalAlignment="Center"/>
+            <TextBox Grid.Row="7" Grid.Column="0" Text="{Binding Url_TestingImages}">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
+                </TextBox.InputBindings>
+            </TextBox>
+            <Button Grid.Row="7" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TestingImages"
+                        Content="File"/>
+        </Grid>
+
+        <!-- OK Button -->
+        
+        <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                        Content="O K"
+                        Command="{Binding OkCommand}" CommandParameter="{Binding ElementName=thisWindow}"/>
+
+    </StackPanel>
+</Window>

@@ -1,4 +1,5 @@
 ﻿using AIDemoUI.Commands;
+using AIDemoUI.Views;
 using FourPixCam;
 using Microsoft.Win32;
 using System;
@@ -7,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -22,20 +22,19 @@ namespace AIDemoUI.ViewModels
         #region ctor & fields
 
         NetParameters _netParameters;
-        IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand, unfocusCommand;
-        IAsyncCommand okCommandAsync, loadNetCommandAsync, saveNetCommandAsync, setSamplesLocationCommandAsync;
+        IRelayCommand importSamplesCommand, addCommand, deleteCommand, moveLeftCommand, moveRightCommand;
+        IAsyncCommand okCommandAsync, loadNetCommandAsync, saveNetCommandAsync;
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
         ObservableCollection<LayerVM> layerVMs;
-        ObservableCollection<string> sampleSets;
-        string selectedSampleSet, url_TrainingLabels, url_TrainingImages, url_TestingImages, url_TestingLabels;
 
         public NetParametersVM()
         {
             _netParameters = new NetParameters();
+            SampleImportWindow = new SampleImportWindow();
+
             SetDefaultValues();
-            // SampleSetChanged += OnSampleSetChanged;
             LayerVMs.CollectionChanged += OnLayerVMsChanged;
         }
 
@@ -48,6 +47,8 @@ namespace AIDemoUI.ViewModels
             WeightMax = 1;
             BiasMin = -1;
             BiasMax = 1;
+            LearningRate = .1f;
+            ChangeOfLearningRate = .9f;
             CostType = CostType.SquaredMeanError;
             WeightInitType = WeightInitType.Xavier;
             LayerVMs = new ObservableCollection<LayerVM>
@@ -56,13 +57,6 @@ namespace AIDemoUI.ViewModels
                 new LayerVM(new Layer(){ Id = 1}),
                 new LayerVM(new Layer(){ Id = 2})
             };
-
-            SampleSets = new ObservableCollection<string>(
-                new[]
-                {
-                    "No Sample Selected", "Four Pixel Camera", "MNIST"
-                });
-            SelectedSampleSet = sampleSets.First();
         }
 
         #endregion
@@ -71,83 +65,7 @@ namespace AIDemoUI.ViewModels
 
         #region public
 
-        public ObservableCollection<string> SampleSets
-        {
-            get { return sampleSets; }
-            set
-            {
-                if (sampleSets != value)
-                {
-                    sampleSets = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public string SelectedSampleSet
-        {
-            get { return selectedSampleSet; }
-            set
-            {
-                if (selectedSampleSet != value)
-                {
-                    selectedSampleSet = value;
-                    OnSampleSetChanged();
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public string Url_TrainingLabels
-        {
-            get { return url_TrainingLabels; }
-            set
-            {
-                if (url_TrainingLabels != value)
-                {
-                    url_TrainingLabels = value;
-                    // OnSampleSetChanged();
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public string Url_TrainingImages
-        {
-            get { return url_TrainingImages; }
-            set
-            {
-                if (url_TrainingImages != value)
-                {
-                    url_TrainingImages = value;
-                    // OnSampleSetChanged();
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public string Url_TestingLabels
-        {
-            get { return url_TestingLabels; }
-            set
-            {
-                if (url_TestingLabels != value)
-                {
-                    url_TestingLabels = value;
-                    // OnSampleSetChanged();
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public string Url_TestingImages
-        {
-            get { return url_TestingImages; }
-            set
-            {
-                if (url_TestingImages != value)
-                {
-                    url_TestingImages = value;
-                    // OnSampleSetChanged();
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public SampleImportWindow SampleImportWindow { get; set; }
         public ObservableCollection<LayerVM> LayerVMs
         {
             get { return layerVMs; }
@@ -220,6 +138,30 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
+        public float LearningRate
+        {
+            get { return _netParameters.LearningRate; }
+            set
+            {
+                if (_netParameters.LearningRate != value)
+                {
+                    _netParameters.LearningRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public float ChangeOfLearningRate
+        {
+            get { return _netParameters.ChangeOfLearningRate; }
+            set
+            {
+                if (_netParameters.ChangeOfLearningRate != value)
+                {
+                    _netParameters.ChangeOfLearningRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public CostType CostType
         {
             get { return _netParameters.CostType; }
@@ -250,125 +192,14 @@ namespace AIDemoUI.ViewModels
         public IEnumerable<CostType> CostTypes => costTypes ??
             (costTypes = Enum.GetValues(typeof(CostType)).ToList<CostType>().Skip(1));
         public IEnumerable<WeightInitType> WeightInitTypes => weightInitTypes ??
-            (weightInitTypes = Enum.GetValues(typeof(WeightInitType)).ToList<WeightInitType>().Skip(1));
+            (weightInitTypes = Enum.GetValues(typeof(WeightInitType)).ToList<WeightInitType>().Skip(1));        
 
         #endregion
 
         #region RelayCommand
 
-        #region unspecified Commands
+        #region General Commands
 
-        public IRelayCommand AddCommand
-        {
-            get
-            {
-                if (addCommand == null)
-                {
-                    addCommand = new RelayCommand(AddCommand_Execute, AddCommand_CanExecute);
-                }
-                return addCommand;
-            }
-        }
-        void AddCommand_Execute(object parameter)
-        {
-            ContentPresenter cp = parameter as ContentPresenter;
-            LayerVM layerVM = cp.Content as LayerVM;
-
-            LayerVM newLayerVM = new LayerVM(new Layer() { ActivationType = ActivationType.ReLU });
-            int newIndex = (LayerVMs.IndexOf(layerVM));
-            LayerVMs.Insert(newIndex + 1, newLayerVM);
-        }
-        bool AddCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        public IRelayCommand DeleteCommand
-        {
-            get
-            {
-                if (deleteCommand == null)
-                {
-                    deleteCommand = new RelayCommand(DeleteCommand_Execute, DeleteCommand_CanExecute);
-                }
-                return deleteCommand;
-            }
-        }
-        void DeleteCommand_Execute(object parameter)
-        {
-            ContentPresenter cp = parameter as ContentPresenter;
-            LayerVM layerVM = cp.Content as LayerVM;
-            LayerVMs.Remove(layerVM);
-        }
-        bool DeleteCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        public IRelayCommand MoveLeftCommand
-        {
-            get
-            {
-                if (moveLeftCommand == null)
-                {
-                    moveLeftCommand = new RelayCommand(MoveLeftCommand_Execute, MoveLeftCommand_CanExecute);
-                }
-                return moveLeftCommand;
-            }
-        }
-        void MoveLeftCommand_Execute(object parameter)
-        {
-            ContentPresenter cp = parameter as ContentPresenter;
-            LayerVM layerVM = cp.Content as LayerVM;
-            int currentIndex = LayerVMs.IndexOf(layerVM);
-            LayerVMs.Move(currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
-        }
-        bool MoveLeftCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        public IRelayCommand MoveRightCommand
-        {
-            get
-            {
-                if (moveRightCommand == null)
-                {
-                    moveRightCommand = new RelayCommand(MoveRightCommand_Execute, MoveRightCommand_CanExecute);
-                }
-                return moveRightCommand;
-            }
-        }
-        void MoveRightCommand_Execute(object parameter)
-        {
-            ContentPresenter cp = parameter as ContentPresenter;
-            LayerVM layerVM = cp.Content as LayerVM;
-            int currentIndex = LayerVMs.IndexOf(layerVM);
-            LayerVMs.Move(currentIndex, currentIndex < LayerVMs.Count - 1 ? currentIndex + 1 : 0);
-        }
-        bool MoveRightCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        public IRelayCommand UnfocusCommand
-        {
-            get
-            {
-                if (unfocusCommand == null)
-                {
-                    unfocusCommand = new RelayCommand(UnfocusCommand_Execute, UnfocusCommand_CanExecute);
-                }
-                return unfocusCommand;
-            }
-        }
-        void UnfocusCommand_Execute(object parameter)
-        {
-            var netParametersView = parameter as UserControl;
-            netParametersView.FocusVisualStyle = null;
-            netParametersView.Focusable = true;
-            netParametersView.Focus();
-        }
-        bool UnfocusCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
         public IAsyncCommand OkCommandAsync
         {
             get
@@ -399,10 +230,13 @@ namespace AIDemoUI.ViewModels
         }
         bool OkCommand_CanExecute(object parameter)
         {
-            if (string.IsNullOrEmpty(Url_TrainingLabels) ||
-                string.IsNullOrEmpty(Url_TrainingImages) ||
-                string.IsNullOrEmpty(Url_TestingLabels) ||
-                string.IsNullOrEmpty(Url_TestingImages))
+            SampleImportVM vm = SampleImportWindow.DataContext as SampleImportVM;
+
+            if (vm != null &&
+                string.IsNullOrEmpty(vm.Url_TrainingLabels) ||
+                string.IsNullOrEmpty(vm.Url_TrainingImages) ||
+                string.IsNullOrEmpty(vm.Url_TestingLabels) ||
+                string.IsNullOrEmpty(vm.Url_TestingImages))
             {
                 return false;
             }
@@ -411,88 +245,27 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region I/O
+        #region I/O Commands
 
-        #region Change SampleSet
-
-        public IAsyncCommand SetSamplesLocationCommandAsync
+        public IRelayCommand ImportSamplesCommand
         {
             get
             {
-                if (setSamplesLocationCommandAsync == null)
+                if (importSamplesCommand == null)
                 {
-                    setSamplesLocationCommandAsync = new AsyncRelayCommand(SetSamplesLocationCommand_Execute, SetSamplesLocationCommand_CanExecute);
+                    importSamplesCommand = new RelayCommand(ImportSamplesCommand_Execute, ImportSamplesCommand_CanExecute);
                 }
-                return setSamplesLocationCommandAsync;
+                return importSamplesCommand;
             }
         }
-        async Task SetSamplesLocationCommand_Execute(object parameter)
+        void ImportSamplesCommand_Execute(object parameter)
         {
-            string url = parameter as string;
-
-            if (!string.IsNullOrEmpty(url))
-            {
-                OpenFileDialog openFileDialog = new OpenFileDialog();
-                if (openFileDialog.ShowDialog() == true)
-                {
-                    await Task.Run(() =>
-                    {
-                        switch (url)
-                        {
-                            case nameof(Url_TrainingLabels):
-                                Url_TrainingLabels = openFileDialog.FileName;
-                                break;
-                            case nameof(Url_TrainingImages):
-                                Url_TrainingImages = openFileDialog.FileName;
-                                break;
-                            case nameof(Url_TestingLabels):
-                                Url_TestingLabels = openFileDialog.FileName;
-                                break;
-                            case nameof(Url_TestingImages):
-                                Url_TestingImages = openFileDialog.FileName;
-                                break;
-                            default:
-                                break;
-                        }
-                    });
-                }
-            }
+            SampleImportWindow.Show();
         }
-        bool SetSamplesLocationCommand_CanExecute(object parameter)
+        bool ImportSamplesCommand_CanExecute(object parameter)
         {
             return true;
         }
-        //public IAsyncCommand LoadTestingDataFromUrlCommandAsync
-        //{
-        //    get
-        //    {
-        //        if (loadTestingDataFromUrlCommandAsync == null)
-        //        {
-        //            loadTestingDataFromUrlCommandAsync = new AsyncRelayCommand(LoadTestingDataFromUrlCommand_Execute, LoadTestingDataFromUrlCommand_CanExecute);
-        //        }
-        //        return loadTestingDataFromUrlCommandAsync;
-        //    }
-        //}
-        //async Task LoadTestingDataFromUrlCommand_Execute(object parameter)
-        //{
-        //    // Either download from url
-        //    using (var client = new WebClient())
-        //    {
-        //        client.DownloadFile("http://yann.lecun.com/exdb/mnist/t10k-images.idx3-ubyte.gz", "abc.gz");
-        //    }
-        //    // or use stream directly...
-
-        //    throw new NotImplementedException();
-        //}
-        //bool LoadTestingDataFromUrlCommand_CanExecute(object parameter)
-        //{
-        //    return true;
-        //}
-
-        #endregion
-
-        #region Load/Save Net
-
         public IAsyncCommand LoadNetCommandAsync
         {
             get
@@ -600,6 +373,98 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
+        #region LayerDetails Commands
+        
+        public IRelayCommand AddCommand
+        {
+            get
+            {
+                if (addCommand == null)
+                {
+                    addCommand = new RelayCommand(AddCommand_Execute, AddCommand_CanExecute);
+                }
+                return addCommand;
+            }
+        }
+        void AddCommand_Execute(object parameter)
+        {
+            ContentPresenter cp = parameter as ContentPresenter;
+            LayerVM layerVM = cp.Content as LayerVM;
+
+            LayerVM newLayerVM = new LayerVM(new Layer() { ActivationType = ActivationType.ReLU });
+            int newIndex = (LayerVMs.IndexOf(layerVM));
+            LayerVMs.Insert(newIndex + 1, newLayerVM);
+        }
+        bool AddCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+        public IRelayCommand DeleteCommand
+        {
+            get
+            {
+                if (deleteCommand == null)
+                {
+                    deleteCommand = new RelayCommand(DeleteCommand_Execute, DeleteCommand_CanExecute);
+                }
+                return deleteCommand;
+            }
+        }
+        void DeleteCommand_Execute(object parameter)
+        {
+            ContentPresenter cp = parameter as ContentPresenter;
+            LayerVM layerVM = cp.Content as LayerVM;
+            LayerVMs.Remove(layerVM);
+        }
+        bool DeleteCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+        public IRelayCommand MoveLeftCommand
+        {
+            get
+            {
+                if (moveLeftCommand == null)
+                {
+                    moveLeftCommand = new RelayCommand(MoveLeftCommand_Execute, MoveLeftCommand_CanExecute);
+                }
+                return moveLeftCommand;
+            }
+        }
+        void MoveLeftCommand_Execute(object parameter)
+        {
+            ContentPresenter cp = parameter as ContentPresenter;
+            LayerVM layerVM = cp.Content as LayerVM;
+            int currentIndex = LayerVMs.IndexOf(layerVM);
+            LayerVMs.Move(currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
+        }
+        bool MoveLeftCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+        public IRelayCommand MoveRightCommand
+        {
+            get
+            {
+                if (moveRightCommand == null)
+                {
+                    moveRightCommand = new RelayCommand(MoveRightCommand_Execute, MoveRightCommand_CanExecute);
+                }
+                return moveRightCommand;
+            }
+        }
+        void MoveRightCommand_Execute(object parameter)
+        {
+            ContentPresenter cp = parameter as ContentPresenter;
+            LayerVM layerVM = cp.Content as LayerVM;
+            int currentIndex = LayerVMs.IndexOf(layerVM);
+            LayerVMs.Move(currentIndex, currentIndex < LayerVMs.Count - 1 ? currentIndex + 1 : 0);
+        }
+        bool MoveRightCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+
         #endregion
 
         #endregion
@@ -654,68 +519,17 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region SampleSetChanged
-
-        void OnSampleSetChanged([CallerMemberName] string propertyName = null)
-        {
-            switch (propertyName)
-            {
-                case nameof(SelectedSampleSet):
-                    SelectSampleSet();
-                    break;
-                default:
-                    break;
-            }
-
-            OnPropertyChanged(propertyName);
-        }
-
-        #region helpers
-
-        void SelectSampleSet()
-        {
-            switch (SelectedSampleSet)
-            {
-                case "No Sample Selected":
-                    Url_TrainingLabels = default;
-                    Url_TrainingImages = default;
-                    Url_TestingLabels = default;
-                    Url_TestingImages = default;
-                    break;
-                case "Four Pixel Camera":
-                    Url_TrainingLabels = new NNet_InputProvider.FourPixCam.DataFactory().Url_TrainLabels;
-                    Url_TrainingImages = new NNet_InputProvider.FourPixCam.DataFactory().Url_TrainImages;
-                    Url_TestingLabels = new NNet_InputProvider.FourPixCam.DataFactory().Url_TestLabels;
-                    Url_TestingImages = new NNet_InputProvider.FourPixCam.DataFactory().Url_TestImages;
-                    break;
-                case "MNIST":
-                    Url_TrainingLabels = new NNet_InputProvider.MNIST.DataFactory().Url_TrainLabels;
-                    Url_TrainingImages = new NNet_InputProvider.MNIST.DataFactory().Url_TrainImages;
-                    Url_TestingLabels = new NNet_InputProvider.MNIST.DataFactory().Url_TestLabels;
-                    Url_TestingImages = new NNet_InputProvider.MNIST.DataFactory().Url_TestImages;
-                    break;
-                default:
-                    Url_TrainingLabels = default;
-                    Url_TrainingImages = default;
-                    Url_TestingLabels = default;
-                    Url_TestingImages = default;
-                    break;
-            }
-        }
-
-        #endregion
-
-        #endregion
-
         #region OkBtnPressed
 
         public event OkBtnEventHandler OkBtnPressed;
         async Task OnOkBtnPressedAsync(bool isTurnBased)
         {
+            SampleImportVM vm = SampleImportWindow.DataContext as SampleImportVM;
+
             _netParameters.Layers = LayerVMs
                 .Select(x => x.Layer)
                 .ToArray();
-            await OkBtnPressed?.Invoke(_netParameters, isTurnBased, Url_TrainingLabels, Url_TrainingImages, Url_TestingLabels, Url_TestingImages);
+            await OkBtnPressed?.Invoke(_netParameters, isTurnBased, vm?.Url_TrainingLabels, vm?.Url_TrainingImages, vm?.Url_TestingLabels, vm?.Url_TestingImages);
         }
 
         #endregion
