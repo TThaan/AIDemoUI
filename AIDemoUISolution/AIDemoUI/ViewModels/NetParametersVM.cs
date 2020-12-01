@@ -2,6 +2,7 @@
 using AIDemoUI.Views;
 using FourPixCam;
 using Microsoft.Win32;
+using NNet_InputProvider;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,8 +15,7 @@ using System.Windows.Controls;
 
 namespace AIDemoUI.ViewModels
 {
-    public delegate Task OkBtnEventHandler(NetParameters netParameters, bool isTurnBased, 
-        string Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages);
+    public delegate Task OkBtnEventHandler(NetParameters netParameters, bool isTurnBased, SampleSetParameters sampleSetParameters);
 
     public class NetParametersVM : BaseVM
     {
@@ -47,8 +47,6 @@ namespace AIDemoUI.ViewModels
             WeightMax = 1;
             BiasMin = -1;
             BiasMax = 1;
-            LearningRate = .1f;
-            ChangeOfLearningRate = .9f;
             CostType = CostType.SquaredMeanError;
             WeightInitType = WeightInitType.Xavier;
             LayerVMs = new ObservableCollection<LayerVM>
@@ -57,6 +55,9 @@ namespace AIDemoUI.ViewModels
                 new LayerVM(new Layer(){ Id = 1}),
                 new LayerVM(new Layer(){ Id = 2})
             };
+            LearningRate = .1f;
+            ChangeOfLearningRate = .9f;
+            EpochCount = 10;
         }
 
         #endregion
@@ -138,30 +139,6 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public float LearningRate
-        {
-            get { return _netParameters.LearningRate; }
-            set
-            {
-                if (_netParameters.LearningRate != value)
-                {
-                    _netParameters.LearningRate = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public float ChangeOfLearningRate
-        {
-            get { return _netParameters.ChangeOfLearningRate; }
-            set
-            {
-                if (_netParameters.ChangeOfLearningRate != value)
-                {
-                    _netParameters.ChangeOfLearningRate = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
         public CostType CostType
         {
             get { return _netParameters.CostType; }
@@ -192,7 +169,44 @@ namespace AIDemoUI.ViewModels
         public IEnumerable<CostType> CostTypes => costTypes ??
             (costTypes = Enum.GetValues(typeof(CostType)).ToList<CostType>().Skip(1));
         public IEnumerable<WeightInitType> WeightInitTypes => weightInitTypes ??
-            (weightInitTypes = Enum.GetValues(typeof(WeightInitType)).ToList<WeightInitType>().Skip(1));        
+            (weightInitTypes = Enum.GetValues(typeof(WeightInitType)).ToList<WeightInitType>().Skip(1));
+
+        public float LearningRate
+        {
+            get { return _netParameters.LearningRate; }
+            set
+            {
+                if (_netParameters.LearningRate != value)
+                {
+                    _netParameters.LearningRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public float ChangeOfLearningRate
+        {
+            get { return _netParameters.ChangeOfLearningRate; }
+            set
+            {
+                if (_netParameters.ChangeOfLearningRate != value)
+                {
+                    _netParameters.ChangeOfLearningRate = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public int EpochCount
+        {
+            get { return _netParameters.EpochCount; }
+            set
+            {
+                if (_netParameters.EpochCount != value)
+                {
+                    _netParameters.EpochCount = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         #endregion
 
@@ -529,7 +543,7 @@ namespace AIDemoUI.ViewModels
             _netParameters.Layers = LayerVMs
                 .Select(x => x.Layer)
                 .ToArray();
-            await OkBtnPressed?.Invoke(_netParameters, isTurnBased, vm?.Url_TrainingLabels, vm?.Url_TrainingImages, vm?.Url_TestingLabels, vm?.Url_TestingImages);
+            await OkBtnPressed?.Invoke(_netParameters, isTurnBased, vm?.SelectedTemplate);
         }
 
         #endregion

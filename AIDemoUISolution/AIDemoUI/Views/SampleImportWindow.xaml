@@ -22,6 +22,7 @@
 
     <Window.Resources>
         <conv:BoolReversingConverter x:Key="BoolReversingConverter"/>
+        <conv:SampleSetParametersToTemplateNameConverter x:Key="SampleSetParametersToTemplateNameConverter"/>
     </Window.Resources>
 
     <StackPanel Name="thisRootElement">
@@ -29,7 +30,7 @@
         <!-- Import Sample Set -->
 
         <ComboBox Name="SampleTemplates" Grid.Row="0" MinHeight="50"
-                  ItemsSource="{Binding SampleSets}" SelectedItem="{Binding SelectedSampleSet}"/>
+                  ItemsSource="{Binding TemplateNames}" SelectedItem="{Binding SelectedTemplate, Converter={StaticResource SampleSetParametersToTemplateNameConverter}}"/>
 
         <!-- Amount of Samples -->
 
@@ -109,7 +110,7 @@
                     <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                 </TextBox.InputBindings>
             </TextBox>
-            <Button Grid.Row="1" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TrainingLabel"
+            <Button Grid.Row="1" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TrainingLabels"
                         Content="File"/>
 
             <TextBlock Grid.Row="2" Text="Url/Path for Training Images" HorizontalAlignment="Center"/>

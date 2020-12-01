@@ -7,7 +7,18 @@ namespace AIDemoUI
 {
     public static class ExtensionMethods
     {
-        public static ObservableCollection<T> ToObservableCollection<T>(this IEnumerable<T> collection)
+        internal static List<T> ToList<T>(this Array arr)
+        {
+            var result = new List<T>();
+
+            for (int i = 0; i < arr.Length; i++)
+            {
+                result.Add((T)arr.GetValue(i));
+            }
+
+            return result;
+        }
+        internal static ObservableCollection<T> ToObservableCollection<T>(this IEnumerable<T> collection)
         {
             return new ObservableCollection<T>(collection);
         }
@@ -16,7 +27,7 @@ namespace AIDemoUI
         /// </summary>
         /// <param name="task"></param>
         /// <param name="handler"></param>
-        public static async void FireAndForgetSafeAsync(this Task task, IExceptionHandler handler = null)
+        internal static async void FireAndForgetSafeAsync(this Task task, IExceptionHandler handler = null)
         {
             try
             {

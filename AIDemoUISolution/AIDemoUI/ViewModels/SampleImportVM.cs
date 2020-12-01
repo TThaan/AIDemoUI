@@ -1,6 +1,8 @@
 ﻿using AIDemoUI.Commands;
 using AIDemoUI.Views;
 using Microsoft.Win32;
+using NNet_InputProvider;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -14,10 +16,7 @@ namespace AIDemoUI.ViewModels
 
         IRelayCommand okCommand;
         IAsyncCommand setSamplesLocationCommandAsync;
-        ObservableCollection<string> sampleSets;
-        string selectedSampleSet, url_TrainingLabels, url_TrainingImages, url_TestingImages, url_TestingLabels;
-        int trainingSamples, testingSamples;
-        bool useAllAvailableTrainingSamples, useAllAvailableTestingSamples;
+        SampleSetParameters selectedSampleSetParameters;
 
         public SampleImportVM()
         {
@@ -28,14 +27,7 @@ namespace AIDemoUI.ViewModels
 
         void SetDefaultValues()
         {
-            SampleSets = new ObservableCollection<string>(
-                new[]
-                {
-                    "No Sample Selected", "Four Pixel Camera", "MNIST"
-                });
-            SelectedSampleSet = sampleSets.First();
-            UseAllAvailableTrainingSamples = true;
-            UseAllAvailableTestingSamples = true;
+            SelectedTemplate = Templates.Values.First();
         }
 
         #endregion
@@ -44,26 +36,16 @@ namespace AIDemoUI.ViewModels
 
         #region public
         
-        public ObservableCollection<string> SampleSets
+        public Dictionary<SetName, SampleSetParameters> Templates => SampleSetParameters.Templates;
+        public ObservableCollection<SetName> TemplateNames => Templates.Keys.ToObservableCollection();
+        public SampleSetParameters SelectedTemplate
         {
-            get { return sampleSets; }
+            get { return selectedSampleSetParameters; }
             set
             {
-                if (sampleSets != value)
+                if (selectedSampleSetParameters?.Name != value?.Name)
                 {
-                    sampleSets = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public string SelectedSampleSet
-        {
-            get { return selectedSampleSet; }
-            set
-            {
-                if (selectedSampleSet != value)
-                {
-                    selectedSampleSet = value;
+                    selectedSampleSetParameters = value;
                     OnSampleSetChanged();
                     OnPropertyChanged();
                 }
@@ -71,64 +53,60 @@ namespace AIDemoUI.ViewModels
         }
         public string Url_TrainingLabels
         {
-            get { return url_TrainingLabels; }
+            get { return SelectedTemplate.Paths[SampleType.TrainingLabel]; }
             set
             {
-                if (url_TrainingLabels != value)
+                if (SelectedTemplate.Paths[SampleType.TrainingLabel] != value)
                 {
-                    url_TrainingLabels = value;
-                    // OnSampleSetChanged();
+                    SelectedTemplate.Paths[SampleType.TrainingLabel] = value;
                     OnPropertyChanged();
                 }
             }
         }
         public string Url_TrainingImages
         {
-            get { return url_TrainingImages; }
+            get { return SelectedTemplate.Paths[SampleType.TrainingData]; }
             set
             {
-                if (url_TrainingImages != value)
+                if (SelectedTemplate.Paths[SampleType.TrainingData] != value)
                 {
-                    url_TrainingImages = value;
-                    // OnSampleSetChanged();
+                    SelectedTemplate.Paths[SampleType.TrainingData] = value;
                     OnPropertyChanged();
                 }
             }
         }
         public string Url_TestingLabels
         {
-            get { return url_TestingLabels; }
+            get { return SelectedTemplate.Paths[SampleType.TestingLabel]; }
             set
             {
-                if (url_TestingLabels != value)
+                if (SelectedTemplate.Paths[SampleType.TestingLabel] != value)
                 {
-                    url_TestingLabels = value;
-                    // OnSampleSetChanged();
+                    SelectedTemplate.Paths[SampleType.TestingLabel] = value;
                     OnPropertyChanged();
                 }
             }
         }
         public string Url_TestingImages
         {
-            get { return url_TestingImages; }
+            get { return SelectedTemplate.Paths[SampleType.TestingData]; }
             set
             {
-                if (url_TestingImages != value)
+                if (SelectedTemplate.Paths[SampleType.TestingData] != value)
                 {
-                    url_TestingImages = value;
-                    // OnSampleSetChanged();
+                    SelectedTemplate.Paths[SampleType.TestingData] = value;
                     OnPropertyChanged();
                 }
             }
         }
         public int TrainingSamples
         {
-            get { return trainingSamples; }
+            get { return SelectedTemplate.TrainingSamples; }
             set
             {
-                if (trainingSamples != value)
+                if (SelectedTemplate.TrainingSamples != value)
                 {
-                    trainingSamples = value;
+                    SelectedTemplate.TrainingSamples = value;
                     // OnSampleSetChanged();
                     OnPropertyChanged();
                 }
@@ -136,12 +114,12 @@ namespace AIDemoUI.ViewModels
         }
         public int TestingSamples
         {
-            get { return testingSamples; }
+            get { return SelectedTemplate.TestingSamples; }
             set
             {
-                if (testingSamples != value)
+                if (SelectedTemplate.TestingSamples != value)
                 {
-                    testingSamples = value;
+                    SelectedTemplate.TestingSamples = value;
                     // OnSampleSetChanged();
                     OnPropertyChanged();
                 }
@@ -149,12 +127,12 @@ namespace AIDemoUI.ViewModels
         }
         public bool UseAllAvailableTrainingSamples
         {
-            get { return useAllAvailableTrainingSamples; }
+            get { return SelectedTemplate.UseAllAvailableTrainingSamples; }
             set
             {
-                if (useAllAvailableTrainingSamples != value)
+                if (SelectedTemplate.UseAllAvailableTrainingSamples != value)
                 {
-                    useAllAvailableTrainingSamples = value;
+                    SelectedTemplate.UseAllAvailableTrainingSamples = value;
                     // OnSampleSetChanged();
                     OnPropertyChanged();
                 }
@@ -162,12 +140,12 @@ namespace AIDemoUI.ViewModels
         }
         public bool UseAllAvailableTestingSamples
         {
-            get { return useAllAvailableTestingSamples; }
+            get { return SelectedTemplate.UseAllAvailableTestingSamples; }
             set
             {
-                if (useAllAvailableTestingSamples != value)
+                if (SelectedTemplate.UseAllAvailableTestingSamples != value)
                 {
-                    useAllAvailableTestingSamples = value;
+                    SelectedTemplate.UseAllAvailableTestingSamples = value;
                     // OnSampleSetChanged();
                     OnPropertyChanged();
                 }
@@ -237,7 +215,7 @@ namespace AIDemoUI.ViewModels
             }
         }
         void OkCommand_Execute(object parameter)
-        {
+        {            
             (parameter as SampleImportWindow)?.Hide();
         }
         bool OkCommand_CanExecute(object parameter)
@@ -252,58 +230,17 @@ namespace AIDemoUI.ViewModels
             return true;
         }
 
-        #endregion        
+        #endregion
 
         #region SampleSetChanged
 
         void OnSampleSetChanged([CallerMemberName] string propertyName = null)
         {
-            switch (propertyName)
-            {
-                case nameof(SelectedSampleSet):
-                    SelectSampleSet();
-                    break;
-                default:
-                    break;
-            }
-
-            OnPropertyChanged(propertyName);
+            OnPropertyChanged("Url_TrainingLabels");
+            OnPropertyChanged("Url_TrainingImages");
+            OnPropertyChanged("Url_TestingLabels");
+            OnPropertyChanged("Url_TestingImages");
         }
-
-        #region helpers
-
-        void SelectSampleSet()
-        {
-            switch (SelectedSampleSet)
-            {
-                case "No Sample Selected":
-                    Url_TrainingLabels = default;
-                    Url_TrainingImages = default;
-                    Url_TestingLabels = default;
-                    Url_TestingImages = default;
-                    break;
-                case "Four Pixel Camera":
-                    Url_TrainingLabels = new NNet_InputProvider.FourPixCam.DataFactory().Url_TrainLabels;
-                    Url_TrainingImages = new NNet_InputProvider.FourPixCam.DataFactory().Url_TrainImages;
-                    Url_TestingLabels = new NNet_InputProvider.FourPixCam.DataFactory().Url_TestLabels;
-                    Url_TestingImages = new NNet_InputProvider.FourPixCam.DataFactory().Url_TestImages;
-                    break;
-                case "MNIST":
-                    Url_TrainingLabels = new NNet_InputProvider.MNIST.DataFactory().Url_TrainLabels;
-                    Url_TrainingImages = new NNet_InputProvider.MNIST.DataFactory().Url_TrainImages;
-                    Url_TestingLabels = new NNet_InputProvider.MNIST.DataFactory().Url_TestLabels;
-                    Url_TestingImages = new NNet_InputProvider.MNIST.DataFactory().Url_TestImages;
-                    break;
-                default:
-                    Url_TrainingLabels = default;
-                    Url_TrainingImages = default;
-                    Url_TestingLabels = default;
-                    Url_TestingImages = default;
-                    break;
-            }
-        }
-
-        #endregion
 
         #endregion
     }
