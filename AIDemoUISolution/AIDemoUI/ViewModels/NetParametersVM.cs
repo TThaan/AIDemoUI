@@ -55,7 +55,7 @@ namespace AIDemoUI.ViewModels
                 new LayerVM(new Layer(){ Id = 1}),
                 new LayerVM(new Layer(){ Id = 2})
             };
-            LearningRate = .1f;
+            LearningRate = .05f;
             LearningRateChange = .9f;
             EpochCount = 10;
         }
