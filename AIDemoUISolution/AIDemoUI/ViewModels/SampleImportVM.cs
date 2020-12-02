@@ -36,7 +36,7 @@ namespace AIDemoUI.ViewModels
 
         #region public
         
-        public Dictionary<SetName, SampleSetParameters> Templates => SampleSetParameters.Templates;
+        public Dictionary<SetName, SampleSetParameters> Templates => Creator.Templates;
         public ObservableCollection<SetName> TemplateNames => Templates.Keys.ToObservableCollection();
         public SampleSetParameters SelectedTemplate
         {

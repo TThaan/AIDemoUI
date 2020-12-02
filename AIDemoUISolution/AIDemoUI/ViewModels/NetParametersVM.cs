@@ -56,7 +56,7 @@ namespace AIDemoUI.ViewModels
                 new LayerVM(new Layer(){ Id = 2})
             };
             LearningRate = .1f;
-            ChangeOfLearningRate = .9f;
+            LearningRateChange = .9f;
             EpochCount = 10;
         }
 
@@ -183,14 +183,14 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public float ChangeOfLearningRate
+        public float LearningRateChange
         {
-            get { return _netParameters.ChangeOfLearningRate; }
+            get { return _netParameters.LearningRateChange; }
             set
             {
-                if (_netParameters.ChangeOfLearningRate != value)
+                if (_netParameters.LearningRateChange != value)
                 {
-                    _netParameters.ChangeOfLearningRate = value;
+                    _netParameters.LearningRateChange = value;
                     OnPropertyChanged();
                 }
             }

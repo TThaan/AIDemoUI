@@ -128,7 +128,7 @@
                     <StackPanel Grid.Column="1">
                         <TextBlock Text="Change per Epoch" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
                         <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="50" Margin="0,5,0,10"
-                             Text="{Binding Path=ChangeOfLearningRate}">
+                             Text="{Binding Path=LearningRateChange}">
                             <TextBox.InputBindings>
                                 <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                             </TextBox.InputBindings>

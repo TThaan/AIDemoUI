@@ -28,7 +28,7 @@ namespace AIDemoUI.Converters
 
             try
             {
-                return SampleSetParameters.Templates[templateName];
+                return Creator.Templates[templateName];
             }
             catch (Exception)
             {
