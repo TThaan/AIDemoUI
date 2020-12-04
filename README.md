@@ -7,3 +7,7 @@ Goals:
 - easy creation/import of sample data via file path, url or by some given presets (e.g. MNIST)
 - observe neuron & weight changes visually, incl step by step mode
 
+Next tasks:
+- Matrix operations are way to slow, so I'm gonna fix those.
+- UI can't keep up with incoming neural net changes without slowing down the learning process..
+  Haven't thought about this yet. Could be due to my messy async events.
