@@ -28,17 +28,72 @@
 
     <Grid Name="thisRootElement">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="9*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         
         <ContentControl Name="NetParametersCC"
                         Content="{Binding Path=NetParametersVM}"
                         ContentTemplate="{StaticResource NetParametersView}"
-                        Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="2"/>
+                        Grid.Column="0" Grid.ColumnSpan="2"/>
+
+        <Grid Grid.Column="0" Grid.Row="1">
+            <ProgressBar Minimum="0" Maximum="{Binding ProgressBarMax}" Value="{Binding ProgressBarValue}"/>
+            <TextBlock Text="{Binding ProgressBarText}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"/>
+        </Grid>
+
+        <Grid Grid.Column="1" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!--<Border Grid.Column="0" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Observer Gap" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,5"/>
+                    <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10"
+                         Text="{Binding Path=ObserverGap}">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                </StackPanel>
+            </Border>-->
+
+            <Border Grid.Column="1" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Step-by-Step" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,5"/>
+                    <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10"
+                              IsChecked="{Binding Stepwise}">
+                        <CheckBox.LayoutTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </CheckBox.LayoutTransform>
+                    </CheckBox>
+                </StackPanel>
+            </Border>
+
+            <!-- Run/Step Buttons -->
+
+            <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                        Content="{Binding RunButtonText}" Command="{Binding RunCommandAsync}"/>
+                <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                        Content="{Binding StepButtonText}" Command="{Binding StepCommand}"/>
+            </Grid>
+            
+        </Grid>
     </Grid>
 </Window>

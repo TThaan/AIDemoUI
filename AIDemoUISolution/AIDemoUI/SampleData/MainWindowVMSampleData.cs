@@ -8,7 +8,9 @@ namespace AIDemoUI.SampleData
 
         public MainWindowVMSampleData()
         {
-
+            ProgressBarMax = 10000;
+            ProgressBarValue = 3800;
+            ProgressBarText = $"Current Accuracy: 0.625";
         }
 
         #endregion

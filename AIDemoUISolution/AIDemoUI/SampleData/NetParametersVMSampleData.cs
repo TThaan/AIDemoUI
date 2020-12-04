@@ -1,4 +1,5 @@
 ﻿using AIDemoUI.ViewModels;
+using FourPixCam;
 
 namespace AIDemoUI.SampleData
 {
@@ -7,7 +8,7 @@ namespace AIDemoUI.SampleData
         #region ctor
 
         public NetParametersVMSampleData()
-            :base()
+            :base(new NetParameters())
         {
         }
 

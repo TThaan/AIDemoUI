@@ -20,12 +20,12 @@
 
     <Grid Name="thisRootElement">
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="6*"/>
         </Grid.ColumnDefinitions>
 
         <!-- Column 1: Grid with multiple rows for NeuralNets' parameters and 'OK' button-->
-        <StackPanel>
+        <StackPanel Grid.Column="1">
 
             <Button Name="btnLoadNet" Command="{Binding LoadNetCommandAsync}" Content="Load Net"/>
             <Button Name="btnSaveNet" Command="{Binding SaveNetCommandAsync}" Content="Save Net"/>
@@ -156,26 +156,11 @@
                     Content="Import Samples"
                     Command="{Binding ImportSamplesCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>            
             
-            <!-- Run/Step Buttons -->
-            
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="3*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                        Content="Run"
-                        Command="{Binding OkCommandAsync}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
-                <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                        Content="Step"
-                        Command="{Binding OkCommandAsync}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
-            </Grid>
             
         </StackPanel>
 
-        <!-- Column 2: 'Layers', 'Inputs' and 'Outputs' -->
-        <Grid Grid.Column="2">
+        <!-- Column 2: 'Layers', 'Inputs' and 'Outputs' (actually: NetView!) -->
+        <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
@@ -190,7 +175,7 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <!-- Grid with 4 rows -->
-                        <Grid>
+                        <Grid VerticalAlignment="Top">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="2*"/>
                                 <ColumnDefinition Width="*"/>
@@ -239,7 +224,7 @@
                             </ComboBox>
 
                             <!-- Row 3: ins/outs -->
-                            <ListBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding Inputs}">
+                            <ListBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding Inputs, Mode=TwoWay}">
 
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
@@ -252,7 +237,7 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <ListBox Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" ItemsSource="{Binding Outputs}">
+                            <ListBox Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" ItemsSource="{Binding Outputs, Mode=TwoWay}">
                             </ListBox>
 
                         </Grid>

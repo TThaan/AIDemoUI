@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 
 namespace AIDemoUI.ViewModels
 {
@@ -12,19 +13,14 @@ namespace AIDemoUI.ViewModels
     {
         #region ctor & fields
 
-        //int id, n;
-        //ActivationType activationType;
         ObservableCollection<float> inputLayer;
         ObservableCollection<float> inputs, outputs;
-        // Matrix weights, biases;
-        // IRelayCommand changeNCommand;
 
         public LayerVM(Layer layer)
         {
             Layer = layer ??
                 throw new NullReferenceException($"" +
                 $"{typeof(Layer).Name} {nameof(layer)} ({GetType().Name}.ctor)");
-
             SetDefaultValues(layer);
         }
 
@@ -183,8 +179,25 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region OnLayersChanged
+        #region OnLayersChanged (redundant?)
 
+        public void OnLayerUpdate()
+        {
+            var dispatcher = Application.Current.Dispatcher;
+            dispatcher.Invoke(() =>
+            {
+                for (int j = 0; j < Layer.Processed.Input.m; j++)
+                {
+                    float a = Layer.Processed.Input[j];
+                    float b = Layer.Processed.Output[j];
+
+                    Inputs[j] = a;
+                    Outputs[j] = b;
+                }
+                Biases?.ForEach(Layer.Biases, x => x);
+                Weights?.ForEach(Layer.Weights, x => x);
+            });
+        }
         void OnInputsChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             switch (e.Action)

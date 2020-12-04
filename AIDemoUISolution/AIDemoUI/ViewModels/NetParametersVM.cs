@@ -23,15 +23,16 @@ namespace AIDemoUI.ViewModels
 
         NetParameters _netParameters;
         IRelayCommand importSamplesCommand, addCommand, deleteCommand, moveLeftCommand, moveRightCommand;
-        IAsyncCommand okCommandAsync, loadNetCommandAsync, saveNetCommandAsync;
+        IAsyncCommand loadNetCommandAsync, saveNetCommandAsync;
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
         ObservableCollection<LayerVM> layerVMs;
 
-        public NetParametersVM()
+        public NetParametersVM(NetParameters netParameters)
         {
-            _netParameters = new NetParameters();
+            _netParameters = netParameters ?? throw new NullReferenceException(
+                    $"{typeof(NetParameters).Name} {nameof(netParameters)} ({typeof(NetParametersVM).Name}.ctor)");
             SampleImportWindow = new SampleImportWindow();
 
             SetDefaultValues();
@@ -55,6 +56,7 @@ namespace AIDemoUI.ViewModels
                 new LayerVM(new Layer(){ Id = 1}),
                 new LayerVM(new Layer(){ Id = 2})
             };
+            //LayerVMs[1].N = 100;
             LearningRate = .05f;
             LearningRateChange = .9f;
             EpochCount = 10;
@@ -211,53 +213,6 @@ namespace AIDemoUI.ViewModels
         #endregion
 
         #region RelayCommand
-
-        #region General Commands
-
-        public IAsyncCommand OkCommandAsync
-        {
-            get
-            {
-                if (okCommandAsync == null)
-                {
-                    okCommandAsync = new AsyncRelayCommand(OkCommand_Execute, OkCommand_CanExecute);
-                }
-                return okCommandAsync;
-            }
-        }
-        async Task OkCommand_Execute(object parameter)
-        {
-            var okBtn = parameter as Button;
-            // var netParametersView = parameter as UserControl;
-            if (okBtn != null)
-            {
-                string isTurnBased = okBtn.Content as string;
-                if ((isTurnBased?.ToLower()).Contains("step"))
-                {
-                    await OnOkBtnPressedAsync(true);
-                }
-                else
-                {
-                    await OnOkBtnPressedAsync(false);
-                }
-            }
-        }
-        bool OkCommand_CanExecute(object parameter)
-        {
-            SampleImportVM vm = SampleImportWindow.DataContext as SampleImportVM;
-
-            if (vm != null &&
-                string.IsNullOrEmpty(vm.Url_TrainingLabels) ||
-                string.IsNullOrEmpty(vm.Url_TrainingImages) ||
-                string.IsNullOrEmpty(vm.Url_TestingLabels) ||
-                string.IsNullOrEmpty(vm.Url_TestingImages))
-            {
-                return false;
-            }
-            return true;
-        }
-
-        #endregion
 
         #region I/O Commands
 
@@ -530,21 +485,6 @@ namespace AIDemoUI.ViewModels
         }
 
         #endregion
-
-        #endregion
-
-        #region OkBtnPressed
-
-        public event OkBtnEventHandler OkBtnPressed;
-        async Task OnOkBtnPressedAsync(bool isTurnBased)
-        {
-            SampleImportVM vm = SampleImportWindow.DataContext as SampleImportVM;
-
-            _netParameters.Layers = LayerVMs
-                .Select(x => x.Layer)
-                .ToArray();
-            await OkBtnPressed?.Invoke(_netParameters, isTurnBased, vm?.SelectedTemplate);
-        }
 
         #endregion
     }
