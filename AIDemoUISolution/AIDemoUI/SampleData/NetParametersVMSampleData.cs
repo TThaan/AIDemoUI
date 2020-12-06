@@ -8,7 +8,7 @@ namespace AIDemoUI.SampleData
         #region ctor
 
         public NetParametersVMSampleData()
-            :base(new NetParameters())
+            :base(new NetParameters(WeightInitType.Xavier))
         {
         }
 

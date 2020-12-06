@@ -13,25 +13,27 @@ namespace AIDemoUI.ViewModels
     {
         #region ctor & fields
 
-        ObservableCollection<float> inputLayer;
+        int n;
         ObservableCollection<float> inputs, outputs;
 
-        public LayerVM(Layer layer)
+        public LayerVM(int id, int n, ActivationType activationType)//Layer layer
         {
-            Layer = layer ??
-                throw new NullReferenceException($"" +
-                $"{typeof(Layer).Name} {nameof(layer)} ({GetType().Name}.ctor)");
-            SetDefaultValues(layer);
+            //Layer = layer ??
+            //    throw new NullReferenceException($"" +
+            //    $"{typeof(Layer).Name} {nameof(layer)} ({GetType().Name}.ctor)");
+
+            Layer = new Layer(id, n, activationType);
+            SetDefaultValues(Layer);
         }
 
         #region helpers
 
         void SetDefaultValues(Layer layer)
         {
-            N = layer.N == 0 ? 4 : layer.N;
             ActivationType = layer.ActivationType == default ? ActivationType.ReLU : layer.ActivationType;
             Inputs = Enumerable.Range(0, N).Select(x => 0f).ToObservableCollection();
             Outputs = Enumerable.Range(0, N).Select(x => 0f).ToObservableCollection();
+            N = layer.N == 0 ? 4 : layer.N;
         }
 
         #endregion
@@ -41,81 +43,41 @@ namespace AIDemoUI.ViewModels
         #region public
 
         public Layer Layer { get; }
-        public int Id
-        {
-            get { return Layer.Id; }
-            set
-            {
-                if (Layer.Id != value)
-                {
-                    Layer.Id = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public int Id { get; set; }
         public int N
         {
-            get { return Layer.N; }
+            get { return n; }
             set
             {
-                if (Layer.N != value)
+                if (n != value)
                 {
-                    Layer.N = value;
-                    OnLayerVMPropertyChanged();
-                }
-            }
-        }
-        public ActivationType ActivationType
-        {
-            get { return Layer.ActivationType; }
-            set
-            {
-                if (Layer.ActivationType != value)
-                {
-                    Layer.ActivationType = value;
+                    int diff = value - n;
+                    n = value;
+
+                    if (diff > 0)
+                    {
+                        for (int i = 0; i < diff; i++)
+                        {
+                            Inputs.Add(0);
+                            Outputs.Add(0);
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < diff; i++)
+                        {
+                            Inputs.RemoveAt(Inputs.Count - 1);
+                            Outputs.RemoveAt(Inputs.Count - 1);
+                        }
+                    }
+                    
                     OnPropertyChanged();
                 }
             }
         }
-        public Matrix Weights
-        {
-            get { return Layer.Weights; }
-            set
-            {
-                if (Layer.Weights != value)
-                {
-                    Layer.Weights = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public Matrix Biases
-        {
-            get { return Layer.Biases; }
-            set
-            {
-                if (Layer.Biases != value)
-                {
-                    Layer.Biases = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public ObservableCollection<float> InputLayer
-        {
-            get
-            {
-                return inputLayer;
-            }
-            set
-            {
-                if (inputLayer != value)
-                {
-                    inputLayer = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public ActivationType ActivationType { get; set; }
+        public Matrix Weights { get; set; }
+        public Matrix Biases { get; set; }
 
         #region Processed
 

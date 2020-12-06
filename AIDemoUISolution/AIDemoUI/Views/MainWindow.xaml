@@ -68,7 +68,7 @@
                 </StackPanel>
             </Border>-->
 
-            <Border Grid.Column="1" Grid.Row="0" BorderBrush="LightGray" BorderThickness="1">
+            <Border Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="Step-by-Step" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,5"/>
                     <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10"

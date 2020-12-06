@@ -20,7 +20,7 @@ namespace AIDemoUI.ViewModels
 
         public MainWindowVM()
         {
-            _netParameters = new NetParameters();
+            _netParameters = new NetParameters(WeightInitType.Xavier);
             NetParametersVM = new NetParametersVM(_netParameters);
             // NetParametersVM.OkBtnPressed += OnOkButtonPressedAsync;
 
@@ -189,6 +189,15 @@ namespace AIDemoUI.ViewModels
             {
                 Paused = false;
 
+                foreach (var item in NetParametersVM.LayerVMs)
+                {
+                    if(item.N != item.Layer.N || item.Layer.N != item.Layer.Processed.Input.m)
+                    {
+                        item.Layer.N = item.N;
+                        item.Layer.Processed.Reset();
+                    }
+                }
+
                 _netParameters.Layers = NetParametersVM.LayerVMs
                     .Select(x => x.Layer)
                     .ToArray();
@@ -209,7 +218,14 @@ namespace AIDemoUI.ViewModels
                 }
                 else
                 {
-                    await Trainer.Train(Initializer.Samples.TrainingSamples, Initializer.Samples.TestingSamples, ObserverGap);
+                    try
+                    {
+                        await Trainer.Train(Initializer.Samples.TrainingSamples, Initializer.Samples.TestingSamples, ObserverGap);
+                    }
+                    catch (Exception e)
+                    {
+                        // throw;
+                    }
                 }
             });
         }
@@ -287,9 +303,9 @@ namespace AIDemoUI.ViewModels
         }
         void Trainer_SomethingHappend(string whatHappend)
         {
-            foreach (var layer in NetParametersVM.LayerVMs)
+            foreach (var layerVM in NetParametersVM.LayerVMs)
             {
-                layer.OnLayerUpdate();
+                layerVM.OnLayerUpdate();
             }
             ProgressBarValue += ObserverGap;
             ProgressBarText = whatHappend;

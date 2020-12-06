@@ -32,6 +32,8 @@ namespace AIDemoUI.Commands
         {
             if (CanExecute())
             {
+                //_isExecuting = true;
+                //await _execute(parameter);
                 try
                 {
                     _isExecuting = true;

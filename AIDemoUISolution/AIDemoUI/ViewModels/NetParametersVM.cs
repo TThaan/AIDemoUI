@@ -52,9 +52,9 @@ namespace AIDemoUI.ViewModels
             WeightInitType = WeightInitType.Xavier;
             LayerVMs = new ObservableCollection<LayerVM>
             {
-                new LayerVM(new Layer(){ Id = 0}),
-                new LayerVM(new Layer(){ Id = 1}),
-                new LayerVM(new Layer(){ Id = 2})
+                new LayerVM(0, 4, ActivationType.ReLU),
+                new LayerVM(1, 4, ActivationType.ReLU),
+                new LayerVM(2, 4, ActivationType.ReLU)
             };
             //LayerVMs[1].N = 100;
             LearningRate = .05f;
@@ -327,15 +327,15 @@ namespace AIDemoUI.ViewModels
         }
         void SetLoadedValues(NetParameters np)
         {
-            IsWithBias = np.IsWithBias;
-            WeightMin = np.WeightMin;
-            WeightMax = np.WeightMax;
-            BiasMin = np.BiasMin;
-            BiasMax = np.BiasMax;
-            CostType = np.CostType;
-            WeightInitType = np.WeightInitType;
-            LayerVMs = new ObservableCollection<LayerVM>(
-                np.Layers.Select(x => new LayerVM(x)));
+            //IsWithBias = np.IsWithBias;
+            //WeightMin = np.WeightMin;
+            //WeightMax = np.WeightMax;
+            //BiasMin = np.BiasMin;
+            //BiasMax = np.BiasMax;
+            //CostType = np.CostType;
+            //WeightInitType = np.WeightInitType;
+            //LayerVMs = new ObservableCollection<LayerVM>(
+            //    np.Layers.Select(x => new LayerVM(x)));
         }
 
         #endregion
@@ -360,8 +360,8 @@ namespace AIDemoUI.ViewModels
             ContentPresenter cp = parameter as ContentPresenter;
             LayerVM layerVM = cp.Content as LayerVM;
 
-            LayerVM newLayerVM = new LayerVM(new Layer() { ActivationType = ActivationType.ReLU });
             int newIndex = (LayerVMs.IndexOf(layerVM));
+            LayerVM newLayerVM = new LayerVM(newIndex, 4, ActivationType.ReLU);
             LayerVMs.Insert(newIndex + 1, newLayerVM);
         }
         bool AddCommand_CanExecute(object parameter)
