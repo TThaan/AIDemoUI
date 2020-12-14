@@ -1,8 +1,11 @@
 ﻿using AIDemoUI.Commands;
 using FourPixCam;
+using MatrixHelper;
 using NNet_InputProvider;
 using System;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
@@ -47,7 +50,7 @@ namespace AIDemoUI.ViewModels
 
         public NetParametersVM NetParametersVM { get; }
         public Initializer Initializer { get; set; }
-        public Trainer Trainer { get; set; }
+        // public Trainer Trainer { get; set; }
         /// <summary>
         /// How many samples in training are skipped until the next ui-notification event.
         /// </summary>
@@ -181,46 +184,29 @@ namespace AIDemoUI.ViewModels
             SampleImportVM vm = NetParametersVM.SampleImportWindow.DataContext as SampleImportVM;
             SampleSetParameters sampleSetParameters = vm.SelectedTemplate;
 
-            SampleSet samples = Creator.GetSampleSet(sampleSetParameters);
-            samples.SomethingHappend += SampleCreator_SomethingHappend;
-            await samples.SetSamples();
-
             await Task.Run(async () =>
             {
                 Paused = false;
 
-                foreach (var item in NetParametersVM.LayerVMs)
-                {
-                    if(item.N != item.Layer.N || item.Layer.N != item.Layer.Processed.Input.m)
-                    {
-                        item.Layer.N = item.N;
-                        item.Layer.Processed.Reset();
-                    }
-                }
-
-                _netParameters.Layers = NetParametersVM.LayerVMs
-                    .Select(x => x.Layer)
-                    .ToArray();
-
-                Initializer = new Initializer(_netParameters, samples);
-                Trainer = Initializer.Trainer;
-                Trainer.SomethingHappend += Trainer_SomethingHappend;
+                // await UseUIGeneratedNetAndSamples(sampleSetParameters);
+                // UseExample01();
+                UseExample02();
 
                 ProgressBarValue = 0;
-                ProgressBarMax = _netParameters.EpochCount * (sampleSetParameters.TestingSamples + sampleSetParameters.TrainingSamples);
+                ProgressBarMax = _netParameters.EpochCount * (Initializer.Samples.Parameters.TestingSamples + Initializer.Samples.Parameters.TrainingSamples);
 
-                ObserverGap = (int)Math.Round((decimal)vm.SelectedTemplate.TrainingSamples / 100, 0);
+                ObserverGap = (int)Math.Round((decimal)(Initializer.Samples.Parameters.TrainingSamples + Initializer.Samples.Parameters.TestingSamples), 0);
 
                 if (Stepwise)
                 {
-                    Trainer.Paused += Trainer_Paused;
-                    await Trainer.Train(Initializer.Samples.TrainingSamples, Initializer.Samples.TestingSamples, 0);
+                    Initializer.Trainer.Paused += Trainer_Paused;
+                    await Initializer.Trainer.Train(Initializer.Samples.TrainingSamples, Initializer.Samples.TestingSamples, 0);
                 }
                 else
                 {
                     try
                     {
-                        await Trainer.Train(Initializer.Samples.TrainingSamples, Initializer.Samples.TestingSamples, ObserverGap);
+                        await Initializer.Trainer.Train(Initializer.Samples.TrainingSamples, Initializer.Samples.TestingSamples, ObserverGap);
                     }
                     catch (Exception e)
                     {
@@ -259,12 +245,12 @@ namespace AIDemoUI.ViewModels
             if (Paused)
             {
                 Paused = false;
-                Trainer.Paused -= Trainer_Paused;
+                Initializer.Trainer.Paused -= Trainer_Paused;
             }
             else
             {
                 Paused = true;
-                Trainer.Paused += Trainer_Paused;
+                Initializer.Trainer.Paused += Trainer_Paused;
                 foreach (var layer in NetParametersVM.LayerVMs)
                 {
                     layer.OnLayerUpdate();
@@ -286,6 +272,55 @@ namespace AIDemoUI.ViewModels
             }
             return true;
         }
+
+        #region helpers
+
+
+        // Better: Factories separated from FourPixCam (at least: (incl) Net -> as lib)
+        // Initializer as static class! (In Trainig Lib?)
+        async Task UseUIGeneratedNetAndSamples(SampleSetParameters sampleSetParameters)
+        {
+            Initializer = new Initializer();
+
+            Initializer.Samples = await SampleSetFactory.GetSampleSet(NetParametersVM, _netParameters, sampleSetParameters);
+            Initializer.Net = NeuralNetFactory.GetNeuralNet(Initializer, NetParametersVM, _netParameters);
+
+            Initializer.Trainer = new Trainer(Initializer.Net, _netParameters);
+            Initializer.Trainer.SomethingHappend += Trainer_SomethingHappend;
+        }
+        void UseExample01()
+        {
+            Initializer = new Initializer();
+
+            Initializer.Samples = SampleSetFactory.GetSampleSet01();
+            Initializer.Net = NeuralNetFactory.GetNeuralNet_Example01(NetParametersVM, _netParameters);
+
+            Initializer.Trainer = new Trainer(Initializer.Net, _netParameters);
+            Initializer.Trainer.SomethingHappend += Trainer_SomethingHappend;
+        }
+        void UseExample02()
+        {
+            Initializer = new Initializer();
+
+            Initializer.Samples = SampleSetFactory.GetSampleSet02();
+            Initializer.Net = NeuralNetFactory.GetNeuralNet(Initializer, NetParametersVM, _netParameters);
+
+            using (Stream stream = File.Open(@"C:\Users\Jan_PC\Documents\_NeuralNetApp\" + "Weights.dat", FileMode.Open))
+            {
+                BinaryFormatter bf = new BinaryFormatter();
+                Matrix[] Weights = (Matrix[])bf.Deserialize(stream);
+
+                for (int i = 1; i < Initializer.Net.Layers.Length; i++)
+                {
+                    Initializer.Net.Layers[i].Weights = Weights[i];
+                }
+            }
+
+            Initializer.Trainer = new Trainer(Initializer.Net, _netParameters);
+            Initializer.Trainer.SomethingHappend += Trainer_SomethingHappend;
+        }
+
+        #endregion
 
         #endregion
 

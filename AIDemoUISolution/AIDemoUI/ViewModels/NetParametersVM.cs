@@ -52,12 +52,14 @@ namespace AIDemoUI.ViewModels
             WeightInitType = WeightInitType.Xavier;
             LayerVMs = new ObservableCollection<LayerVM>
             {
-                new LayerVM(0, 4, ActivationType.ReLU),
-                new LayerVM(1, 4, ActivationType.ReLU),
-                new LayerVM(2, 4, ActivationType.ReLU)
+                new LayerVM(0, 4, ActivationType.NullActivator),
+                new LayerVM(1, 4, ActivationType.Tanh),
+                new LayerVM(2, 4, ActivationType.Tanh),
+                new LayerVM(3, 8, ActivationType.ReLU),
+                new LayerVM(4, 4, ActivationType.Tanh)
             };
             //LayerVMs[1].N = 100;
-            LearningRate = .05f;
+            LearningRate = .1f;
             LearningRateChange = .9f;
             EpochCount = 10;
         }
@@ -360,9 +362,9 @@ namespace AIDemoUI.ViewModels
             ContentPresenter cp = parameter as ContentPresenter;
             LayerVM layerVM = cp.Content as LayerVM;
 
-            int newIndex = (LayerVMs.IndexOf(layerVM));
+            int newIndex = LayerVMs.IndexOf(layerVM) + 1;
             LayerVM newLayerVM = new LayerVM(newIndex, 4, ActivationType.ReLU);
-            LayerVMs.Insert(newIndex + 1, newLayerVM);
+            LayerVMs.Insert(newIndex, newLayerVM);
         }
         bool AddCommand_CanExecute(object parameter)
         {
