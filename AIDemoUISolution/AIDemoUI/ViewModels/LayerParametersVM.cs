@@ -1,4 +1,5 @@
-﻿using NeuralNetBuilder.FactoriesAndParameters;
+﻿using AIDemoUI.Commands;
+using NeuralNetBuilder.FactoriesAndParameters;
 
 namespace AIDemoUI.ViewModels
 {
@@ -6,19 +7,25 @@ namespace AIDemoUI.ViewModels
     {
         #region ctor & fields
 
+        IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand;
+
         public LayerParametersVM(int id)
         {
             LayerParameters = new LayerParameters();
             Id = id;
             SetDefaultValues();
         }
+        public LayerParametersVM(ILayerParameters layerParameters)
+        {
+            LayerParameters = layerParameters;
+        }
 
         #region helpers
 
         void SetDefaultValues()
         {
-            IsWithBias = false;
             N = 4;
+            IsWithBias = false;
             WeightMin = -1;
             WeightMax = 1;
             BiasMin = -1;
@@ -131,6 +138,88 @@ namespace AIDemoUI.ViewModels
                     OnPropertyChanged();
                 }
             }
+        }
+
+        #endregion
+
+        #region LayerDetails Commands
+
+        public IRelayCommand AddCommand
+        {
+            get
+            {
+                if (addCommand == null)
+                {
+                    addCommand = new RelayCommand(AddCommand_Execute, AddCommand_CanExecute);
+                }
+                return addCommand;
+            }
+        }
+        void AddCommand_Execute(object parameter)
+        {
+            OnPropertyChanged();
+        }
+        bool AddCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+        public IRelayCommand DeleteCommand
+        {
+            get
+            {
+                if (deleteCommand == null)
+                {
+                    deleteCommand = new RelayCommand(DeleteCommand_Execute, DeleteCommand_CanExecute);
+                }
+                return deleteCommand;
+            }
+        }
+        void DeleteCommand_Execute(object parameter)
+        {
+            OnPropertyChanged();
+        }
+        bool DeleteCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+        public IRelayCommand MoveLeftCommand
+        {
+            get
+            {
+                if (moveLeftCommand == null)
+                {
+                    moveLeftCommand = new RelayCommand(MoveLeftCommand_Execute, MoveLeftCommand_CanExecute);
+                }
+                return moveLeftCommand;
+            }
+        }
+        void MoveLeftCommand_Execute(object parameter)
+        {
+            OnPropertyChanged();
+            
+        }
+        bool MoveLeftCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+        public IRelayCommand MoveRightCommand
+        {
+            get
+            {
+                if (moveRightCommand == null)
+                {
+                    moveRightCommand = new RelayCommand(MoveRightCommand_Execute, MoveRightCommand_CanExecute);
+                }
+                return moveRightCommand;
+            }
+        }
+        void MoveRightCommand_Execute(object parameter)
+        {
+            OnPropertyChanged();
+        }
+        bool MoveRightCommand_CanExecute(object parameter)
+        {
+            return true;
         }
 
         #endregion

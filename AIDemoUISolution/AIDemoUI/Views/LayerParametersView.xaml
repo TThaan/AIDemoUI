@@ -41,20 +41,16 @@
 
                 <!-- Row 0: Left, Delete, Right, Add -->
                 <Button Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &lt;  " 
-                DataContext="{Binding ElementName=thisRootElement, Path=DataContext}" 
-                Command="{Binding MoveLeftCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                        Command="{Binding MoveLeftCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}}"/>
 
                 <Button Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" FontSize="20" MinWidth="50" Content="  -  " 
-                DataContext="{Binding ElementName=thisRootElement, Path=DataContext}" 
-                Command="{Binding DeleteCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                        Command="{Binding DeleteCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}}"/>
 
                 <Button Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &gt;  " 
-                DataContext="{Binding ElementName=thisRootElement, Path=DataContext}" 
-                Command="{Binding MoveRightCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                        Command="{Binding MoveRightCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
 
                 <Button Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" MinWidth="50" FontSize="20"  Content="  +  " 
-                DataContext="{Binding ElementName=thisRootElement, Path=DataContext}" 
-                Command="{Binding AddCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                        Command="{Binding AddCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
 
                 <!-- Row 1: N -->
                 <TextBlock Grid.Row="1" Text="Neurons" HorizontalAlignment="Center" VerticalAlignment="Center"/>

@@ -179,6 +179,7 @@ namespace AIDemoUI.ViewModels
         }
         async Task RunCommandAsync_Execute(object parameter)
         {
+            // Use dedicated class (main/initializer/Start):
             SampleImportVM vm = NetParametersVM.SampleImportWindow.DataContext as SampleImportVM;
             _sampleSetParameters = vm.SelectedTemplate;
 

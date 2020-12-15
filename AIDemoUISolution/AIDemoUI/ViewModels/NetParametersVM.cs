@@ -7,11 +7,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 
 namespace AIDemoUI.ViewModels
 {
@@ -23,7 +23,7 @@ namespace AIDemoUI.ViewModels
 
         INetParameters _netParameters;
         ITrainerParameters _trainerParameters;
-        IRelayCommand importSamplesCommand, addCommand, deleteCommand, moveLeftCommand, moveRightCommand;
+        IRelayCommand importSamplesCommand;
         IAsyncCommand loadNetCommandAsync, saveNetCommandAsync;
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
@@ -64,10 +64,63 @@ namespace AIDemoUI.ViewModels
                 new LayerParametersVM(3),
                 new LayerParametersVM(4)
             };
+            foreach (var layerParameterVM in LayerParameterVMs)
+            {
+                layerParameterVM.PropertyChanged += LayerParametersVM_PropertyChanged;
+            }
             LearningRate = .1f;
             LearningRateChange = .9f;
             EpochCount = 10;
         }
+
+        private void LayerParametersVM_PropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
+        {
+            string suffix = "_Execute";
+
+            switch (eventArgs.PropertyName.Replace(suffix, ""))
+            {
+                case nameof(LayerParametersVM.AddCommand):
+                    AddLayerParametersVM(sender as LayerParametersVM);
+                    break;
+                case nameof(LayerParametersVM.DeleteCommand):
+                    DeleteLayerParametersVM(sender as LayerParametersVM);
+                    break;
+                case nameof(LayerParametersVM.MoveLeftCommand):
+                    MoveLayerParametersVMLeft(sender as LayerParametersVM);
+                    break;
+                case nameof(LayerParametersVM.MoveRightCommand):
+                    MoveLayerParametersVMRight(sender as LayerParametersVM);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        #region helpers
+
+        void AddLayerParametersVM(LayerParametersVM layerParametersVM)
+        {
+            int newIndex = LayerParameterVMs.IndexOf(layerParametersVM) + 1;
+            LayerParametersVM newLayerParametersVM = new LayerParametersVM(newIndex);
+            newLayerParametersVM.PropertyChanged += LayerParametersVM_PropertyChanged;
+            LayerParameterVMs.Insert(newIndex, newLayerParametersVM);
+        }
+        void DeleteLayerParametersVM(LayerParametersVM layerParametersVM)
+        {
+            LayerParameterVMs.Remove(layerParametersVM);
+        }
+        void MoveLayerParametersVMLeft(LayerParametersVM layerParametersVM)
+        {
+            int currentIndex = LayerParameterVMs.IndexOf(layerParametersVM);
+            LayerParameterVMs.Move(currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
+        }
+        void MoveLayerParametersVMRight(LayerParametersVM layerParametersVM)
+        {
+            int currentIndex = LayerParameterVMs.IndexOf(layerParametersVM);
+            LayerParameterVMs.Move(currentIndex, currentIndex < LayerParameterVMs.Count - 1 ? currentIndex + 1 : 0);
+        }
+
+        #endregion
 
         #endregion
 
@@ -88,7 +141,6 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        // public ILayerParameters[] LayerParameters => 
         public bool IsWithBias_Global
         {
             get { return isWithBias_Global; }
@@ -220,11 +272,11 @@ namespace AIDemoUI.ViewModels
 
         public void SynchronizeModelToVM()
         {
-            _netParameters.LayerParameters = LayerParameterVMs.Select(x => x.LayerParameters).ToArray();
+            _netParameters.LayersParameters = LayerParameterVMs.Select(x => x.LayerParameters).ToArray();
 
             if (AreParametersGlobal)
             {
-                foreach (var lp in _netParameters.LayerParameters)
+                foreach (var lp in _netParameters.LayersParameters)
                 {
                     lp.IsWithBias = IsWithBias_Global;
                     lp.WeightMin = WeightMin_Global;
@@ -314,10 +366,6 @@ namespace AIDemoUI.ViewModels
         }
         async Task SaveNetCommand_Execute(object parameter)
         {
-            //_netParameters.Layers = LayerVMs
-            //    .Select(x => x.Layer)
-            //    .ToArray();
-
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Save this Template";
             saveFileDialog.DefaultExt = ".txt";
@@ -325,6 +373,8 @@ namespace AIDemoUI.ViewModels
 
             if (saveFileDialog.ShowDialog() == true)
             {
+                SynchronizeModelToVM();
+
                 if (!string.IsNullOrEmpty(saveFileDialog.FileName))
                 {
                     await Task.Run(() =>
@@ -364,113 +414,18 @@ namespace AIDemoUI.ViewModels
         }
         void SetLoadedValues(NetParameters np)
         {
-            //IsWithBias = np.IsWithBias;
-            //WeightMin = np.WeightMin;
-            //WeightMax = np.WeightMax;
-            //BiasMin = np.BiasMin;
-            //BiasMax = np.BiasMax;
-            //CostType = np.CostType;
-            //WeightInitType = np.WeightInitType;
-            //LayerVMs = new ObservableCollection<LayerVM>(
-            //    np.Layers.Select(x => new LayerVM(x)));
+            // CostType = np.CostType; -> from trainerParameters
+            WeightInitType = np.WeightInitType;
+            LayerParameterVMs = new ObservableCollection<LayerParametersVM>(
+                np.LayersParameters.Select(x => new LayerParametersVM(x)));
+
+            foreach (var layerParameterVM in LayerParameterVMs)
+            {
+                layerParameterVM.PropertyChanged += LayerParametersVM_PropertyChanged;
+            }
         }
 
         #endregion
-
-        #endregion
-
-        #region LayerDetails Commands
-        
-        public IRelayCommand AddCommand
-        {
-            get
-            {
-                if (addCommand == null)
-                {
-                    addCommand = new RelayCommand(AddCommand_Execute, AddCommand_CanExecute);
-                }
-                return addCommand;
-            }
-        }
-        void AddCommand_Execute(object parameter)
-        {
-            ContentPresenter cp = parameter as ContentPresenter;
-            LayerParametersVM layerVM = cp.Content as LayerParametersVM;
-
-            int newIndex = LayerParameterVMs.IndexOf(layerVM) + 1;
-            LayerParametersVM newLayerVM = new LayerParametersVM(newIndex);
-            LayerParameterVMs.Insert(newIndex, newLayerVM);
-        }
-        bool AddCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        public IRelayCommand DeleteCommand
-        {
-            get
-            {
-                if (deleteCommand == null)
-                {
-                    deleteCommand = new RelayCommand(DeleteCommand_Execute, DeleteCommand_CanExecute);
-                }
-                return deleteCommand;
-            }
-        }
-        void DeleteCommand_Execute(object parameter)
-        {
-            ContentPresenter cp = parameter as ContentPresenter;
-            LayerParametersVM layerVM = cp.Content as LayerParametersVM;
-            LayerParameterVMs.Remove(layerVM);
-        }
-        bool DeleteCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        public IRelayCommand MoveLeftCommand
-        {
-            get
-            {
-                if (moveLeftCommand == null)
-                {
-                    moveLeftCommand = new RelayCommand(MoveLeftCommand_Execute, MoveLeftCommand_CanExecute);
-                }
-                return moveLeftCommand;
-            }
-        }
-        void MoveLeftCommand_Execute(object parameter)
-        {
-            ContentPresenter cp = parameter as ContentPresenter;
-            LayerParametersVM layerVM = cp.Content as LayerParametersVM;
-            int currentIndex = LayerParameterVMs.IndexOf(layerVM);
-            LayerParameterVMs.Move(currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
-        }
-        bool MoveLeftCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        public IRelayCommand MoveRightCommand
-        {
-            get
-            {
-                if (moveRightCommand == null)
-                {
-                    moveRightCommand = new RelayCommand(MoveRightCommand_Execute, MoveRightCommand_CanExecute);
-                }
-                return moveRightCommand;
-            }
-        }
-
-        void MoveRightCommand_Execute(object parameter)
-        {
-            ContentPresenter cp = parameter as ContentPresenter;
-            LayerParametersVM layerVM = cp.Content as LayerParametersVM;
-            int currentIndex = LayerParameterVMs.IndexOf(layerVM);
-            LayerParameterVMs.Move(currentIndex, currentIndex < LayerParameterVMs.Count - 1 ? currentIndex + 1 : 0);
-        }
-        bool MoveRightCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
 
         #endregion
 
@@ -512,15 +467,14 @@ namespace AIDemoUI.ViewModels
 
         void UpdateIndeces()
         {
-            throw new NotImplementedException();
-            //for (int i = 0; i < LayerVMs.Count; i++)
-            //{
-            //    LayerVMs.ElementAt(i).Id = i;
-            //    for (int k = 0; k < LayerVMs.ElementAt(i).Inputs.Count; k++)
-            //    {
-            //        LayerVMs.ElementAt(i).Inputs[k] = 0f;
-            //    }
-            //}
+            for (int i = 0; i < LayerParameterVMs.Count; i++)
+            {
+                //LayerParameterVMs.ElementAt(i).Id = i;
+                //for (int k = 0; k < LayerParameterVMs.ElementAt(i).Inputs.Count; k++)
+                //{
+                //    LayerParameterVMs.ElementAt(i).Inputs[k] = 0f;
+                //}
+            }
         }
 
         #endregion
