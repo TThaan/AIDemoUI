@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:AIDemoUI.Views"
+             xmlns:views="clr-namespace:AIDemoUI.Views"
              xmlns:sd="clr-namespace:AIDemoUI.SampleData"
              xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
              xmlns:conv="clr-namespace:AIDemoUI.Converters"
@@ -12,9 +12,12 @@
 
     <d:UserControl.DataContext>
         <sd:NetParametersVMSampleData/>
-    </d:UserControl.DataContext>    
+    </d:UserControl.DataContext>
 
     <UserControl.Resources>
+        <DataTemplate x:Key="LayerParametersView">
+            <views:LayerParametersView/>
+        </DataTemplate>
         <conv:IntToBoolConverter x:Key="IntToBoolConverter"/>
     </UserControl.Resources>
 
@@ -24,7 +27,29 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Column 1: Grid with multiple rows for NeuralNets' parameters and 'OK' button-->
+        <!-- Column 1: 'LayerParameters' -->
+        <Grid Grid.Column="0">
+
+            <ListBox VerticalAlignment="Stretch"
+                     ItemsSource="{Binding LayerParameterVMs}" VerticalContentAlignment="Stretch">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <ContentControl 
+                            Content="{Binding}"
+                            ContentTemplate="{StaticResource LayerParametersView}"/>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </Grid>
+
+        <!-- Column 2: NetParameters' and 'OK' button-->
         <StackPanel Grid.Column="1">
 
             <Button Name="btnLoadNet" Command="{Binding LoadNetCommandAsync}" Content="Load Net"/>
@@ -34,7 +59,7 @@
                 <StackPanel>
                     <TextBlock Text="WeightMin" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
                     <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
-                         Text="{Binding Path=WeightMin}">
+                         Text="{Binding Path=WeightMin_Global}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                         </TextBox.InputBindings>
@@ -46,7 +71,7 @@
                 <StackPanel>
                     <TextBlock Text="WeightMax" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
                     <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
-                         Text="{Binding Path=WeightMax}">
+                         Text="{Binding Path=WeightMax_Global}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                         </TextBox.InputBindings>
@@ -58,7 +83,7 @@
                 <StackPanel>
                     <TextBlock Text="Using a Bias" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
                     <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
-                              IsChecked="{Binding IsWithBias}">
+                              IsChecked="{Binding IsWithBias_Global}">
                         <CheckBox.LayoutTransform>
                             <ScaleTransform ScaleX="2" ScaleY="2"/>
                         </CheckBox.LayoutTransform>
@@ -70,7 +95,7 @@
                 <StackPanel>
                     <TextBlock Text="BiasMin" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
                     <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
-                     Text="{Binding Path=BiasMin}" IsEnabled="{Binding IsWithBias}">
+                     Text="{Binding Path=BiasMin_Global}" IsEnabled="{Binding IsWithBias_Global}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                         </TextBox.InputBindings>
@@ -82,7 +107,7 @@
                 <StackPanel>
                     <TextBlock Text="BiasMax" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
                     <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
-                     Text="{Binding Path=BiasMax}" IsEnabled="{Binding IsWithBias}">
+                     Text="{Binding Path=BiasMax_Global}" IsEnabled="{Binding IsWithBias_Global}">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                         </TextBox.InputBindings>
@@ -159,94 +184,5 @@
             
         </StackPanel>
 
-        <!-- Column 2: 'Layers', 'Inputs' and 'Outputs' (actually: NetView!) -->
-        <Grid Grid.Column="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <ListBox Grid.Row="0" VerticalAlignment="Stretch"
-                 ItemsSource="{Binding LayerVMs}" VerticalContentAlignment="Stretch">
-                <ListBox.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <!-- Grid with 4 rows -->
-                        <Grid VerticalAlignment="Top">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="6*"/>
-                            </Grid.RowDefinitions>
-
-                            <!-- Row 0: Left, Delete, Right, Add -->
-                            <Button Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &lt;  " 
-                            DataContext="{Binding ElementName=thisRootElement, Path=DataContext}" 
-                            Command="{Binding MoveLeftCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
-
-                            <Button Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" FontSize="20" MinWidth="50" Content="  -  " 
-                            DataContext="{Binding ElementName=thisRootElement, Path=DataContext}" 
-                            Command="{Binding DeleteCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
-
-                            <Button Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &gt;  " 
-                            DataContext="{Binding ElementName=thisRootElement, Path=DataContext}" 
-                            Command="{Binding MoveRightCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
-
-                            <Button Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" MinWidth="50" FontSize="20"  Content="  +  " 
-                            DataContext="{Binding ElementName=thisRootElement, Path=DataContext}" 
-                            Command="{Binding AddCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
-
-                            <!-- Row 1: N -->
-                            <TextBlock Grid.Row="1" Text="Neurons" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,5,0,5" 
-                                Name="N_Textbox" Text="{Binding N}">
-                                <TextBox.InputBindings>
-                                    <KeyBinding Key="Return" 
-                                        Command="{Binding ElementName=thisRootElement, Path=DataContext.UnfocusCommand}" 
-                                        CommandParameter="{Binding ElementName=thisRootElement}"/>
-                                </TextBox.InputBindings>
-                            </TextBox>
-
-                            <!-- Row 2: Activation -->
-                            <TextBlock Grid.Row="2" Text="Activation" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,5,0,5" 
-                                ItemsSource="{Binding ElementName=thisRootElement, Path=DataContext.ActivationTypes}" SelectedItem="{Binding ActivationType}">
-                            </ComboBox>
-
-                            <!-- Row 3: ins/outs -->
-                            <ListBox Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" ItemsSource="{Binding Inputs, Mode=TwoWay}">
-
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBox Text="{Binding Path=.}" IsEnabled="{
-                                            Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}, 
-                                            Path=DataContext.Id, 
-                                            Converter={StaticResource IntToBoolConverter}}">
-                                            
-                                        </TextBox>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                            <ListBox Grid.Row="3" Grid.Column="2" Grid.ColumnSpan="2" ItemsSource="{Binding Outputs, Mode=TwoWay}">
-                            </ListBox>
-
-                        </Grid>
-
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-
-        </Grid>
-        
     </Grid>
 </UserControl>

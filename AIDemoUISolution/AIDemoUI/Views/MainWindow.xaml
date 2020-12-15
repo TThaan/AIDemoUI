@@ -10,7 +10,6 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="900" Width="1600"
         WindowStartupLocation="CenterScreen">
-        <!--Loaded="MainWindow_OnLoaded"-->
 
     <d:Window.DataContext>
         <sd:MainWindowVMSampleData/>

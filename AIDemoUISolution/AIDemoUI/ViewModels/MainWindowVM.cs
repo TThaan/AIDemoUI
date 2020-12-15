@@ -1,11 +1,8 @@
 ﻿using AIDemoUI.Commands;
-using FourPixCam;
-using MatrixHelper;
+using NeuralNetBuilder;
+using NeuralNetBuilder.FactoriesAndParameters;
 using NNet_InputProvider;
 using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
@@ -14,7 +11,9 @@ namespace AIDemoUI.ViewModels
     {
         #region ctor & fields
 
-        NetParameters _netParameters;
+        INetParameters _netParameters;
+        ITrainerParameters _trainerParameters;
+        SampleSetParameters _sampleSetParameters;
         int observerGap, progressBarValue, progressBarMax;
         string progressBarText;
         bool paused, started, stepwise;
@@ -23,8 +22,9 @@ namespace AIDemoUI.ViewModels
 
         public MainWindowVM()
         {
-            _netParameters = new NetParameters(WeightInitType.Xavier);
-            NetParametersVM = new NetParametersVM(_netParameters);
+            _netParameters = new NetParameters();
+            _trainerParameters = new TrainerParameters();
+            NetParametersVM = new NetParametersVM(_netParameters, _trainerParameters);
             // NetParametersVM.OkBtnPressed += OnOkButtonPressedAsync;
 
             SetDefaultValues();
@@ -49,8 +49,6 @@ namespace AIDemoUI.ViewModels
         #region public
 
         public NetParametersVM NetParametersVM { get; }
-        public Initializer Initializer { get; set; }
-        // public Trainer Trainer { get; set; }
         /// <summary>
         /// How many samples in training are skipped until the next ui-notification event.
         /// </summary>
@@ -182,31 +180,30 @@ namespace AIDemoUI.ViewModels
         async Task RunCommandAsync_Execute(object parameter)
         {
             SampleImportVM vm = NetParametersVM.SampleImportWindow.DataContext as SampleImportVM;
-            SampleSetParameters sampleSetParameters = vm.SelectedTemplate;
+            _sampleSetParameters = vm.SelectedTemplate;
 
             await Task.Run(async () =>
             {
                 Paused = false;
 
-                // await UseUIGeneratedNetAndSamples(sampleSetParameters);
-                // UseExample01();
-                UseExample02();
+                SampleSet sampleSet = await GetSampleSetAsync();
+                Initializer initializer = await GetInitializerAsync();
 
                 ProgressBarValue = 0;
-                ProgressBarMax = _netParameters.EpochCount * (Initializer.Samples.Parameters.TestingSamples + Initializer.Samples.Parameters.TrainingSamples);
+                ProgressBarMax = _trainerParameters.Epochs * (_sampleSetParameters.TestingSamples + _sampleSetParameters.TrainingSamples);
 
-                ObserverGap = (int)Math.Round((decimal)(Initializer.Samples.Parameters.TrainingSamples + Initializer.Samples.Parameters.TestingSamples), 0);
+                ObserverGap = (int)Math.Round((decimal)(_sampleSetParameters.TrainingSamples + _sampleSetParameters.TestingSamples), 0);
 
                 if (Stepwise)
                 {
-                    Initializer.Trainer.Paused += Trainer_Paused;
-                    await Initializer.Trainer.Train(Initializer.Samples.TrainingSamples, Initializer.Samples.TestingSamples, 0);
+                    // initializer.Trainer.Paused += Trainer_Paused;
+                    await initializer.Trainer.Train(sampleSet.TrainingSamples, sampleSet.TestingSamples, 0);
                 }
                 else
                 {
                     try
                     {
-                        await Initializer.Trainer.Train(Initializer.Samples.TrainingSamples, Initializer.Samples.TestingSamples, ObserverGap);
+                        await initializer.Trainer.Train(sampleSet.TrainingSamples, sampleSet.TestingSamples, ObserverGap);
                     }
                     catch (Exception e)
                     {
@@ -242,21 +239,21 @@ namespace AIDemoUI.ViewModels
         }
         void StepCommand_Execute(object parameter)
         {
-            if (Paused)
-            {
-                Paused = false;
-                Initializer.Trainer.Paused -= Trainer_Paused;
-            }
-            else
-            {
-                Paused = true;
-                Initializer.Trainer.Paused += Trainer_Paused;
-                foreach (var layer in NetParametersVM.LayerVMs)
-                {
-                    layer.OnLayerUpdate();
-                }
-                // Thread.Sleep(200);
-            }
+            //if (Paused)
+            //{
+            //    Paused = false;
+            //    Initializer.Trainer.Paused -= Trainer_Paused;
+            //}
+            //else
+            //{
+            //    Paused = true;
+            //    Initializer.Trainer.Paused += Trainer_Paused;
+            //    foreach (var layer in NetParametersVM.LayerVMs)
+            //    {
+            //        layer.OnLayerUpdate();
+            //    }
+            //    // Thread.Sleep(200);
+            //}
         }
         bool StepCommand_CanExecute(object parameter)
         {
@@ -276,48 +273,26 @@ namespace AIDemoUI.ViewModels
         #region helpers
 
 
-        // Better: Factories separated from FourPixCam (at least: (incl) Net -> as lib)
-        // Initializer as static class! (In Trainig Lib?)
-        async Task UseUIGeneratedNetAndSamples(SampleSetParameters sampleSetParameters)
+        async Task<SampleSet> GetSampleSetAsync()
         {
-            Initializer = new Initializer();
-
-            Initializer.Samples = await SampleSetFactory.GetSampleSet(NetParametersVM, _netParameters, sampleSetParameters);
-            Initializer.Net = NeuralNetFactory.GetNeuralNet(Initializer, NetParametersVM, _netParameters);
-
-            Initializer.Trainer = new Trainer(Initializer.Net, _netParameters);
-            Initializer.Trainer.SomethingHappend += Trainer_SomethingHappend;
+            SampleSet result = Creator.GetSampleSet(_sampleSetParameters);
+            await result.SetSamples();
+            return result;  // Task..
         }
-        void UseExample01()
+        async Task<Initializer> GetInitializerAsync()
         {
-            Initializer = new Initializer();
-
-            Initializer.Samples = SampleSetFactory.GetSampleSet01();
-            Initializer.Net = NeuralNetFactory.GetNeuralNet_Example01(NetParametersVM, _netParameters);
-
-            Initializer.Trainer = new Trainer(Initializer.Net, _netParameters);
-            Initializer.Trainer.SomethingHappend += Trainer_SomethingHappend;
-        }
-        void UseExample02()
-        {
-            Initializer = new Initializer();
-
-            Initializer.Samples = SampleSetFactory.GetSampleSet02();
-            Initializer.Net = NeuralNetFactory.GetNeuralNet(Initializer, NetParametersVM, _netParameters);
-
-            using (Stream stream = File.Open(@"C:\Users\Jan_PC\Documents\_NeuralNetApp\" + "Weights.dat", FileMode.Open))
+            return await Task.Run(() =>
             {
-                BinaryFormatter bf = new BinaryFormatter();
-                Matrix[] Weights = (Matrix[])bf.Deserialize(stream);
+                // Check if layer ids match their position in array.
 
-                for (int i = 1; i < Initializer.Net.Layers.Length; i++)
-                {
-                    Initializer.Net.Layers[i].Weights = Weights[i];
-                }
-            }
+                Initializer result = new Initializer();
+                NetParametersVM.SynchronizeModelToVM();
+                result.Net = result.GetNet(_netParameters);
+                result.Trainer = result.GetTrainer(result.Net, _trainerParameters);
+                // Initializer.Trainer.SomethingHappend += Trainer_SomethingHappend;
 
-            Initializer.Trainer = new Trainer(Initializer.Net, _netParameters);
-            Initializer.Trainer.SomethingHappend += Trainer_SomethingHappend;
+                return result;
+            });
         }
 
         #endregion
@@ -338,9 +313,9 @@ namespace AIDemoUI.ViewModels
         }
         void Trainer_SomethingHappend(string whatHappend)
         {
-            foreach (var layerVM in NetParametersVM.LayerVMs)
+            foreach (var layerVM in NetParametersVM.LayerParameterVMs)
             {
-                layerVM.OnLayerUpdate();
+                //layerVM.OnLayerUpdate();
             }
             ProgressBarValue += ObserverGap;
             ProgressBarText = whatHappend;
