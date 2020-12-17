@@ -6,7 +6,6 @@ using NNet_InputProvider;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -23,14 +22,17 @@ namespace AIDemoUI.ViewModels
 
         INetParameters _netParameters;
         ITrainerParameters _trainerParameters;
-        IRelayCommand importSamplesCommand;
-        IAsyncCommand loadNetCommandAsync, saveNetCommandAsync;
+        IRelayCommand importSamplesCommand, saveCreatedNetCommand;
+        IAsyncCommand loadNetCommandAsync, saveNetCommandAsync, loadInitializedNetCommandAsync;
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
         ObservableCollection<LayerParametersVM> layerParameterVMs;
         bool isWithBias_Global, areParametersGlobal;
         float weightMin_Global, weightMax_Global, biasMin_Global, biasMax_Global;
+        FileInfo fullyInitializedNetFileInfo;
+        RunningMode mode;
+        string fileName;
 
         public NetParametersVM(INetParameters netParameters, ITrainerParameters trainerParameters)
         {
@@ -41,7 +43,6 @@ namespace AIDemoUI.ViewModels
             SampleImportWindow = new SampleImportWindow();
 
             SetDefaultValues();
-            LayerParameterVMs.CollectionChanged += OnLayerParameterVMsChanged;
         }
 
         #region helpers
@@ -73,61 +74,31 @@ namespace AIDemoUI.ViewModels
             EpochCount = 10;
         }
 
-        private void LayerParametersVM_PropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
-        {
-            string suffix = "_Execute";
-
-            switch (eventArgs.PropertyName.Replace(suffix, ""))
-            {
-                case nameof(LayerParametersVM.AddCommand):
-                    AddLayerParametersVM(sender as LayerParametersVM);
-                    break;
-                case nameof(LayerParametersVM.DeleteCommand):
-                    DeleteLayerParametersVM(sender as LayerParametersVM);
-                    break;
-                case nameof(LayerParametersVM.MoveLeftCommand):
-                    MoveLayerParametersVMLeft(sender as LayerParametersVM);
-                    break;
-                case nameof(LayerParametersVM.MoveRightCommand):
-                    MoveLayerParametersVMRight(sender as LayerParametersVM);
-                    break;
-                default:
-                    break;
-            }
-        }
-
-        #region helpers
-
-        void AddLayerParametersVM(LayerParametersVM layerParametersVM)
-        {
-            int newIndex = LayerParameterVMs.IndexOf(layerParametersVM) + 1;
-            LayerParametersVM newLayerParametersVM = new LayerParametersVM(newIndex);
-            newLayerParametersVM.PropertyChanged += LayerParametersVM_PropertyChanged;
-            LayerParameterVMs.Insert(newIndex, newLayerParametersVM);
-        }
-        void DeleteLayerParametersVM(LayerParametersVM layerParametersVM)
-        {
-            LayerParameterVMs.Remove(layerParametersVM);
-        }
-        void MoveLayerParametersVMLeft(LayerParametersVM layerParametersVM)
-        {
-            int currentIndex = LayerParameterVMs.IndexOf(layerParametersVM);
-            LayerParameterVMs.Move(currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
-        }
-        void MoveLayerParametersVMRight(LayerParametersVM layerParametersVM)
-        {
-            int currentIndex = LayerParameterVMs.IndexOf(layerParametersVM);
-            LayerParameterVMs.Move(currentIndex, currentIndex < LayerParameterVMs.Count - 1 ? currentIndex + 1 : 0);
-        }
-
-        #endregion
-
         #endregion
 
         #endregion
 
         #region public
 
+        public enum RunningMode
+        {
+            Create, CreateAndSave, Load
+        }
+        public RunningMode Mode
+        {
+            get 
+            {
+                return mode;
+            }
+            set
+            {
+                if (mode != value)
+                {
+                    mode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public SampleImportWindow SampleImportWindow { get; set; }
         public ObservableCollection<LayerParametersVM> LayerParameterVMs
         {
@@ -270,6 +241,18 @@ namespace AIDemoUI.ViewModels
             }
         }
 
+        public bool AreParametersGlobal
+        {
+            get { return areParametersGlobal; }
+            set
+            {
+                if (areParametersGlobal != value)
+                {
+                    areParametersGlobal = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public void SynchronizeModelToVM()
         {
             _netParameters.LayersParameters = LayerParameterVMs.Select(x => x.LayerParameters).ToArray();
@@ -286,44 +269,63 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public bool AreParametersGlobal
+        //public FileInfo FullyInitializedNetFileInfo
+        //{
+        //    get { return fullyInitializedNetFileInfo; }
+        //    set
+        //    {
+        //        if (fullyInitializedNetFileInfo != value)
+        //        {
+        //            fullyInitializedNetFileInfo = value;
+        //            OnPropertyChanged();
+        //        }
+        //        OnPropertyChanged(nameof(Mode));
+        //    }
+        //}
+        public string FileName
         {
-            get { return areParametersGlobal; }
+            get { return fileName; }
             set
             {
-                if (areParametersGlobal != value)
+                if (fileName != value)
                 {
-                    areParametersGlobal = value;
+                    fileName = value;
                     OnPropertyChanged();
                 }
             }
+            //get { return FullyInitializedNetFileInfo?.Name; }
+            //set
+            //{
+            //    if (fileName != value)
+            //    {
+            //        if (string.IsNullOrEmpty(value))
+            //        {
+            //            FullyInitializedNetFileInfo = null;
+            //        }
+            //        else
+            //        {
+            //            FileInfo fi = new FileInfo(value);
+            //            if (fi.Exists)
+            //            {
+            //                // alert pop up
+            //                throw new NotImplementedException();
+            //            }
+            //            else
+            //            {
+            //                FullyInitializedNetFileInfo = fi;
+            //            }
+            //        }
+            //        fileName = value;
+            //        OnPropertyChanged();
+            //    }
+            //    OnPropertyChanged(nameof(Mode));
+            //}
         }
-
+        
         #endregion
 
         #region RelayCommand
 
-        #region I/O Commands
-
-        public IRelayCommand ImportSamplesCommand
-        {
-            get
-            {
-                if (importSamplesCommand == null)
-                {
-                    importSamplesCommand = new RelayCommand(ImportSamplesCommand_Execute, ImportSamplesCommand_CanExecute);
-                }
-                return importSamplesCommand;
-            }
-        }
-        void ImportSamplesCommand_Execute(object parameter)
-        {
-            SampleImportWindow.Show();
-        }
-        bool ImportSamplesCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
         public IAsyncCommand LoadNetCommandAsync
         {
             get
@@ -344,8 +346,8 @@ namespace AIDemoUI.ViewModels
                 {
                     Stream stream = openFileDialog.OpenFile();
                     BinaryFormatter b = new BinaryFormatter();
-                    NetParameters np = (NetParameters)b.Deserialize(stream);
-                    SetLoadedValues(np);
+                    SerializedParameters sp = (SerializedParameters)b.Deserialize(stream);
+                    SetLoadedValues(sp);
                 });
             }
         }
@@ -374,6 +376,11 @@ namespace AIDemoUI.ViewModels
             if (saveFileDialog.ShowDialog() == true)
             {
                 SynchronizeModelToVM();
+                SerializedParameters sp = new SerializedParameters()
+                {
+                    NetParameters = _netParameters,
+                    TrainerParameters = _trainerParameters
+                };
 
                 if (!string.IsNullOrEmpty(saveFileDialog.FileName))
                 {
@@ -381,7 +388,7 @@ namespace AIDemoUI.ViewModels
                     {
                         Stream stream = saveFileDialog.OpenFile();
                         BinaryFormatter b = new BinaryFormatter();
-                        b.Serialize(stream, _netParameters);
+                        b.Serialize(stream, sp);
                         stream.Close();
                     });
                 }
@@ -391,90 +398,156 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
+        public IRelayCommand ImportSamplesCommand
+        {
+            get
+            {
+                if (importSamplesCommand == null)
+                {
+                    importSamplesCommand = new RelayCommand(ImportSamplesCommand_Execute, ImportSamplesCommand_CanExecute);
+                }
+                return importSamplesCommand;
+            }
+        }
+        void ImportSamplesCommand_Execute(object parameter)
+        {
+            SampleImportWindow.Show();
+        }
+        bool ImportSamplesCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public IAsyncCommand LoadInitializedNetCommandAsync
+        {
+            get
+            {
+                if (loadInitializedNetCommandAsync == null)
+                {
+                    loadInitializedNetCommandAsync = new AsyncRelayCommand(LoadInitializedNetCommand_Execute, LoadInitializedNetCommand_CanExecute);
+                }
+                return loadInitializedNetCommandAsync;
+            }
+        }
+        async Task LoadInitializedNetCommand_Execute(object parameter)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            if (openFileDialog.ShowDialog() == true)
+            {
+                await Task.Run(() =>
+                {
+                    // FullyInitializedNetFileInfo = new FileInfo(openFileDialog.FileName);
+                    FileName = openFileDialog.FileName;
+                    Mode = RunningMode.Load;
+                    // Deactivate netParameters options
+                });
+            }
+        }
+        bool LoadInitializedNetCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public IRelayCommand SaveCreatedNetCommand
+        {
+            get
+            {
+                if (saveCreatedNetCommand == null)
+                {
+                    saveCreatedNetCommand = new RelayCommand(SaveCreatedNetCommand_Execute, SaveCreatedNetCommand_CanExecute);
+                }
+                return saveCreatedNetCommand;
+            }
+        }
+        void SaveCreatedNetCommand_Execute(object parameter)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Title = "Choose the location to save your newly created net at.";
+            saveFileDialog.DefaultExt = ".dat";
+            // saveFileDialog.Filter = "Text| *.txt";
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                // FullyInitializedNetFileInfo = new FileInfo(saveFileDialog.FileName);    // only before initializing?
+                FileName = saveFileDialog.FileName;
+                Mode = RunningMode.CreateAndSave;
+            }
+        }
+        bool SaveCreatedNetCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
 
         #region helpers
 
-        // in NP class:
-        void SerializeNetParameters()
+        void SetLoadedValues(SerializedParameters sp)
         {
-            //_netParameters.Layers = LayerVMs
-            //    .Select(x => x.Layer)
-            //    .ToArray();
-            //Stream stream = File.Open("temp.dat", FileMode.Create);
-            //BinaryFormatter b = new BinaryFormatter();
-            //b.Serialize(stream, _netParameters);
-            //stream.Close();
-        }
-        void DeSerializeNetParameters()
-        {
-            Stream stream = File.Open("temp.dat", FileMode.Open);
-            BinaryFormatter b = new BinaryFormatter();
-            _netParameters = (NetParameters)b.Deserialize(stream);
-            stream.Close();
-        }
-        void SetLoadedValues(NetParameters np)
-        {
-            // CostType = np.CostType; -> from trainerParameters
-            WeightInitType = np.WeightInitType;
+            WeightInitType = sp.NetParameters.WeightInitType;
             LayerParameterVMs = new ObservableCollection<LayerParametersVM>(
-                np.LayersParameters.Select(x => new LayerParametersVM(x)));
+                sp.NetParameters.LayersParameters.Select(x => new LayerParametersVM(x)));
 
             foreach (var layerParameterVM in LayerParameterVMs)
             {
                 layerParameterVM.PropertyChanged += LayerParametersVM_PropertyChanged;
             }
+
+            CostType = sp.TrainerParameters.CostType;
+            EpochCount = sp.TrainerParameters.Epochs;
+            LearningRate = sp.TrainerParameters.LearningRate;
+            LearningRateChange = sp.TrainerParameters.LearningRateChange;
         }
 
         #endregion
 
         #endregion
 
-        #endregion
+        #region LayerParametersVM_PropertyChanged
 
-        #region OnLayerParametersChanged
-
-        void OnLayerParameterVMsChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void LayerParametersVM_PropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
         {
-            switch (e.Action)
+            string suffix = "_Execute";
+
+            switch (eventArgs.PropertyName.Replace(suffix, ""))
             {
-                case NotifyCollectionChangedAction.Add:
-                    // Check if input layer has changed.
-                    // If 'yes': Notify 'InputValues'.
+                case nameof(LayerParametersVM.AddCommand):
+                    AddLayerParametersVM(sender as LayerParametersVM);
                     break;
-                case NotifyCollectionChangedAction.Remove:
-                    // Check if input layer has changed.
-                    // If 'yes': Notify 'InputValues'.
+                case nameof(LayerParametersVM.DeleteCommand):
+                    DeleteLayerParametersVM(sender as LayerParametersVM);
                     break;
-                case NotifyCollectionChangedAction.Replace:
-                    // Check if input layer has changed.
-                    // If 'yes': Notify 'InputValues'.
+                case nameof(LayerParametersVM.MoveLeftCommand):
+                    MoveLayerParametersVMLeft(sender as LayerParametersVM);
                     break;
-                case NotifyCollectionChangedAction.Move:
-                    // Check if input layer has changed.
-                    // If 'yes': Notify 'InputValues'.
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    // Check if input layer has changed.
-                    // If 'yes': Notify 'InputValues'.
+                case nameof(LayerParametersVM.MoveRightCommand):
+                    MoveLayerParametersVMRight(sender as LayerParametersVM);
                     break;
                 default:
                     break;
             }
-            UpdateIndeces();
         }
 
         #region helpers
 
-        void UpdateIndeces()
+        private void AddLayerParametersVM(LayerParametersVM layerParametersVM)
         {
-            for (int i = 0; i < LayerParameterVMs.Count; i++)
-            {
-                //LayerParameterVMs.ElementAt(i).Id = i;
-                //for (int k = 0; k < LayerParameterVMs.ElementAt(i).Inputs.Count; k++)
-                //{
-                //    LayerParameterVMs.ElementAt(i).Inputs[k] = 0f;
-                //}
-            }
+            int newIndex = LayerParameterVMs.IndexOf(layerParametersVM) + 1;
+            LayerParametersVM newLayerParametersVM = new LayerParametersVM(newIndex);
+            newLayerParametersVM.PropertyChanged += LayerParametersVM_PropertyChanged;
+            LayerParameterVMs.Insert(newIndex, newLayerParametersVM);
+        }
+        private void DeleteLayerParametersVM(LayerParametersVM layerParametersVM)
+        {
+            LayerParameterVMs.Remove(layerParametersVM);
+        }
+        private void MoveLayerParametersVMLeft(LayerParametersVM layerParametersVM)
+        {
+            int currentIndex = LayerParameterVMs.IndexOf(layerParametersVM);
+            LayerParameterVMs.Move(currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
+        }
+        private void MoveLayerParametersVMRight(LayerParametersVM layerParametersVM)
+        {
+            int currentIndex = LayerParameterVMs.IndexOf(layerParametersVM);
+            LayerParameterVMs.Move(currentIndex, currentIndex < LayerParameterVMs.Count - 1 ? currentIndex + 1 : 0);
         }
 
         #endregion

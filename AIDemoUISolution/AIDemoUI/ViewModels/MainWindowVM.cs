@@ -1,8 +1,6 @@
 ﻿using AIDemoUI.Commands;
-using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 using NNet_InputProvider;
-using System;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
@@ -11,9 +9,6 @@ namespace AIDemoUI.ViewModels
     {
         #region ctor & fields
 
-        INetParameters _netParameters;
-        ITrainerParameters _trainerParameters;
-        SampleSetParameters _sampleSetParameters;
         int observerGap, progressBarValue, progressBarMax;
         string progressBarText;
         bool paused, started, stepwise;
@@ -22,9 +17,9 @@ namespace AIDemoUI.ViewModels
 
         public MainWindowVM()
         {
-            _netParameters = new NetParameters();
-            _trainerParameters = new TrainerParameters();
-            NetParametersVM = new NetParametersVM(_netParameters, _trainerParameters);
+            NetParameters = new NetParameters();
+            TrainerParameters = new TrainerParameters();
+            NetParametersVM = new NetParametersVM(NetParameters, TrainerParameters);
             // NetParametersVM.OkBtnPressed += OnOkButtonPressedAsync;
 
             SetDefaultValues();
@@ -48,7 +43,10 @@ namespace AIDemoUI.ViewModels
 
         #region public
 
-        public NetParametersVM NetParametersVM { get; }
+        public NetParametersVM NetParametersVM { get; set; }
+        public INetParameters NetParameters { get; set; }
+        public ITrainerParameters TrainerParameters { get; set; }
+        public SampleSetParameters SampleSetParameters { get; set; }
         /// <summary>
         /// How many samples in training are skipped until the next ui-notification event.
         /// </summary>
@@ -179,39 +177,8 @@ namespace AIDemoUI.ViewModels
         }
         async Task RunCommandAsync_Execute(object parameter)
         {
-            // Use dedicated class (main/initializer/Start):
-            SampleImportVM vm = NetParametersVM.SampleImportWindow.DataContext as SampleImportVM;
-            _sampleSetParameters = vm.SelectedTemplate;
-
-            await Task.Run(async () =>
-            {
-                Paused = false;
-
-                SampleSet sampleSet = await GetSampleSetAsync();
-                Initializer initializer = await GetInitializerAsync();
-
-                ProgressBarValue = 0;
-                ProgressBarMax = _trainerParameters.Epochs * (_sampleSetParameters.TestingSamples + _sampleSetParameters.TrainingSamples);
-
-                ObserverGap = (int)Math.Round((decimal)(_sampleSetParameters.TrainingSamples + _sampleSetParameters.TestingSamples), 0);
-
-                if (Stepwise)
-                {
-                    // initializer.Trainer.Paused += Trainer_Paused;
-                    await initializer.Trainer.Train(sampleSet.TrainingSamples, sampleSet.TestingSamples, 0);
-                }
-                else
-                {
-                    try
-                    {
-                        await initializer.Trainer.Train(sampleSet.TrainingSamples, sampleSet.TestingSamples, ObserverGap);
-                    }
-                    catch (Exception e)
-                    {
-                        // throw;
-                    }
-                }
-            });
+            Paused = false;
+            await Start.Run(this);
         }
         bool RunCommandAsync_CanExecute(object parameter)
         {
@@ -270,33 +237,6 @@ namespace AIDemoUI.ViewModels
             }
             return true;
         }
-
-        #region helpers
-
-
-        async Task<SampleSet> GetSampleSetAsync()
-        {
-            SampleSet result = Creator.GetSampleSet(_sampleSetParameters);
-            await result.SetSamples();
-            return result;  // Task..
-        }
-        async Task<Initializer> GetInitializerAsync()
-        {
-            return await Task.Run(() =>
-            {
-                // Check if layer ids match their position in array.
-
-                Initializer result = new Initializer();
-                NetParametersVM.SynchronizeModelToVM();
-                result.Net = result.GetNet(_netParameters);
-                result.Trainer = result.GetTrainer(result.Net, _trainerParameters);
-                // Initializer.Trainer.SomethingHappend += Trainer_SomethingHappend;
-
-                return result;
-            });
-        }
-
-        #endregion
 
         #endregion
 

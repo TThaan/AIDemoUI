@@ -27,7 +27,7 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Column 1: 'LayerParameters' -->
+        <!-- Column 1: 'Layer Parameters' -->
         <Grid Grid.Column="0">
 
             <ListBox VerticalAlignment="Stretch"
@@ -49,70 +49,151 @@
 
         </Grid>
 
-        <!-- Column 2: NetParameters' and 'OK' button-->
+        <!-- Column 2: Net-/Trainer Parameters' and 'Import/Export -->
+        
         <StackPanel Grid.Column="1">
 
-            <Button Name="btnLoadNet" Command="{Binding LoadNetCommandAsync}" Content="Load Net"/>
-            <Button Name="btnSaveNet" Command="{Binding SaveNetCommandAsync}" Content="Save Net"/>
+            <!-- Load/Save Net Parameters -->
+            
+            <Border BorderBrush="Black" BorderThickness="3, 3 ,3 , 0">
+                <StackPanel>
+                    <TextBlock Text="Net &amp; Trainer Parameters" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10" FontSize="20"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                                Content="Load Net Parameters"
+                                Command="{Binding LoadNetCommandAsync}" 
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
+
+                        <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                                Content="Save Net Parameters"
+                                Command="{Binding LoadInitializedNetCommandAsync}" 
+                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Load/Save Complete Net -->
+            
+            <Border BorderBrush="Black" BorderThickness="3, 3, 3, 3">
+                <StackPanel>
+                    <TextBlock Text="Complete Net" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10" FontSize="20"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                            Content="Create"
+                            Command="{Binding SaveCreatedNetCommand}" 
+                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
+                        <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                            Content="Create &amp; Save"
+                            Command="{Binding SaveCreatedNetCommand}" 
+                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
+                        <Button Grid.Column="2" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                            Content="Load"
+                            Command="{Binding LoadInitializedNetCommandAsync}" 
+                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
+                    </Grid>
+                    
+                    <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                    
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Current Mode : " VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10" FontSize="16"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Mode}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10" FontSize="16"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Weight and Bias Parameters -->
             
             <Border BorderBrush="LightGray" BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="WeightMin" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
-                    <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
-                         Text="{Binding Path=WeightMin_Global}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="WeightMin" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" FontSize="16"/>
+                    <TextBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10" MinWidth="50"
+                         Text="{Binding Path=WeightMin_Global}" TextAlignment="Right" FontSize="16">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                         </TextBox.InputBindings>
                     </TextBox>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border BorderBrush="LightGray" BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="WeightMax" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
-                    <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
-                         Text="{Binding Path=WeightMax_Global}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="WeightMax" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" FontSize="16"/>
+                    <TextBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10" MinWidth="50"
+                         Text="{Binding Path=WeightMax_Global}" TextAlignment="Right" FontSize="16">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                         </TextBox.InputBindings>
                     </TextBox>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border BorderBrush="LightGray" BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="Using a Bias" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
-                    <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Using a Bias" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" FontSize="16"/>
+                    <CheckBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,5" FontSize="16"
                               IsChecked="{Binding IsWithBias_Global}">
                         <CheckBox.LayoutTransform>
                             <ScaleTransform ScaleX="2" ScaleY="2"/>
                         </CheckBox.LayoutTransform>
                     </CheckBox>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border BorderBrush="LightGray" BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="BiasMin" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
-                    <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
-                     Text="{Binding Path=BiasMin_Global}" IsEnabled="{Binding IsWithBias_Global}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="BiasMin" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" FontSize="16"/>
+                    <TextBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10" MinWidth="50"
+                     Text="{Binding Path=BiasMin_Global}" IsEnabled="{Binding IsWithBias_Global}" TextAlignment="Right" FontSize="16">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                         </TextBox.InputBindings>
                     </TextBox>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border BorderBrush="LightGray" BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="BiasMax" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
-                    <TextBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10"
-                     Text="{Binding Path=BiasMax_Global}" IsEnabled="{Binding IsWithBias_Global}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="BiasMax" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" FontSize="16"/>
+                    <TextBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,10" MinWidth="50"
+                     Text="{Binding Path=BiasMax_Global}" IsEnabled="{Binding IsWithBias_Global}" TextAlignment="Right" FontSize="16">
                         <TextBox.InputBindings>
                             <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                         </TextBox.InputBindings>
                     </TextBox>
-                </StackPanel>
+                </Grid>
             </Border>
 
             <Border BorderBrush="LightGray" BorderThickness="1">
@@ -176,12 +257,18 @@
             </Border>
             
             <!-- Import Samples Button -->
+
+            <Border BorderBrush="LightGray" BorderThickness="1">
+                <StackPanel>
+                    <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                            Content="Import Samples"
+                            Command="{Binding ImportSamplesCommand}" 
+                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
+                    <TextBlock Text="{Binding SampleImportWindow.DataContext.SelectedTemplate}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
+                </StackPanel>
+            </Border>
             
-            <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="Import Samples"
-                    Command="{Binding ImportSamplesCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>            
-            
-            
+
         </StackPanel>
 
     </Grid>

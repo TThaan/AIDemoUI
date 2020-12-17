@@ -8,7 +8,7 @@
         xmlns:sd="clr-namespace:AIDemoUI.SampleData"
         xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="900" Width="1600"
+        Title="MainWindow" Height="990" Width="1760"
         WindowStartupLocation="CenterScreen">
 
     <d:Window.DataContext>
