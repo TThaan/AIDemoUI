@@ -269,19 +269,6 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        //public FileInfo FullyInitializedNetFileInfo
-        //{
-        //    get { return fullyInitializedNetFileInfo; }
-        //    set
-        //    {
-        //        if (fullyInitializedNetFileInfo != value)
-        //        {
-        //            fullyInitializedNetFileInfo = value;
-        //            OnPropertyChanged();
-        //        }
-        //        OnPropertyChanged(nameof(Mode));
-        //    }
-        //}
         public string FileName
         {
             get { return fileName; }
@@ -293,33 +280,6 @@ namespace AIDemoUI.ViewModels
                     OnPropertyChanged();
                 }
             }
-            //get { return FullyInitializedNetFileInfo?.Name; }
-            //set
-            //{
-            //    if (fileName != value)
-            //    {
-            //        if (string.IsNullOrEmpty(value))
-            //        {
-            //            FullyInitializedNetFileInfo = null;
-            //        }
-            //        else
-            //        {
-            //            FileInfo fi = new FileInfo(value);
-            //            if (fi.Exists)
-            //            {
-            //                // alert pop up
-            //                throw new NotImplementedException();
-            //            }
-            //            else
-            //            {
-            //                FullyInitializedNetFileInfo = fi;
-            //            }
-            //        }
-            //        fileName = value;
-            //        OnPropertyChanged();
-            //    }
-            //    OnPropertyChanged(nameof(Mode));
-            //}
         }
         
         #endregion

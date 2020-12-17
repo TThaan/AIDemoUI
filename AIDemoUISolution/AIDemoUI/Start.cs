@@ -3,6 +3,7 @@ using NeuralNetBuilder;
 using NNet_InputProvider;
 using System;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using static AIDemoUI.ViewModels.NetParametersVM;
 
@@ -47,6 +48,8 @@ namespace AIDemoUI
                 {
                     try
                     {
+                        sampleSet.TrainingSamples = DeSerialize<Sample[]>(@"C:\Users\Jan_PC\Documents\_NeuralNetApp\TrainingData.dat");
+                        sampleSet.TestingSamples = DeSerialize<Sample[]>(@"C:\Users\Jan_PC\Documents\_NeuralNetApp\TestingData.dat");
                         await initializer.Trainer.Train(sampleSet.TrainingSamples, sampleSet.TestingSamples, _mainVM.ObserverGap);
                     }
                     catch (Exception e)
@@ -56,6 +59,26 @@ namespace AIDemoUI
                 }
             });
         }
+        #region helpers (debugging only)
+
+        static void Serialize<T>(T target, string fileName)
+        {
+            using (Stream stream = File.Open(fileName, FileMode.Create))// + ".dat"
+            {
+                BinaryFormatter bf = new BinaryFormatter();
+                bf.Serialize(stream, target);
+            }
+        }
+        static T DeSerialize<T>(string name)
+        {
+            using (Stream stream = File.Open(name, FileMode.Open))
+            {
+                BinaryFormatter bf = new BinaryFormatter();
+                return (T)bf.Deserialize(stream);
+            }
+        }
+
+        #endregion
 
         #endregion
 
