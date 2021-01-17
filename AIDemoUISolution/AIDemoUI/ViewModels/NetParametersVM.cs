@@ -46,7 +46,7 @@ namespace AIDemoUI.ViewModels
         }
 
         #region helpers
-
+        // In parameters class ?
         void SetDefaultValues()
         {
             AreParametersGlobal = true;

@@ -23,6 +23,7 @@ namespace AIDemoUI.ViewModels
             // NetParametersVM.OkBtnPressed += OnOkButtonPressedAsync;
 
             SetDefaultValues();
+
         }
 
         #region helpers
@@ -259,11 +260,6 @@ namespace AIDemoUI.ViewModels
                 //layerVM.OnLayerUpdate();
             }
             ProgressBarValue += ObserverGap;
-            ProgressBarText = whatHappend;
-            //Thread.Sleep(100);
-        }
-        void SampleCreator_SomethingHappend(string whatHappend)
-        {
             ProgressBarText = whatHappend;
             //Thread.Sleep(100);
         }

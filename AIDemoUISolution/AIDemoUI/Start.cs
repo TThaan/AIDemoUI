@@ -4,6 +4,7 @@ using NNet_InputProvider;
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
 using System.Threading.Tasks;
 using static AIDemoUI.ViewModels.NetParametersVM;
 
@@ -24,18 +25,20 @@ namespace AIDemoUI
             _mainVM = mainVM ?? throw new NullReferenceException($"{nameof(Run)}.ctor: " +
                     $"Parameter {nameof(mainVM)}.");
 
+            //
             SampleImportVM vm = _mainVM.NetParametersVM.SampleImportWindow.DataContext as SampleImportVM;
-            mainVM.SampleSetParameters = vm.SelectedTemplate;
+            _mainVM.SampleSetParameters = vm.SelectedTemplate;
 
             await Task.Run(async () =>
             {
                 _mainVM.Paused = false;
 
+                // ISampleSet ?
                 SampleSet sampleSet = await GetSampleSetAsync();
                 Initializer initializer = await GetInitializerAsync();
-
+                initializer.Trainer.StatusChanged += Trainer_StatusChanged;
+                _mainVM.ProgressBarMax = _mainVM.TrainerParameters.Epochs - 1;// * (_mainVM.SampleSetParameters.TestingSamples + _mainVM.SampleSetParameters.TrainingSamples)
                 _mainVM.ProgressBarValue = 0;
-                _mainVM.ProgressBarMax = _mainVM.TrainerParameters.Epochs * (_mainVM.SampleSetParameters.TestingSamples + _mainVM.SampleSetParameters.TrainingSamples);
 
                 _mainVM.ObserverGap = (int)Math.Round((decimal)(_mainVM.SampleSetParameters.TrainingSamples + _mainVM.SampleSetParameters.TestingSamples), 0);
 
@@ -59,6 +62,7 @@ namespace AIDemoUI
                 }
             });
         }
+
         #region helpers (debugging only)
 
         static void Serialize<T>(T target, string fileName)
@@ -87,6 +91,7 @@ namespace AIDemoUI
         static async Task<SampleSet> GetSampleSetAsync()
         {
             SampleSet result = Creator.GetSampleSet(_mainVM.SampleSetParameters);
+            result.StatusChanged += SampleSet_StatusChanged;
             await result.SetSamples();
             return result;  // Task..
         }
@@ -122,5 +127,24 @@ namespace AIDemoUI
 
         #endregion
 
+        #region events
+
+        private static void SampleSet_StatusChanged(object sender, NNet_InputProvider.StatusChangedEventArgs e)
+        {
+            _mainVM.ProgressBarText = e.Info;
+            Thread.Sleep(200);
+        }
+        private static void Trainer_StatusChanged(object sender, NeuralNetBuilder.StatusChangedEventArgs e)
+        {
+            ITrainer trainer = sender as ITrainer;
+
+            _mainVM.ProgressBarText = e.Info;
+            if (trainer != null)
+            {
+                _mainVM.ProgressBarValue = trainer.CurrentEpoch;
+            }
+        }
+
+        #endregion
     }
 }
