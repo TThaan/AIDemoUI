@@ -1,6 +1,7 @@
 ﻿using AIDemoUI.Commands;
 using AIDemoUI.Views;
 using Microsoft.Win32;
+using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 using NNet_InputProvider;
 using System;
@@ -30,7 +31,7 @@ namespace AIDemoUI.ViewModels
         ObservableCollection<LayerParametersVM> layerParameterVMs;
         bool isWithBias_Global, areParametersGlobal;
         float weightMin_Global, weightMax_Global, biasMin_Global, biasMax_Global;
-        FileInfo fullyInitializedNetFileInfo;
+        // FileInfo fullyInitializedNetFileInfo;
         RunningMode mode;
         string fileName;
 

@@ -1,4 +1,5 @@
 ﻿using AIDemoUI.ViewModels;
+using CustomLogger;
 using NeuralNetBuilder;
 using NNet_InputProvider;
 using System;
@@ -15,6 +16,7 @@ namespace AIDemoUI
         #region fields
 
         static MainWindowVM _mainVM;
+        static ILogger _logger;
 
         #endregion
 
@@ -25,7 +27,12 @@ namespace AIDemoUI
             _mainVM = mainVM ?? throw new NullReferenceException($"{nameof(Run)}.ctor: " +
                     $"Parameter {nameof(mainVM)}.");
 
-            //
+            _logger = null;
+            if (_mainVM.IsLogged)
+            {
+                // _logger = new CustomLogger.Logger(Path.GetTempPath() + "AIDemoUI.txt");  // Declare 'string path'.
+            }
+
             SampleImportVM vm = _mainVM.NetParametersVM.SampleImportWindow.DataContext as SampleImportVM;
             _mainVM.SampleSetParameters = vm.SelectedTemplate;
 
@@ -36,9 +43,8 @@ namespace AIDemoUI
                 // ISampleSet ?
                 SampleSet sampleSet = await GetSampleSetAsync();
                 Initializer initializer = await GetInitializerAsync();
-                initializer.Trainer.StatusChanged += Trainer_StatusChanged;
-                _mainVM.ProgressBarMax = _mainVM.TrainerParameters.Epochs - 1;// * (_mainVM.SampleSetParameters.TestingSamples + _mainVM.SampleSetParameters.TrainingSamples)
-                _mainVM.ProgressBarValue = 0;
+                _mainVM.ProgressBarMax = _mainVM.TrainerParameters.Epochs;// * (_mainVM.SampleSetParameters.TestingSamples + _mainVM.SampleSetParameters.TrainingSamples)
+                // _mainVM.ProgressBarValue = 1;
 
                 _mainVM.ObserverGap = (int)Math.Round((decimal)(_mainVM.SampleSetParameters.TrainingSamples + _mainVM.SampleSetParameters.TestingSamples), 0);
 
@@ -51,8 +57,8 @@ namespace AIDemoUI
                 {
                     try
                     {
-                        sampleSet.TrainingSamples = DeSerialize<Sample[]>(@"C:\Users\Jan_PC\Documents\_NeuralNetApp\TrainingData.dat");
-                        sampleSet.TestingSamples = DeSerialize<Sample[]>(@"C:\Users\Jan_PC\Documents\_NeuralNetApp\TestingData.dat");
+                        // sampleSet.TrainingSamples = DeSerialize<Sample[]>(@"C:\Users\Jan_PC\Documents\_NeuralNetApp\TrainingData.dat");
+                        // sampleSet.TestingSamples = DeSerialize<Sample[]>(@"C:\Users\Jan_PC\Documents\_NeuralNetApp\TestingData.dat");
                         await initializer.Trainer.Train(sampleSet.TrainingSamples, sampleSet.TestingSamples, _mainVM.ObserverGap);
                     }
                     catch (Exception e)
@@ -61,6 +67,8 @@ namespace AIDemoUI
                     }
                 }
             });
+
+            _logger?.Dispose();
         }
 
         #region helpers (debugging only)
@@ -118,8 +126,8 @@ namespace AIDemoUI
                         break;
                 }
 
-                result.Trainer = result.GetTrainer(result.Net, _mainVM.TrainerParameters);
-                // Initializer.Trainer.SomethingHappend += Trainer_SomethingHappend;
+                result.Trainer = result.GetTrainer(result.Net, _mainVM.TrainerParameters, _logger);
+                result.Trainer.StatusChanged += Trainer_StatusChanged;
 
                 return result;
             });

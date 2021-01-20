@@ -11,6 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="CustomLogger">
+      <HintPath>..\..\..\CustomLogger\CustomLoggerSolution\CustomLogger\bin\Debug\netcoreapp3.1\CustomLogger.dll</HintPath>
+    </Reference>
     <Reference Include="MatrixHelper">
       <HintPath>..\..\..\MatrixHelper\MatrixHelperSolution\MatrixHelper\bin\Debug\netcoreapp3.1\MatrixHelper.dll</HintPath>
     </Reference>

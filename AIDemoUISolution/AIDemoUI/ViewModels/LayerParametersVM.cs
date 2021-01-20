@@ -1,4 +1,5 @@
 ﻿using AIDemoUI.Commands;
+using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 
 namespace AIDemoUI.ViewModels

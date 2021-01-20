@@ -11,7 +11,7 @@ namespace AIDemoUI.ViewModels
 
         int observerGap, progressBarValue, progressBarMax;
         string progressBarText;
-        bool paused, started, stepwise;
+        bool paused, started, stepwise, isLogged = true;
         IAsyncCommand runCommandAsync;
         IRelayCommand stepCommand;
 
@@ -143,6 +143,21 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
+        public bool IsLogged
+        {
+            get
+            {
+                return isLogged;
+            }
+            set
+            {
+                if (isLogged != value)
+                {
+                    isLogged = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public string RunButtonText => Started ? "Cancel" : "Run";
         public string StepButtonText => Paused ? "Continue" : "Pause";
         public string ProgressBarText
@@ -252,16 +267,6 @@ namespace AIDemoUI.ViewModels
 
             }
             return Task.FromResult(0);
-        }
-        void Trainer_SomethingHappend(string whatHappend)
-        {
-            foreach (var layerVM in NetParametersVM.LayerParameterVMs)
-            {
-                //layerVM.OnLayerUpdate();
-            }
-            ProgressBarValue += ObserverGap;
-            ProgressBarText = whatHappend;
-            //Thread.Sleep(100);
         }
 
         #endregion
