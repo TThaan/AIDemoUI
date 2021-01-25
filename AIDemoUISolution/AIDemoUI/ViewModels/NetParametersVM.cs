@@ -1,9 +1,9 @@
 ﻿using AIDemoUI.Commands;
 using AIDemoUI.Views;
+using DeepLearningDataProvider;
 using Microsoft.Win32;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
-using NNet_InputProvider;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

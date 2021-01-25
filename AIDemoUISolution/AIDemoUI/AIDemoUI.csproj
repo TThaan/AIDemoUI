@@ -14,14 +14,14 @@
     <Reference Include="CustomLogger">
       <HintPath>..\..\..\CustomLogger\CustomLoggerSolution\CustomLogger\bin\Debug\netcoreapp3.1\CustomLogger.dll</HintPath>
     </Reference>
+    <Reference Include="DeepLearningDataProvider">
+      <HintPath>..\..\..\DeepLearningDataProvider\DeepLearningDataProviderSolution\DeepLearningDataProvider\bin\Debug\netcoreapp3.1\DeepLearningDataProvider.dll</HintPath>
+    </Reference>
     <Reference Include="MatrixHelper">
       <HintPath>..\..\..\MatrixHelper\MatrixHelperSolution\MatrixHelper\bin\Debug\netcoreapp3.1\MatrixHelper.dll</HintPath>
     </Reference>
     <Reference Include="NeuralNetBuilder">
       <HintPath>..\..\..\NeuralNetBuilder\NeuralNetBuilderSolution\NeuralNetBuilder\bin\Debug\netcoreapp3.1\NeuralNetBuilder.dll</HintPath>
-    </Reference>
-    <Reference Include="NNet_InputProvider">
-      <HintPath>..\..\..\NNet_InputProvider\NNet_InputProviderSolution\NNet_InputProvider\bin\Debug\netcoreapp3.1\NNet_InputProvider.dll</HintPath>
     </Reference>
   </ItemGroup>
 

@@ -1,7 +1,7 @@
 ﻿using AIDemoUI.ViewModels;
 using CustomLogger;
+using DeepLearningDataProvider;
 using NeuralNetBuilder;
-using NNet_InputProvider;
 using System;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -30,7 +30,7 @@ namespace AIDemoUI
             _logger = null;
             if (_mainVM.IsLogged)
             {
-                // _logger = new CustomLogger.Logger(Path.GetTempPath() + "AIDemoUI.txt");  // Declare 'string path'.
+                _logger = new CustomLogger.Logger(Path.GetTempPath() + "AIDemoUI.txt");  // Declare 'string path'.
             }
 
             SampleImportVM vm = _mainVM.NetParametersVM.SampleImportWindow.DataContext as SampleImportVM;
@@ -63,7 +63,7 @@ namespace AIDemoUI
                     }
                     catch (Exception e)
                     {
-                        // throw;
+                        throw;
                     }
                 }
             });
@@ -137,7 +137,7 @@ namespace AIDemoUI
 
         #region events
 
-        private static void SampleSet_StatusChanged(object sender, NNet_InputProvider.StatusChangedEventArgs e)
+        private static void SampleSet_StatusChanged(object sender, DeepLearningDataProvider.StatusChangedEventArgs e)
         {
             _mainVM.ProgressBarText = e.Info;
             Thread.Sleep(200);

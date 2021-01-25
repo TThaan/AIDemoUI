@@ -41,7 +41,7 @@ namespace AIDemoUI.Commands
                 }
                 catch(Exception e)
                 {
-                    // ..
+                    throw;
                 }
                 finally
                 {

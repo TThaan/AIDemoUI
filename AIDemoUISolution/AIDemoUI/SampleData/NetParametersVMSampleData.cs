@@ -1,6 +1,5 @@
 ﻿using AIDemoUI.ViewModels;
 using NeuralNetBuilder.FactoriesAndParameters;
-using System.Collections.ObjectModel;
 
 namespace AIDemoUI.SampleData
 {

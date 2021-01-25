@@ -1,7 +1,7 @@
 ﻿using AIDemoUI.Commands;
 using AIDemoUI.Views;
+using DeepLearningDataProvider;
 using Microsoft.Win32;
-using NNet_InputProvider;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;

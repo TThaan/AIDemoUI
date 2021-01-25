@@ -1,4 +1,4 @@
-﻿using NNet_InputProvider;
+﻿using DeepLearningDataProvider;
 using System;
 using System.Globalization;
 using System.Windows.Data;

@@ -1,6 +1,6 @@
 ﻿using AIDemoUI.Commands;
+using DeepLearningDataProvider;
 using NeuralNetBuilder.FactoriesAndParameters;
-using NNet_InputProvider;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
@@ -11,7 +11,7 @@ namespace AIDemoUI.ViewModels
 
         int observerGap, progressBarValue, progressBarMax;
         string progressBarText;
-        bool paused, started, stepwise, isLogged = true;
+        bool paused, started, stepwise, isLogged;
         IAsyncCommand runCommandAsync;
         IRelayCommand stepCommand;
 
