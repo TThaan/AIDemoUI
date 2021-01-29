@@ -13,11 +13,11 @@
         Name="thisWindow">
 
     <d:Window.DataContext>
-        <sd:SampleImportVMSampleData/>
+        <sd:SampleImportWindowVMSampleData/>
     </d:Window.DataContext>
 
     <Window.DataContext>
-        <vm:SampleImportVM/>
+        <vm:SampleImportWindowVM/>
     </Window.DataContext>
 
     <Window.Resources>

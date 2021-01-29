@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
 {
-    public class SampleImportVM : BaseVM
+    public class SampleImportWindowVM : BaseVM
     {
         #region ctor & fields
 
@@ -18,7 +18,7 @@ namespace AIDemoUI.ViewModels
         IAsyncCommand setSamplesLocationCommandAsync;
         SampleSetParameters selectedSampleSetParameters;
 
-        public SampleImportVM()
+        public SampleImportWindowVM()
         {
             SetDefaultValues();
         }

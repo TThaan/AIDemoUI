@@ -1,4 +1,5 @@
 ﻿using AIDemoUI.ViewModels;
+using System;
 
 namespace AIDemoUI.SampleData
 {
@@ -8,9 +9,9 @@ namespace AIDemoUI.SampleData
 
         public MainWindowVMSampleData()
         {
-            ProgressBarMax = 10000;
-            ProgressBarValue = 3800;
-            ProgressBarText = $"Current Accuracy: 0.625";
+            NetParametersVM = new NetParametersVMSampleData(this);
+            StatusVM = new StatusVMSampleData(this);
+            StartStopVM = new StartStopVMSampleData(this);
         }
 
         #endregion

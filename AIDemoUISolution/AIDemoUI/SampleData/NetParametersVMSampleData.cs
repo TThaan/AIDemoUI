@@ -1,5 +1,4 @@
 ﻿using AIDemoUI.ViewModels;
-using NeuralNetBuilder.FactoriesAndParameters;
 
 namespace AIDemoUI.SampleData
 {
@@ -7,17 +6,14 @@ namespace AIDemoUI.SampleData
     {
         #region ctor
 
-        public NetParametersVMSampleData()
-            :base(new NetParameters(), new TrainerParameters())
-        {
-            // LayerParameterVMs = new ObservableCollection<LayerParametersVM>();
-            // LayerParameterVMs.CollectionChanged += OnLayerVMsChanged;
-            // LayerParameterVMs.Add(new LayerParametersVM(0));
-            // LayerParameterVMs.Add(new LayerParametersVM(1));
-            // LayerParameterVMs.Add(new LayerParametersVM(2));
-            // LayerParameterVMs.Add(new LayerParametersVM(3));
-            // LayerParameterVMs.Add(new LayerParametersVM(4));
-        }
+        /// <summary>
+        /// Ctor used by NetParametersVMSampleData
+        /// </summary>
+        public NetParametersVMSampleData() : base(new MainWindowVM()) { }
+        /// <summary>
+        /// Ctor used by MainVMSampleData
+        /// </summary>
+        public NetParametersVMSampleData(MainWindowVM mainVM) : base(mainVM) { }
 
         #endregion
     }

@@ -2,11 +2,11 @@
 
 namespace AIDemoUI.SampleData
 {
-    public class SampleImportVMSampleData : SampleImportVM
+    public class SampleImportWindowVMSampleData : SampleImportWindowVM
     {
         #region ctor
 
-        public SampleImportVMSampleData()
+        public SampleImportWindowVMSampleData()
             : base()
         {
         }

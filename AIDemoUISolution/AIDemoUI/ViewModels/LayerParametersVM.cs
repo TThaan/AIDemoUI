@@ -4,19 +4,21 @@ using NeuralNetBuilder.FactoriesAndParameters;
 
 namespace AIDemoUI.ViewModels
 {
-    public class LayerParametersVM : BaseVM
+    public class LayerParametersVM : BaseSubVM
     {
-        #region ctor & fields
+        #region fields & ctor
 
         IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand;
 
-        public LayerParametersVM(int id)
+        public LayerParametersVM(MainWindowVM mainVM, int id)
+            : base(mainVM)
         {
             LayerParameters = new LayerParameters();
             Id = id;
             SetDefaultValues();
         }
-        public LayerParametersVM(ILayerParameters layerParameters)
+        public LayerParametersVM(MainWindowVM mainVM, ILayerParameters layerParameters)
+            : base(mainVM)
         {
             LayerParameters = layerParameters;
         }
@@ -26,15 +28,11 @@ namespace AIDemoUI.ViewModels
         void SetDefaultValues()
         {
             N = 4;
-            IsWithBias = false;
             WeightMin = -1;
             WeightMax = 1;
-            BiasMin = -1;
-            BiasMax = 1;
+            BiasMin = 0;
+            BiasMax = 0;
             ActivationType = ActivationType.ReLU;
-
-            // Inputs = Enumerable.Range(0, N).Select(x => 0f).ToObservableCollection();
-            // Outputs = Enumerable.Range(0, N).Select(x => 0f).ToObservableCollection();
         }
 
         #endregion
@@ -64,18 +62,6 @@ namespace AIDemoUI.ViewModels
                 if (LayerParameters.NeuronsPerLayer != value)
                 {
                     LayerParameters.NeuronsPerLayer = value;                    
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public bool IsWithBias
-        {
-            get { return LayerParameters.IsWithBias; }
-            set
-            {
-                if (LayerParameters.IsWithBias != value)
-                {
-                    LayerParameters.IsWithBias = value;
                     OnPropertyChanged();
                 }
             }
@@ -158,7 +144,12 @@ namespace AIDemoUI.ViewModels
         }
         void AddCommand_Execute(object parameter)
         {
-            OnPropertyChanged();
+            // OnPropertyChanged();
+            int newIndex = Id + 1;
+            LayerParametersVM newLayerParametersVM = new LayerParametersVM(_mainVM, newIndex);
+            // newLayerParametersVM.PropertyChanged += LayerParametersVM_PropertyChanged;
+            _mainVM.NetParametersVM.LayerParameterVMs.Insert(newIndex, newLayerParametersVM);
+            AdjustIdsToNewPositions();
         }
         bool AddCommand_CanExecute(object parameter)
         {
@@ -177,7 +168,10 @@ namespace AIDemoUI.ViewModels
         }
         void DeleteCommand_Execute(object parameter)
         {
-            OnPropertyChanged();
+            // wa LayerParameters & ..VMs as IDisposable?
+            // OnPropertyChanged();
+            _mainVM.NetParametersVM.LayerParameterVMs.Remove(this);
+            AdjustIdsToNewPositions();
         }
         bool DeleteCommand_CanExecute(object parameter)
         {
@@ -196,8 +190,11 @@ namespace AIDemoUI.ViewModels
         }
         void MoveLeftCommand_Execute(object parameter)
         {
-            OnPropertyChanged();
-            
+            // OnPropertyChanged();
+            int currentIndex = Id;
+            _mainVM.NetParametersVM.LayerParameterVMs.Move(
+                currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
+            AdjustIdsToNewPositions();
         }
         bool MoveLeftCommand_CanExecute(object parameter)
         {
@@ -216,13 +213,29 @@ namespace AIDemoUI.ViewModels
         }
         void MoveRightCommand_Execute(object parameter)
         {
-            OnPropertyChanged();
+            // OnPropertyChanged();
+            int currentIndex = Id;
+            _mainVM.NetParametersVM.LayerParameterVMs.Move(
+                currentIndex, currentIndex < _mainVM.NetParametersVM.LayerParameterVMs.Count - 1 ? currentIndex + 1 : 0);
+            AdjustIdsToNewPositions();
         }
         bool MoveRightCommand_CanExecute(object parameter)
         {
             return true;
         }
 
+        #region helpers
+
+        private void AdjustIdsToNewPositions()
+        {
+            for (int i = 0; i < _mainVM.NetParametersVM.LayerParameterVMs.Count; i++)
+            {
+                _mainVM.NetParametersVM.LayerParameterVMs[i].Id = i;
+            }
+        }
+
+        #endregion
+        
         #endregion
     }
 }
