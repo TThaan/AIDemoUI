@@ -53,67 +53,6 @@
         
         <StackPanel Grid.Column="1">
 
-            <!-- Load/Save Net Parameters (better as button + window?) (In any case: like (or incl?) SampleImport! As drop down menu?) -->
-            
-            <Border BorderBrush="Black" BorderThickness="3, 3 ,3 , 0">
-                <StackPanel>
-                    <TextBlock Text="Net &amp; Trainer Parameters" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10" FontSize="20"/>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                                Content="Load Net Parameters"
-                                Command="{Binding LoadNetCommandAsync}" 
-                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
-
-                        <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                                Content="Save Net Parameters"
-                                Command="{Binding SaveNetCommandAsync}" 
-                                CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
-            <!-- Load/Save Complete Net -->
-            
-            <Border BorderBrush="Black" BorderThickness="3, 3, 3, 3">
-                <StackPanel>
-                    <TextBlock Text="Complete Net" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10" FontSize="20"/>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Button MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                            Content="Create"
-                            Command="{Binding SaveCreatedNetCommand}" 
-                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
-                        <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                            Content="Create &amp; Save"
-                            Command="{Binding SaveCreatedNetCommand}" 
-                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
-                        <Button Grid.Column="2" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                            Content="Load"
-                            Command="{Binding LoadInitializedNetCommandAsync}" 
-                            CommandParameter="{Binding RelativeSource={RelativeSource Mode=Self}}"/>
-                    </Grid>
-                    
-                    <TextBlock Text="{Binding FileName}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
-                    
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="Current Mode : " VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10" FontSize="16"/>
-                        <TextBlock Grid.Column="1" Text="{Binding Mode}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,10" FontSize="16"/>
-                    </Grid>
-                </StackPanel>
-            </Border>
-
             <!-- Weight and Bias Parameters -->
 
             <Border BorderBrush="LightGray" BorderThickness="1">

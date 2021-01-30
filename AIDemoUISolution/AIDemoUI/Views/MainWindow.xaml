@@ -8,8 +8,10 @@
         xmlns:sd="clr-namespace:AIDemoUI.SampleData"
         xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
         mc:Ignorable="d"
+        
         Title="MainWindow" Height="990" Width="1760"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" ResizeMode="NoResize">
 
     <d:Window.DataContext>
         <sd:MainWindowVMSampleData/>
@@ -29,12 +31,6 @@
         <DataTemplate x:Key="StartStopView">
             <views:StartStopView/>
         </DataTemplate>
-        <!--<ControlTemplate x:Key="SamplesImportWindow1" TargetType="{x:Type Window}">
-            <views:SampleImportWindow/>
-        </ControlTemplate>-->
-        <!--<Window x:Key="SIWindow">
-            <views:SampleImportWindow/>
-        </Window>-->
     </Window.Resources>
 
     <Grid Name="thisRootElement">
@@ -43,28 +39,61 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="9*"/>
+            <RowDefinition Height=".25*"/>
+            <RowDefinition Height="7.75*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ContentControl Grid.Column="0" Grid.ColumnSpan="2"
+        <!-- Nav Bar -->
+
+        <Menu Name="ImportExportMenu" Grid.Row="0" HorizontalAlignment="Left" Width="150">
+            <MenuItem Width="150" Height="25" Margin="0" Padding="0">
+                <MenuItem.Header>
+                    <Label Content="Im/Export" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                </MenuItem.Header>
+
+                <Label Content="Load Parameters" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                    <Label.InputBindings>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding LoadParametersCommandAsync}"/>
+                    </Label.InputBindings>
+                </Label>
+                <Label Content="Save Parameters" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                    <Label.InputBindings>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding SaveParametersCommandAsync}"/>
+                    </Label.InputBindings>
+                </Label>
+                <Separator/>
+                <Label Content="Load Initialized Net" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                    <Label.InputBindings>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding LoadInitializedNetCommandAsync}"/>
+                    </Label.InputBindings>
+                </Label>
+                <Label Content="Save Initialized Net" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                    <Label.InputBindings>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding SaveInitializedNetCommandAsync}"/>
+                    </Label.InputBindings>
+                </Label>
+
+            </MenuItem>
+        </Menu>
+
+        <Button x:Name="ExitButton" Grid.Column="1" HorizontalAlignment="Right" Width="25" Content="X" Command="{Binding ExitCommand}"/>
+        
+        <!-- Sub Views -->
+        
+        <ContentControl Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
                         Name="NetParametersCC"
                         Content="{Binding Path=NetParametersVM}"
                         ContentTemplate="{StaticResource NetParametersView}"/>
 
-        <ContentControl Grid.Column="0" Grid.Row="1"
+        <ContentControl Grid.Column="0" Grid.Row="2"
                         Name="StatusCC"
                         Content="{Binding Path=StatusVM}"
                         ContentTemplate="{StaticResource StatusView}"/>
 
-        <ContentControl Grid.Column="1" Grid.Row="1"
+        <ContentControl Grid.Column="1" Grid.Row="2"
                         Name="StartStopCC"
                         Content="{Binding Path=StartStopVM}"
                         ContentTemplate="{StaticResource StartStopView}"/>
-
-        <!--<Window Name="SamplesImport"
-                Content="{Binding Path=SampleImportWindowVM}">
-        </Window>-->
-        <!--ContentTemplate="{StaticResource SIWindow}"-->
     </Grid>
 </Window>

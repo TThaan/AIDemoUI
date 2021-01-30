@@ -97,17 +97,18 @@ namespace AIDemoUI.ViewModels
         }
         public void SampleSet_StatusChanged(object sender, DeepLearningDataProvider.StatusChangedEventArgs e)
         {
-            _mainVM.StatusVM.ProgressBarText = e.Info;
+            ProgressBarText = e.Info;
             Thread.Sleep(200);
         }
         public void Trainer_StatusChanged(object sender, NeuralNetBuilder.StatusChangedEventArgs e)
         {
             ITrainer trainer = sender as ITrainer;
 
-            _mainVM.StatusVM.ProgressBarText = e.Info;
+            ProgressBarText = e.Info;
             if (trainer != null)
             {
-                _mainVM.StatusVM.ProgressBarValue = trainer.CurrentEpoch;
+                ProgressBarMax = trainer.Epochs;
+                ProgressBarValue = trainer.CurrentEpoch;
             }
         }
 

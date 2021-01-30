@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace AIDemoUI.ViewModels
 {
@@ -21,15 +22,12 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        IRelayCommand saveCreatedNetCommand;
-        IAsyncCommand loadNetCommandAsync, saveNetCommandAsync, loadInitializedNetCommandAsync;
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
         ObservableCollection<LayerParametersVM> layerParameterVMs;
         bool areParametersGlobal;
         float weightMin_Global, weightMax_Global, biasMin_Global, biasMax_Global;
-        // FileInfo fullyInitializedNetFileInfo;
 
         public NetParametersVM(MainWindowVM mainVM)
             : base(mainVM)
@@ -73,21 +71,6 @@ namespace AIDemoUI.ViewModels
 
         public INetParameters NetParameters { get; set; }
         public ITrainerParameters TrainerParameters { get; set; }
-        public NetCreationMode Mode
-        {
-            get 
-            {
-                return NetParameters.Mode;
-            }
-            set
-            {
-                if (NetParameters.Mode != value)
-                {
-                    NetParameters.Mode = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
         public string FileName
         {
             get { return NetParameters.FileName; }
@@ -244,171 +227,6 @@ namespace AIDemoUI.ViewModels
         
         #endregion
 
-        #region RelayCommand
-
-        public IAsyncCommand LoadNetCommandAsync
-        {
-            get
-            {
-                if (loadNetCommandAsync == null)
-                {
-                    loadNetCommandAsync = new AsyncRelayCommand(LoadNetCommand_Execute, LoadNetCommand_CanExecute);
-                }
-                return loadNetCommandAsync;
-            }
-        }
-        async Task LoadNetCommand_Execute(object parameter)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-            {
-                await Task.Run(() =>
-                {
-                    Stream stream = openFileDialog.OpenFile();
-                    BinaryFormatter b = new BinaryFormatter();
-                    SerializedParameters sp = (SerializedParameters)b.Deserialize(stream);
-                    SetLoadedValues(sp);
-                });
-            }
-        }
-        bool LoadNetCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        // Rename to SaveParametersCommandAsync!
-        public IAsyncCommand SaveNetCommandAsync
-        {
-            get
-            {
-                if (saveNetCommandAsync == null)
-                {
-                    saveNetCommandAsync = new AsyncRelayCommand(SaveNetCommand_Execute, SaveNetCommand_CanExecute);
-                }
-                return saveNetCommandAsync;
-            }
-        }
-        async Task SaveNetCommand_Execute(object parameter)
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Title = "Save this Template";
-            saveFileDialog.DefaultExt = ".txt";
-            // saveFileDialog.Filter = "Text| *.txt";
-
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                SwitchBetweenGlobalAndLocalParameters();
-                SerializedParameters sp = new SerializedParameters()
-                {
-                    NetParameters = NetParameters,
-                    TrainerParameters = TrainerParameters
-            };
-
-                if (!string.IsNullOrEmpty(saveFileDialog.FileName))
-                {
-                    await Task.Run(() =>
-                    {
-                        Stream stream = saveFileDialog.OpenFile();
-                        BinaryFormatter b = new BinaryFormatter();
-                        b.Serialize(stream, sp);
-                        stream.Close();
-                    });
-                }
-            }
-        }
-        bool SaveNetCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        public IAsyncCommand LoadInitializedNetCommandAsync
-        {
-            get
-            {
-                if (loadInitializedNetCommandAsync == null)
-                {
-                    loadInitializedNetCommandAsync = new AsyncRelayCommand(LoadInitializedNetCommand_Execute, LoadInitializedNetCommand_CanExecute);
-                }
-                return loadInitializedNetCommandAsync;
-            }
-        }
-        async Task LoadInitializedNetCommand_Execute(object parameter)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-            {
-                await Task.Run(() =>
-                {
-                    // FullyInitializedNetFileInfo = new FileInfo(openFileDialog.FileName);
-                    FileName = openFileDialog.FileName;
-                    Mode = NetCreationMode.Load;
-                    // Deactivate netParameters options
-                });
-            }
-        }
-        bool LoadInitializedNetCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-
-        public IRelayCommand SaveCreatedNetCommand
-        {
-            get
-            {
-                if (saveCreatedNetCommand == null)
-                {
-                    saveCreatedNetCommand = new RelayCommand(SaveCreatedNetCommand_Execute, SaveCreatedNetCommand_CanExecute);
-                }
-                return saveCreatedNetCommand;
-            }
-        }
-        void SaveCreatedNetCommand_Execute(object parameter)
-        {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Title = "Choose the location to save your newly created net at.";
-            saveFileDialog.DefaultExt = ".dat";
-            // saveFileDialog.Filter = "Text| *.txt";
-
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                // FullyInitializedNetFileInfo = new FileInfo(saveFileDialog.FileName);    // only before initializing?
-                FileName = saveFileDialog.FileName;
-                Mode = NetCreationMode.CreateAndSave;
-            }
-        }
-        bool SaveCreatedNetCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        
-        #region helpers
-
-        void SetLoadedValues(SerializedParameters sp)
-        {
-            NetParameters = sp.NetParameters;
-            LayerParameterVMs = new ObservableCollection<LayerParametersVM>(
-                sp.NetParameters.LayersParameters.Select(x => new LayerParametersVM(_mainVM, x)));
-            TrainerParameters = sp.TrainerParameters;
-
-            // After loading serialized parameters each local property gets set to it's stored value.
-            // So the value of AreParametersGlobal can be set to false here by default
-            // and the global properties can be set to the parameters of the first layer.
-            // This way they are correct in the case of AreParametersGlobal being true
-            // whereas they get ignored otherwise.
-            AreParametersGlobal = false;
-            WeightMin_Global = sp.NetParameters.LayersParameters[0].WeightMin;
-            WeightMax_Global = sp.NetParameters.LayersParameters[0].WeightMax;
-            BiasMin_Global = sp.NetParameters.LayersParameters[0].BiasMin;
-            BiasMax_Global = sp.NetParameters.LayersParameters[0].BiasMax;
-
-            // Notify the UI (via properties in NetParametersVM  and LayerParametersVMs)
-            // about changed values in NetParameters and LayerParameters.
-            OnAllPropertiesChanged();
-        }
-
-        #endregion
-
-        #endregion
-
         #region LayerParametersVM_CollectionChanged
 
         private void LayerParameterVMs_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -430,7 +248,7 @@ namespace AIDemoUI.ViewModels
             base.OnPropertyChanged(propertyName);
         }
 
-        #region
+        #region helpers
 
         /// <summary>
         /// Only the model's (NetParameters, LayerParameters) values get adapted to the global/local values.
@@ -463,6 +281,7 @@ namespace AIDemoUI.ViewModels
         }
 
         #endregion
+
         #endregion
     }
 }

@@ -1,10 +1,8 @@
 ﻿using AIDemoUI.Commands;
-using CustomLogger;
 using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using System;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
@@ -14,9 +12,10 @@ namespace AIDemoUI.ViewModels
         #region fields & ctor
         
         bool paused, started, stepwise, isLogged;
-        IAsyncCommand runCommandAsync;
+        string logName;
+        IAsyncCommand getNetCommandAsync, getTrainerCommandAsync, getSamplesCommandAsync, trainCommandAsync;
         IRelayCommand stepCommand;
-
+        
         public StartStopVM(MainWindowVM mainVM)
             : base(mainVM)
         {
@@ -31,6 +30,7 @@ namespace AIDemoUI.ViewModels
             Paused = true;
             IsLogged = false;
             Stepwise = false;
+            LogName = Path.GetTempPath() + "AIDemoUI.txt";
         }
 
         #endregion
@@ -39,6 +39,9 @@ namespace AIDemoUI.ViewModels
 
         #region public
 
+        public SampleSet SampleSet { get; set; }    // ISampleSet
+        public INet Net { get; set; }
+        public ITrainer Trainer { get; set; }
         public bool Started
         {
             get
@@ -51,7 +54,7 @@ namespace AIDemoUI.ViewModels
                 {
                     started = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(RunButtonText));
+                    OnPropertyChanged(nameof(TrainButtonText));
                     OnSubViewModelChanged();
                 }
             }
@@ -73,7 +76,7 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public string RunButtonText => Started ? "Cancel" : "Run";
+        public string TrainButtonText => Started ? "Cancel" : "Run";
         public string StepButtonText => Paused ? "Continue" : "Pause";
         public bool Stepwise
         {
@@ -105,78 +108,108 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-
-        #region helpers (debugging only)
-
-        static void Serialize<T>(T target, string fileName)
+        public string LogName
         {
-            using (Stream stream = File.Open(fileName, FileMode.Create))// + ".dat"
+            get
             {
-                BinaryFormatter bf = new BinaryFormatter();
-                bf.Serialize(stream, target);
+                return logName;
+            }
+            set
+            {
+                if (logName != value)
+                {
+                    logName = value;
+                    OnPropertyChanged();
+                }
             }
         }
-        static T DeSerialize<T>(string name)
-        {
-            using (Stream stream = File.Open(name, FileMode.Open))
-            {
-                BinaryFormatter bf = new BinaryFormatter();
-                return (T)bf.Deserialize(stream);
-            }
-        }
-
-        #endregion
 
         #endregion
 
         #region Commands
 
-        public IAsyncCommand RunCommandAsync
+        public IAsyncCommand GetNetCommandAsync
         {
             get
             {
-                if (runCommandAsync == null)
+                if (getNetCommandAsync == null)
                 {
-                    runCommandAsync = new AsyncRelayCommand(RunCommandAsync_Execute, RunCommandAsync_CanExecute);
+                    getNetCommandAsync = new AsyncRelayCommand(GetNetCommandAsync_Execute, x => true);
                 }
-                return runCommandAsync;
+                return getNetCommandAsync;
+            }
+        }
+        private async Task GetNetCommandAsync_Execute(object parameter)
+        {
+            Net = await Task.Run(() => Initializer.GetNet(_mainVM.NetParametersVM.NetParameters));
+        }
+        public IAsyncCommand GetTrainerCommandAsync
+        {
+            get
+            {
+                if (getTrainerCommandAsync == null)
+                {
+                    getTrainerCommandAsync = new AsyncRelayCommand(GetTrainerCommandAsync_Execute, x => true);
+                }
+                return getTrainerCommandAsync;
+            }
+        }
+        private async Task GetTrainerCommandAsync_Execute(object parameter)
+        {
+            Trainer = await Task.Run(() => Initializer.GetTrainer(Net, _mainVM.NetParametersVM.TrainerParameters)); // Pass Net copy?
+            Trainer.StatusChanged += _mainVM.StatusVM.Trainer_StatusChanged;    // DIC
+        }
+        public IAsyncCommand GetSamplesCommandAsync
+        {
+            get
+            {
+                if (getSamplesCommandAsync == null)
+                {
+                    getSamplesCommandAsync = new AsyncRelayCommand(GetSamplesCommandAsync_Execute, x => true);
+                }
+                return getSamplesCommandAsync;
+            }
+        }
+        private async Task GetSamplesCommandAsync_Execute(object parameter)
+        {
+            SampleSet = Creator.GetSampleSet((_mainVM.SampleImportWindow.DataContext as SampleImportWindowVM).SelectedTemplate);
+            SampleSet.StatusChanged += _mainVM.StatusVM.SampleSet_StatusChanged;
+            await SampleSet.SetSamples();  // DIC
+        }
+        public IAsyncCommand TrainCommandAsync
+        {
+            get
+            {
+                if (trainCommandAsync == null)
+                {
+                    trainCommandAsync = new AsyncRelayCommand(TrainCommandAsync_Execute, TrainCommandAsync_CanExecute);
+                }
+                return trainCommandAsync;
             }
         }
         // No Relay here..
-        private async Task RunCommandAsync_Execute(object parameter)
+        private async Task TrainCommandAsync_Execute(object parameter)
         {
             Paused = false;
 
-            // Create and dispose of Logger in Trainer? Just pass bool 'IsLogged' and path?
-            using (ILogger logger = IsLogged
-                ? new CustomLogger.Logger(Path.GetTempPath() + "AIDemoUI.txt")  // Declare 'string path'.
-                : null)
+            if (Stepwise)
             {
-                SampleSet sampleSet = await GetSampleSetAsync();    // ISampleSet ?
-                IInitializer initializer = await GetInitializerAsync(logger);
-                initializer.Trainer.StatusChanged += _mainVM.StatusVM.Trainer_StatusChanged;
-
-                if (Stepwise)
+                if (!IsLogged) LogName = default;
+                await Trainer.Train(SampleSet.TrainingSamples, SampleSet.TestingSamples, LogName);
+            }
+            else
+            {
+                try
                 {
-                    // initializer.Trainer.Paused += Trainer_Paused;
-                    await initializer.Trainer.Train(sampleSet.TrainingSamples, sampleSet.TestingSamples);
+                    await Trainer.Train(SampleSet.TrainingSamples, SampleSet.TestingSamples);
                 }
-                else
+                catch (Exception e)
                 {
-                    try
-                    {
-                        // sampleSet.TrainingSamples = DeSerialize<Sample[]>(@"C:\Users\Jan_PC\Documents\_NeuralNetApp\TrainingData.dat");
-                        // sampleSet.TestingSamples = DeSerialize<Sample[]>(@"C:\Users\Jan_PC\Documents\_NeuralNetApp\TestingData.dat");
-                        await initializer.Trainer.Train(sampleSet.TrainingSamples, sampleSet.TestingSamples);
-                    }
-                    catch (Exception e)
-                    {
-                        throw;
-                    }
+                    throw;
                 }
             }
         }
-        private bool RunCommandAsync_CanExecute(object parameter)
+        private bool TrainCommandAsync_CanExecute(object parameter)
         {
             SampleImportWindowVM vm = _mainVM.SampleImportWindow.DataContext as SampleImportWindowVM;
 
@@ -234,23 +267,6 @@ namespace AIDemoUI.ViewModels
             //}
             return true;
         }
-
-        #region helpers
-
-        private async Task<SampleSet> GetSampleSetAsync()
-        {
-            SampleSet result = Creator.GetSampleSet((_mainVM.SampleImportWindow.DataContext as SampleImportWindowVM).SelectedTemplate);
-            result.StatusChanged += _mainVM.StatusVM.SampleSet_StatusChanged;
-            await result.SetSamples();  // use DI container
-            return result;  // Task..            
-        }
-        private async Task<IInitializer> GetInitializerAsync(ILogger logger)
-        {
-            return await Task.Run(() => new Initializer(
-                _mainVM.NetParametersVM.NetParameters, _mainVM.NetParametersVM.TrainerParameters, logger));
-        }
-
-        #endregion
 
         #endregion
 
