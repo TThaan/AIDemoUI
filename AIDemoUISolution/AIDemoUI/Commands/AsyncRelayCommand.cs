@@ -58,7 +58,7 @@ namespace AIDemoUI.Commands
         public bool CanExecute(object parameter = null)
         {
             return
-                !_isExecuting &&
+                // !_isExecuting &&
                 (_canExecute?.Invoke(parameter) ?? true);
         }
         public event EventHandler CanExecuteChanged

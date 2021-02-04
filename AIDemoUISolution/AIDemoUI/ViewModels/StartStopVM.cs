@@ -1,7 +1,6 @@
 ﻿using AIDemoUI.Commands;
 using DeepLearningDataProvider;
 using NeuralNetBuilder;
-using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -10,11 +9,14 @@ namespace AIDemoUI.ViewModels
     public class StartStopVM : BaseSubVM
     {
         #region fields & ctor
-        
-        bool paused, started, stepwise, isLogged;
+
+        INet net;
+        SampleSet sampleSet;
+        ITrainer trainer;
+        bool hasStarted, isLogged;
         string logName;
-        IAsyncCommand getNetCommandAsync, getTrainerCommandAsync, getSamplesCommandAsync, trainCommandAsync;
-        IRelayCommand stepCommand;
+        IAsyncCommand initializeNetCommandAsync, trainCommandAsync;
+        IRelayCommand importSamplesCommand;
         
         public StartStopVM(MainWindowVM mainVM)
             : base(mainVM)
@@ -26,10 +28,8 @@ namespace AIDemoUI.ViewModels
 
         void SetDefaultValues()
         {
-            Started = false;
-            Paused = true;
+            HasStarted = false;
             IsLogged = false;
-            Stepwise = false;
             LogName = Path.GetTempPath() + "AIDemoUI.txt";
         }
 
@@ -39,60 +39,93 @@ namespace AIDemoUI.ViewModels
 
         #region public
 
-        public SampleSet SampleSet { get; set; }    // ISampleSet
-        public INet Net { get; set; }
-        public ITrainer Trainer { get; set; }
-        public bool Started
+        public SampleSet SampleSet
         {
             get
             {
-                return started;
+                return sampleSet;
             }
             set
             {
-                if (started != value)
+                if (sampleSet != value)
                 {
-                    started = value;
+                    sampleSet = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(TrainButtonText));
                     OnSubViewModelChanged();
                 }
             }
         }
-        public bool Paused
+        public INet Net
         {
             get
             {
-                return paused;
+                return net;
             }
             set
             {
-                if (paused != value)
+                if (net != value)
                 {
-                    paused = value;
+                    net = value;
                     OnPropertyChanged();
-                    OnPropertyChanged(nameof(StepButtonText));
+                    OnPropertyChanged(nameof(TrainButtonText));
                     OnSubViewModelChanged();
                 }
             }
         }
-        public string TrainButtonText => Started ? "Cancel" : "Run";
-        public string StepButtonText => Paused ? "Continue" : "Pause";
-        public bool Stepwise
+        public ITrainer Trainer
         {
             get
             {
-                return stepwise;
+                return trainer;
             }
             set
             {
-                if (stepwise != value)
+                if (trainer != value)
                 {
-                    stepwise = value;
+                    trainer = value;
                     OnPropertyChanged();
+                    OnPropertyChanged(nameof(TrainButtonText));
+                    OnSubViewModelChanged();
                 }
             }
         }
+        public bool HasStarted
+        {
+            get
+            {
+                return hasStarted;
+            }
+            set
+            {
+                if (hasStarted != value)
+                {
+                    hasStarted = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(TrainButtonText)); // Call in Base.OnPropChgd?
+                    OnSubViewModelChanged();
+                }
+            }
+        }
+        public bool IsPaused
+        {
+            get
+            {
+                return Trainer == null ? true : Trainer.IsPaused;
+            }
+            set
+            {
+                if (Trainer.IsPaused != value)
+                {
+                    Trainer.IsPaused = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(TrainButtonText));
+                    OnSubViewModelChanged();
+                }
+            }
+        }
+        public string TrainButtonText => GetTrainButtonText();
+        public string StepButtonText => "Step";
         public bool IsLogged
         {
             get
@@ -124,57 +157,52 @@ namespace AIDemoUI.ViewModels
             }
         }
 
+        #region helpers
+
+        private string GetTrainButtonText()
+        {
+            if (Net == null && SampleSet == null)
+            {
+                return "You need to initialize the net and\nimport a sample set to start training.";
+            }
+            else if (Net == null && SampleSet != null)
+            {
+                return "You need to initialize the net\nto start training.";
+            }
+            else if (Net != null && SampleSet == null)
+            {
+                return "You need to import a sample set\nto start training.";
+            }
+            else
+            {
+                return HasStarted && IsPaused 
+                    ? "Continue" 
+                    : HasStarted & !IsPaused 
+                        ? "Pause" 
+                        : "Train";
+            }
+        }
+
+        #endregion
+
         #endregion
 
         #region Commands
 
-        public IAsyncCommand GetNetCommandAsync
+        public IAsyncCommand InitializeNetCommandAsync
         {
             get
             {
-                if (getNetCommandAsync == null)
+                if (initializeNetCommandAsync == null)
                 {
-                    getNetCommandAsync = new AsyncRelayCommand(GetNetCommandAsync_Execute, x => true);
+                    initializeNetCommandAsync = new AsyncRelayCommand(InitializeNetCommandAsync_Execute, x => true);
                 }
-                return getNetCommandAsync;
+                return initializeNetCommandAsync;
             }
         }
-        private async Task GetNetCommandAsync_Execute(object parameter)
+        private async Task InitializeNetCommandAsync_Execute(object parameter)
         {
             Net = await Task.Run(() => Initializer.GetNet(_mainVM.NetParametersVM.NetParameters));
-        }
-        public IAsyncCommand GetTrainerCommandAsync
-        {
-            get
-            {
-                if (getTrainerCommandAsync == null)
-                {
-                    getTrainerCommandAsync = new AsyncRelayCommand(GetTrainerCommandAsync_Execute, x => true);
-                }
-                return getTrainerCommandAsync;
-            }
-        }
-        private async Task GetTrainerCommandAsync_Execute(object parameter)
-        {
-            Trainer = await Task.Run(() => Initializer.GetTrainer(Net, _mainVM.NetParametersVM.TrainerParameters)); // Pass Net copy?
-            Trainer.StatusChanged += _mainVM.StatusVM.Trainer_StatusChanged;    // DIC
-        }
-        public IAsyncCommand GetSamplesCommandAsync
-        {
-            get
-            {
-                if (getSamplesCommandAsync == null)
-                {
-                    getSamplesCommandAsync = new AsyncRelayCommand(GetSamplesCommandAsync_Execute, x => true);
-                }
-                return getSamplesCommandAsync;
-            }
-        }
-        private async Task GetSamplesCommandAsync_Execute(object parameter)
-        {
-            SampleSet = Creator.GetSampleSet((_mainVM.SampleImportWindow.DataContext as SampleImportWindowVM).SelectedTemplate);
-            SampleSet.StatusChanged += _mainVM.StatusVM.SampleSet_StatusChanged;
-            await SampleSet.SetSamples();  // DIC
         }
         public IAsyncCommand TrainCommandAsync
         {
@@ -187,100 +215,65 @@ namespace AIDemoUI.ViewModels
                 return trainCommandAsync;
             }
         }
-        // No Relay here..
         private async Task TrainCommandAsync_Execute(object parameter)
         {
-            Paused = false;
+            bool isStepModeOn = (bool)parameter;
 
-            if (Stepwise)
+            if (Trainer == null)
             {
-                if (!IsLogged) LogName = default;
-                await Trainer.Train(SampleSet.TrainingSamples, SampleSet.TestingSamples, LogName);
+                Trainer = await Task.Run(() => Initializer.GetTrainer(Net.GetCopy(), _mainVM.NetParametersVM.TrainerParameters, SampleSet));
+                Trainer.StatusChanged += _mainVM.StatusVM.Trainer_StatusChanged;    // DIC
+            }
+
+            if (HasStarted)
+            {
+                if (IsPaused)
+                {
+                    if (!isStepModeOn) IsPaused = false;
+                    await Trainer.Train(IsLogged ? LogName : string.Empty);
+                }
+                else
+                {
+                    IsPaused = true;
+                }
             }
             else
             {
-                try
+                HasStarted = true;
+                if (!isStepModeOn) IsPaused = false;
+                await Trainer.Train(IsLogged ? LogName : string.Empty);
+                Net = Trainer.TrainedNet.GetCopy();
+
+                if (Trainer.IsFinished)
                 {
-                    await Trainer.Train(SampleSet.TrainingSamples, SampleSet.TestingSamples);
-                }
-                catch (Exception e)
-                {
-                    throw;
+                    await Trainer.Reset();
+                    IsPaused = true;
+                    HasStarted = false;
                 }
             }
         }
         private bool TrainCommandAsync_CanExecute(object parameter)
         {
-            SampleImportWindowVM vm = _mainVM.SampleImportWindow.DataContext as SampleImportWindowVM;
-
-            if (vm != null &&
-                (string.IsNullOrEmpty(vm.Url_TrainingLabels) ||
-                string.IsNullOrEmpty(vm.Url_TrainingImages) ||
-                string.IsNullOrEmpty(vm.Url_TestingLabels) ||
-                string.IsNullOrEmpty(vm.Url_TestingImages)))
-            {
-                return false;
-            }
-
-            return true;
+            return SampleSet != null && Net != null;
         }
-        public IRelayCommand StepCommand
+        public IRelayCommand ImportSamplesCommand
         {
             get
             {
-                if (stepCommand == null)
+                if (importSamplesCommand == null)
                 {
-                    stepCommand = new RelayCommand(StepCommand_Execute, StepCommand_CanExecute);
+                    importSamplesCommand = new RelayCommand(ImportSamplesCommand_Execute, ImportSamplesCommand_CanExecute);
                 }
-                return stepCommand;
+                return importSamplesCommand;
             }
         }
-        private void StepCommand_Execute(object parameter)
+        void ImportSamplesCommand_Execute(object parameter)
         {
-            //if (Paused)
-            //{
-            //    Paused = false;
-            //    Initializer.Trainer.Paused -= Trainer_Paused;
-            //}
-            //else
-            //{
-            //    Paused = true;
-            //    Initializer.Trainer.Paused += Trainer_Paused;
-            //    foreach (var layer in NetParametersVM.LayerVMs)
-            //    {
-            //        layer.OnLayerUpdate();
-            //    }
-            //    // Thread.Sleep(200);
-            //}
+            _mainVM.SampleImportWindow.Show();
         }
-        private bool StepCommand_CanExecute(object parameter)
+        bool ImportSamplesCommand_CanExecute(object parameter)
         {
-            //SampleImportVM vm = NetParametersVM.SampleImportWindow.DataContext as SampleImportVM;
-
-            //if (vm != null &&
-            //    string.IsNullOrEmpty(vm.Url_TrainingLabels) ||
-            //    string.IsNullOrEmpty(vm.Url_TrainingImages) ||
-            //    string.IsNullOrEmpty(vm.Url_TestingLabels) ||
-            //    string.IsNullOrEmpty(vm.Url_TestingImages))
-            //{
-            //    return false;
-            //}
             return true;
-        }
-
-        #endregion
-
-        #region Events Handling Methods (OK Button, Trainer)
-
-        Task Trainer_Paused(string stepFinished)
-        {
-            Paused = true;
-            _mainVM.StatusVM.ProgressBarText = stepFinished;
-            while (Paused == true)
-            {
-
-            }
-            return Task.FromResult(0);
         }
 
         #endregion

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:views="clr-namespace:AIDemoUI.Views"
              xmlns:sd="clr-namespace:AIDemoUI.SampleData"
              xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
@@ -14,6 +15,12 @@
         <sd:StartStopVMSampleData/>
     </d:UserControl.DataContext>
 
+    <UserControl.Resources>
+        <sys:Boolean x:Key="True">True</sys:Boolean>
+        <sys:Boolean x:Key="False">False</sys:Boolean>
+        <!--<conv:IntToBoolConverter x:Key="IntToBoolConverter"/>-->        
+    </UserControl.Resources>
+    
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -23,48 +30,35 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- IsStepwise Checkbox -->
+        <!-- Initialize Net Button -->
 
-        <Border Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="1">
-            <StackPanel>
-                <TextBlock Text="Log Math to File (slow!)" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,5"/>
-                <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10"
-                              IsChecked="{Binding IsLogged}">
-                    <CheckBox.LayoutTransform>
-                        <ScaleTransform ScaleX="1" ScaleY="1"/>
-                    </CheckBox.LayoutTransform>
-                </CheckBox>
-            </StackPanel>
-        </Border>
+        <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2">
+            <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                    Content="Initialize Net" Command="{Binding InitializeNetCommandAsync}"/>
+        </Grid>
 
-        <!-- IsStepwise Checkbox -->
+        <!-- Get Samples Button -->
 
-        <Border Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" BorderBrush="LightGray" BorderThickness="1">
-            <StackPanel>
-                <TextBlock Text="Step-by-Step" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,5"/>
-                <CheckBox VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,10"
-                              IsChecked="{Binding Stepwise}">
-                    <CheckBox.LayoutTransform>
-                        <ScaleTransform ScaleX="1" ScaleY="1"/>
-                    </CheckBox.LayoutTransform>
-                </CheckBox>
-            </StackPanel>
-        </Border>
+        <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
+            <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                    Content="Get Samples" Command="{Binding ImportSamplesCommand}"/>
+        </Grid>
 
         <!-- Train/Step Buttons -->
 
-        <Grid Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2">
+        <Grid Grid.Column="0" Grid.Row="2" Grid.RowSpan="2" Grid.ColumnSpan="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                        Content="{Binding TrainButtonText}" Command="{Binding TrainCommandAsync}"/>
+            <Button Name="StartButton" Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                    Content="{Binding TrainButtonText}" Command="{Binding TrainCommandAsync}" CommandParameter="{StaticResource False}"/>
             <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                        Content="{Binding StepButtonText}" Command="{Binding StepCommand}"/>
+                    Content="{Binding StepButtonText}" Command="{Binding TrainCommandAsync}" CommandParameter="{StaticResource True}"/>
         </Grid>
 
     </Grid>

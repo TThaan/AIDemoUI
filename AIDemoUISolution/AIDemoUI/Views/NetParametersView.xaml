@@ -18,7 +18,6 @@
         <DataTemplate x:Key="LayerParametersView">
             <views:LayerParametersView/>
         </DataTemplate>
-        <conv:IntToBoolConverter x:Key="IntToBoolConverter"/>
     </UserControl.Resources>
 
     <Grid Name="thisRootElement">

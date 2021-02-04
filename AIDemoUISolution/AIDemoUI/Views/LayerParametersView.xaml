@@ -14,9 +14,9 @@
         <sd:LayerParametersVMSampleData/>
     </d:UserControl.DataContext>
 
-    <UserControl.Resources>
+    <!--<UserControl.Resources>
         <conv:IntToBoolConverter x:Key="IntToBoolConverter"/>
-    </UserControl.Resources>
+    </UserControl.Resources>-->
 
     <Grid>
 

@@ -12,7 +12,7 @@ namespace AIDemoUI.Converters
         {
             try
             {
-                return (int)value == 0 ? true : false;
+                return (int)value == 0 ? false : true;
             }
             catch (Exception)
             {

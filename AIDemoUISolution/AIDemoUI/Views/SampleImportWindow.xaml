@@ -16,9 +16,9 @@
         <sd:SampleImportWindowVMSampleData/>
     </d:Window.DataContext>
 
-    <Window.DataContext>
+    <!--<Window.DataContext>
         <vm:SampleImportWindowVM/>
-    </Window.DataContext>
+    </Window.DataContext>-->
 
     <Window.Resources>
         <conv:BoolReversingConverter x:Key="BoolReversingConverter"/>
@@ -145,7 +145,7 @@
         
         <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
                         Content="O K"
-                        Command="{Binding OkCommand}" CommandParameter="{Binding ElementName=thisWindow}"/>
+                        Command="{Binding OkCommandAsync}" CommandParameter="{Binding ElementName=thisWindow}"/>
 
     </StackPanel>
 </Window>

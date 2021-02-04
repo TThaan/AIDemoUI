@@ -10,8 +10,6 @@ namespace AIDemoUI.SampleData
         public StartStopVMSampleData()
             : base(new MainWindowVM())
         {
-            Paused = true;
-            Stepwise = true;
         }
         /// <summary>
         /// Ctor used by MainVMSampleData
@@ -19,8 +17,6 @@ namespace AIDemoUI.SampleData
         public StartStopVMSampleData(MainWindowVM mainVM)
             : base(mainVM)
         {
-            Paused = true;
-            Stepwise = true;
         }
     }
 }

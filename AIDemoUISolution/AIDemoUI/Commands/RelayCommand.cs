@@ -35,9 +35,15 @@ namespace AIDemoUI.Commands
             add { CommandManager.RequerySuggested += value; }
             remove { CommandManager.RequerySuggested -= value; }
         }
+        //public event EventHandler CanExecuteChanged;              // Variant2
         public void Execute(object parameter)
         {
             execute(parameter);
+        }
+        public void RaiseCanExecuteChanged()
+        {
+            // CanExecuteChanged?.Invoke(this, EventArgs.Empty);    // Variant2
+            CommandManager.InvalidateRequerySuggested();
         }
 
         #endregion

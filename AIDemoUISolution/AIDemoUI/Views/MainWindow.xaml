@@ -31,6 +31,9 @@
         <DataTemplate x:Key="StartStopView">
             <views:StartStopView/>
         </DataTemplate>
+        <!--<DataTemplate DataType="{x:Type vm:SampleImportWindowVM}">
+            <views:SampleImportWindow/>
+        </DataTemplate>-->
     </Window.Resources>
 
     <Grid Name="thisRootElement">
@@ -40,16 +43,16 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height=".25*"/>
-            <RowDefinition Height="7.75*"/>
+            <RowDefinition Height="4.75*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Nav Bar -->
 
-        <Menu Name="ImportExportMenu" Grid.Row="0" HorizontalAlignment="Left" Width="150">
-            <MenuItem Width="150" Height="25" Margin="0" Padding="0">
+        <Menu Name="ImportExportMenu" Height="40" Grid.Row="0" HorizontalAlignment="Left" Width="150">
+            <MenuItem Width="150" Height="40" Margin="0" Padding="0">
                 <MenuItem.Header>
-                    <Label Content="Im/Export" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                    <Label Content="Im/Export" Width="150" VerticalAlignment="Bottom" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                 </MenuItem.Header>
 
                 <Label Content="Load Parameters" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
@@ -73,7 +76,12 @@
                         <MouseBinding Gesture="LeftClick" Command="{Binding SaveInitializedNetCommandAsync}"/>
                     </Label.InputBindings>
                 </Label>
-
+                <MenuItem IsCheckable="True" IsChecked="{Binding StartStopVM.IsLogged}" StaysOpenOnClick="True" HorizontalContentAlignment="Right">
+                    <MenuItem.Header>
+                        <Label Content="Log Math to File (slow!)" Width="150" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                    </MenuItem.Header>
+                </MenuItem>
+                
             </MenuItem>
         </Menu>
 

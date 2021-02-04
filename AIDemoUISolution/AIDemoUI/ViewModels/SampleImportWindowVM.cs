@@ -10,15 +10,15 @@ using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
 {
-    public class SampleImportWindowVM : BaseVM
+    public class SampleImportWindowVM : BaseSubVM
     {
         #region ctor & fields
 
-        IRelayCommand okCommand;
-        IAsyncCommand setSamplesLocationCommandAsync;
+        IAsyncCommand okCommandAsync, setSamplesLocationCommandAsync;
         SampleSetParameters selectedSampleSetParameters;
 
-        public SampleImportWindowVM()
+        public SampleImportWindowVM(MainWindowVM mainVM)
+            :base(mainVM)
         {
             SetDefaultValues();
         }
@@ -203,22 +203,29 @@ namespace AIDemoUI.ViewModels
         {
             return true;
         }
-        public IRelayCommand OkCommand
+        public IAsyncCommand OkCommandAsync
         {
             get
             {
-                if (okCommand == null)
+                if (okCommandAsync == null)
                 {
-                    okCommand = new RelayCommand(OkCommand_Execute, OkCommand_CanExecute);
+                    okCommandAsync = new AsyncRelayCommand(OkCommandAsync_Execute, OkCommandAsync_CanExecute);
                 }
-                return okCommand;
+                return okCommandAsync;
             }
         }
-        void OkCommand_Execute(object parameter)
-        {            
+        async Task OkCommandAsync_Execute(object parameter)
+        {
             (parameter as SampleImportWindow)?.Hide();
+
+            // Use a local variable to store the sample set in.
+            // So the TrainCommandAsync_CanExecute (enabling the 'Train' button) won't return 'true' too early.
+            SampleSet sampleSet = Creator.GetSampleSet((_mainVM.SampleImportWindow.DataContext as SampleImportWindowVM).SelectedTemplate);
+            sampleSet.StatusChanged += _mainVM.StatusVM.SampleSet_StatusChanged;  // DIC
+            await sampleSet.SetSamples();
+            _mainVM.StartStopVM.SampleSet = sampleSet;
         }
-        bool OkCommand_CanExecute(object parameter)
+        bool OkCommandAsync_CanExecute(object parameter)
         {
             //if (string.IsNullOrEmpty(Url_TrainingLabels) ||
             //    string.IsNullOrEmpty(Url_TrainingImages) ||
@@ -236,6 +243,7 @@ namespace AIDemoUI.ViewModels
 
         void OnSampleSetChanged([CallerMemberName] string propertyName = null)
         {
+            // redundant..
             OnPropertyChanged("Url_TrainingLabels");
             OnPropertyChanged("Url_TrainingImages");
             OnPropertyChanged("Url_TestingLabels");
