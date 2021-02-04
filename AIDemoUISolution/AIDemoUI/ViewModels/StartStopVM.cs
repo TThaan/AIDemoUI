@@ -13,7 +13,7 @@ namespace AIDemoUI.ViewModels
         INet net;
         SampleSet sampleSet;
         ITrainer trainer;
-        bool hasStarted, isLogged;
+        bool isStarted, isLogged;
         string logName;
         IAsyncCommand initializeNetCommandAsync, trainCommandAsync;
         IRelayCommand importSamplesCommand;
@@ -28,7 +28,7 @@ namespace AIDemoUI.ViewModels
 
         void SetDefaultValues()
         {
-            HasStarted = false;
+            IsStarted = false;
             IsLogged = false;
             LogName = Path.GetTempPath() + "AIDemoUI.txt";
         }
@@ -90,17 +90,17 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public bool HasStarted
+        public bool IsStarted
         {
             get
             {
-                return hasStarted;
+                return isStarted;
             }
             set
             {
-                if (hasStarted != value)
+                if (isStarted != value)
                 {
-                    hasStarted = value;
+                    isStarted = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(TrainButtonText)); // Call in Base.OnPropChgd?
                     OnSubViewModelChanged();
@@ -175,11 +175,22 @@ namespace AIDemoUI.ViewModels
             }
             else
             {
-                return HasStarted && IsPaused 
-                    ? "Continue" 
-                    : HasStarted & !IsPaused 
-                        ? "Pause" 
-                        : "Train";
+                if (IsStarted && IsPaused)
+                {
+                    return "Continue";
+                }
+                else if (!IsStarted && IsPaused)
+                {
+                    return "Train";
+                }
+                else if (IsStarted & !IsPaused)
+                {
+                    return "Pause";
+                }
+                else
+                {
+                    return "Error: The Trainer cannot be unstarted\nand unpaused at the same time.";
+                }
             }
         }
 
@@ -225,7 +236,7 @@ namespace AIDemoUI.ViewModels
                 Trainer.StatusChanged += _mainVM.StatusVM.Trainer_StatusChanged;    // DIC
             }
 
-            if (HasStarted)
+            if (IsStarted)
             {
                 if (IsPaused)
                 {
@@ -239,7 +250,7 @@ namespace AIDemoUI.ViewModels
             }
             else
             {
-                HasStarted = true;
+                IsStarted = true;
                 if (!isStepModeOn) IsPaused = false;
                 await Trainer.Train(IsLogged ? LogName : string.Empty);
                 Net = Trainer.TrainedNet.GetCopy();
@@ -248,7 +259,7 @@ namespace AIDemoUI.ViewModels
                 {
                     await Trainer.Reset();
                     IsPaused = true;
-                    HasStarted = false;
+                    IsStarted = false;
                 }
             }
         }
