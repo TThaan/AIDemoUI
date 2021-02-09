@@ -12,7 +12,7 @@ namespace AIDemoUI.SampleData
         {
             ProgressBarMax = 100;
             ProgressBarValue = 38;
-            ProgressBarText = $"Current Accuracy: 0.625";
+            ProgressBarText = $"Training...\n(Last Epoch's Accuracy: 0.625)";
         }
         /// <summary>
         /// Ctor used by MainVMSampleData
@@ -22,7 +22,7 @@ namespace AIDemoUI.SampleData
         {
             ProgressBarMax = 100;
             ProgressBarValue = 38;
-            ProgressBarText = $"Current Accuracy: 0.625";
+            ProgressBarText = $"Training...\n(Last Epoch's Accuracy: 0.625)";
         }
     }
 }

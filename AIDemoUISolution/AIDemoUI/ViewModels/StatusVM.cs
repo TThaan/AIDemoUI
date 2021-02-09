@@ -1,4 +1,5 @@
 ﻿using NeuralNetBuilder;
+using System.ComponentModel;
 using System.Threading;
 
 namespace AIDemoUI.ViewModels
@@ -7,7 +8,8 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        int progressBarValue, progressBarMax;
+        int epochs, currentEpoch, currentSample, progressBarValue, progressBarMax;
+        float lastEpochsAccuracy, currentTotalCost;
         string progressBarText;
 
         public StatusVM(MainWindowVM mainVM)
@@ -32,6 +34,81 @@ namespace AIDemoUI.ViewModels
 
         #region public
 
+        public int Epochs
+        {
+            get
+            {
+                return epochs;
+            }
+            set
+            {
+                if (epochs != value)
+                {
+                    epochs = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public int CurrentEpoch
+        {
+            get
+            {
+                return currentEpoch;
+            }
+            set
+            {
+                if (currentEpoch != value)
+                {
+                    currentEpoch = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public int CurrentSample
+        {
+            get
+            {
+                return currentSample;
+            }
+            set
+            {
+                if (currentSample != value)
+                {
+                    currentSample = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public float CurrentTotalCost
+        {
+            get
+            {
+                return currentTotalCost;
+            }
+            set
+            {
+                if (currentTotalCost != value)
+                {
+                    currentTotalCost = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public float LastEpochsAccuracy
+        {
+            get
+            {
+                return lastEpochsAccuracy;
+            }
+            set
+            {
+                if (lastEpochsAccuracy != value)
+                {
+                    lastEpochsAccuracy = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public int ProgressBarMax
         {
             get
@@ -102,13 +179,49 @@ namespace AIDemoUI.ViewModels
         }
         public void Trainer_StatusChanged(object sender, NeuralNetBuilder.StatusChangedEventArgs e)
         {
+            ProgressBarText = e.Info;
+        }
+        public void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
             ITrainer trainer = sender as ITrainer;
 
-            ProgressBarText = e.Info;
             if (trainer != null)
             {
-                ProgressBarMax = trainer.Epochs;
-                ProgressBarValue = trainer.CurrentEpoch;
+                switch (e.PropertyName)
+                {
+                    case nameof(trainer.CurrentSample):
+                        CurrentSample = trainer.CurrentSample;
+                        break;
+                    case nameof(trainer.CurrentTotalCost):
+                        CurrentTotalCost = trainer.CurrentTotalCost;
+                        break;
+                    case nameof(trainer.LastEpochsAccuracy):
+                        LastEpochsAccuracy = trainer.LastEpochsAccuracy;
+                        ProgressBarText = $"Training...\n(Last Epoch's Accuracy: {trainer.LastEpochsAccuracy})";
+                        break;
+                    case nameof(trainer.CurrentEpoch):
+                        CurrentEpoch = trainer.CurrentEpoch;
+                        ProgressBarValue = CurrentEpoch;
+                        break;
+                    case nameof(trainer.LearningRate):
+                        break;
+                    case nameof(trainer.Epochs):
+                        Epochs = trainer.Epochs;
+                        ProgressBarMax = Epochs;
+                        break;
+                    case nameof(trainer.IsStarted):
+                        _mainVM.StatusVM.ProgressBarMax = trainer.Epochs;
+                        _mainVM.StatusVM.ProgressBarText = $"Training...\nLast Epoch's Accuracy: {LastEpochsAccuracy}";
+                        break;
+                    case nameof(trainer.IsPaused):
+                        _mainVM.StatusVM.ProgressBarText = $"Training paused...\nLast Epoch's Accuracy: {LastEpochsAccuracy}";
+                        break;
+                    case nameof(trainer.IsFinished):
+                        _mainVM.StatusVM.ProgressBarText = $"Training finished.\nLast Epoch's Accuracy: {LastEpochsAccuracy}";
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 

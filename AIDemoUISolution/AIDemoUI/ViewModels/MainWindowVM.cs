@@ -3,6 +3,7 @@ using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using Microsoft.Win32;
 using NeuralNetBuilder;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -17,7 +18,9 @@ namespace AIDemoUI.ViewModels
         #region ctor & fields
 
         IRelayCommand exitCommand;
-        IAsyncCommand loadParametersCommandAsync, saveInitializedNetCommandAsync, saveParametersCommandAsync, loadInitializedNetCommandAsync;
+        IAsyncCommand 
+            loadParametersCommandAsync, saveInitializedNetCommandAsync, saveParametersCommandAsync, 
+            loadInitializedNetCommandAsync, enterLogNameCommandAsync;
 
         public MainWindowVM()
         {
@@ -83,12 +86,23 @@ namespace AIDemoUI.ViewModels
         async Task LoadParametersCommand_ExecuteAsync(object parameter)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Load Parameters";
+            openFileDialog.Filter = "Parameters|*.par";
+
             if (openFileDialog.ShowDialog() == true)
             {
                 await Task.Run(() =>
                 {
-                    SerializedParameters sp = GetSerializedParameters(openFileDialog);
-                    SetLoadedValues(sp);
+                    try
+                    {
+                        SerializedParameters sp = GetSerializedParameters(openFileDialog);
+                        SetLoadedValues(sp);
+                    }
+                    catch(Exception e)
+                    {
+                        MessageBox.Show($"That didn't work.\n({e.Message})");
+                        return;
+                    }
                 });
             }
         }
@@ -106,9 +120,9 @@ namespace AIDemoUI.ViewModels
         async Task SaveParameters_ExecuteAsync(object parameter)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Title = "Save this Template";
-            saveFileDialog.DefaultExt = ".txt";
-            // saveFileDialog.Filter = "Text| *.txt";
+            saveFileDialog.Title = "Save Parameters";
+            saveFileDialog.Filter = "Parameters| *.par";
+            saveFileDialog.DefaultExt = ".par";
 
             if (saveFileDialog.ShowDialog() == true)
             {
@@ -144,12 +158,23 @@ namespace AIDemoUI.ViewModels
         async Task LoadInitializedNetCommand_ExecuteAsync(object parameter)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Load Initialized Net";
+            openFileDialog.Filter = "Initialized Net|*.net";
+
             if (openFileDialog.ShowDialog() == true)
             {
                 await Task.Run(() =>
                 {
-                    NetParametersVM.FileName = openFileDialog.FileName;
-                    StartStopVM.Net = DeSerialize<INet>(openFileDialog.FileName);
+                    try
+                    {
+                        NetParametersVM.FileName = openFileDialog.FileName;
+                        StartStopVM.Net = DeSerialize<INet>(openFileDialog.FileName);
+                    }
+                    catch (Exception e)
+                    {
+                        MessageBox.Show($"That didn't work.\n({e.Message})");
+                        return;
+                    }
                 });
             }
         }
@@ -173,9 +198,9 @@ namespace AIDemoUI.ViewModels
             else
             {
                 SaveFileDialog saveFileDialog = new SaveFileDialog();
-                saveFileDialog.Title = "Choose the location to save your newly created net at.";
-                saveFileDialog.DefaultExt = ".dat";
-                // saveFileDialog.Filter = "Text| *.txt";
+                saveFileDialog.Title = "Save Initialized Net";
+                saveFileDialog.Filter = "Net| *.net";
+                saveFileDialog.DefaultExt = ".net";
 
                 if (saveFileDialog.ShowDialog() == true)
                 {
@@ -183,6 +208,35 @@ namespace AIDemoUI.ViewModels
                     {
                         NetParametersVM.FileName = saveFileDialog.FileName;
                         Serialize(StartStopVM.Net, NetParametersVM.FileName);
+                    });
+                }
+            }
+        }
+        public IAsyncCommand EnterLogNameCommandAsync
+        {
+            get
+            {
+                if (enterLogNameCommandAsync == null)
+                {
+                    enterLogNameCommandAsync = new AsyncRelayCommand(EnterLogName_ExecuteAsync, x => StartStopVM.IsLogged);
+                }
+                return enterLogNameCommandAsync;
+            }
+        }
+        async Task EnterLogName_ExecuteAsync(object parameter)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Title = "Enter LogName";
+            saveFileDialog.Filter = "Text| *.txt";
+            saveFileDialog.DefaultExt = ".txt";
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                if (!string.IsNullOrEmpty(saveFileDialog.FileName))
+                {
+                    await Task.Run(() =>
+                    {
+                        StartStopVM.LogName = saveFileDialog.FileName;
                     });
                 }
             }
@@ -221,7 +275,7 @@ namespace AIDemoUI.ViewModels
         }
         static void Serialize<T>(T target, string fileName)
         {
-            using (Stream stream = File.Open(fileName, FileMode.Create))// + ".dat"
+            using (Stream stream = File.Open(fileName, FileMode.Create))//
             {
                 BinaryFormatter bf = new BinaryFormatter();
                 bf.Serialize(stream, target);

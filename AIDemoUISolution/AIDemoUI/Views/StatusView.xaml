@@ -15,7 +15,28 @@
     </d:UserControl.DataContext>
 
     <Grid>
-            <ProgressBar Minimum="0" Maximum="{Binding ProgressBarMax}" Value="{Binding ProgressBarValue}"/>
-            <TextBlock Text="{Binding ProgressBarText}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <ProgressBar Grid.RowSpan="2" Grid.Column="1" Minimum="0" Maximum="{Binding ProgressBarMax}" Value="{Binding ProgressBarValue}"/>
+        <TextBlock Grid.Column="1" Text="{Binding ProgressBarText}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"/>
+        <Grid Height="50" Width="400" Grid.Row="1" VerticalAlignment="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Current Epoch"/>
+            <TextBlock Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" Text="{Binding CurrentEpoch}"/>
+            <TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Current Sample"/>
+            <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Text="{Binding CurrentSample}"/>
+
+        </Grid>
     </Grid>
 </UserControl>

@@ -215,6 +215,25 @@ namespace AIDemoUI.ViewModels
         {
             Net = await Task.Run(() => Initializer.GetNet(_mainVM.NetParametersVM.NetParameters));
         }
+        public IRelayCommand ImportSamplesCommand
+        {
+            get
+            {
+                if (importSamplesCommand == null)
+                {
+                    importSamplesCommand = new RelayCommand(ImportSamplesCommand_Execute, ImportSamplesCommand_CanExecute);
+                }
+                return importSamplesCommand;
+            }
+        }
+        void ImportSamplesCommand_Execute(object parameter)
+        {
+            _mainVM.SampleImportWindow.Show();
+        }
+        bool ImportSamplesCommand_CanExecute(object parameter)
+        {
+            return true;
+        }
         public IAsyncCommand TrainCommandAsync
         {
             get
@@ -233,7 +252,7 @@ namespace AIDemoUI.ViewModels
             if (Trainer == null)
             {
                 Trainer = await Task.Run(() => Initializer.GetTrainer(Net.GetCopy(), _mainVM.NetParametersVM.TrainerParameters, SampleSet));
-                Trainer.StatusChanged += _mainVM.StatusVM.Trainer_StatusChanged;    // DIC
+                Trainer.PropertyChanged += _mainVM.StatusVM.Trainer_PropertyChanged;
             }
 
             if (IsStarted)
@@ -266,25 +285,6 @@ namespace AIDemoUI.ViewModels
         private bool TrainCommandAsync_CanExecute(object parameter)
         {
             return SampleSet != null && Net != null;
-        }
-        public IRelayCommand ImportSamplesCommand
-        {
-            get
-            {
-                if (importSamplesCommand == null)
-                {
-                    importSamplesCommand = new RelayCommand(ImportSamplesCommand_Execute, ImportSamplesCommand_CanExecute);
-                }
-                return importSamplesCommand;
-            }
-        }
-        void ImportSamplesCommand_Execute(object parameter)
-        {
-            _mainVM.SampleImportWindow.Show();
-        }
-        bool ImportSamplesCommand_CanExecute(object parameter)
-        {
-            return true;
         }
 
         #endregion

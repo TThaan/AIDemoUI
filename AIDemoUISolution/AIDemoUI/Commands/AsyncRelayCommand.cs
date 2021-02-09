@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace AIDemoUI.Commands
@@ -41,7 +42,7 @@ namespace AIDemoUI.Commands
                 }
                 catch(Exception e)
                 {
-                    throw;
+                    MessageBox.Show($"Exception in {GetType().Name}.{nameof(ExecuteAsync)}.\n({e.Message})");
                 }
                 finally
                 {

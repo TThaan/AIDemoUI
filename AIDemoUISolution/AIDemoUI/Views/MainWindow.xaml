@@ -81,6 +81,11 @@
                         <Label Content="Log Math to File (slow!)" Width="150" HorizontalAlignment="Right" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                     </MenuItem.Header>
                 </MenuItem>
+                <Label Content="LogName" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+                    <Label.InputBindings>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding EnterLogNameCommandAsync}"/>
+                    </Label.InputBindings>
+                </Label>
                 
             </MenuItem>
         </Menu>
