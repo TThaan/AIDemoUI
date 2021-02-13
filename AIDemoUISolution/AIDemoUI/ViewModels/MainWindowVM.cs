@@ -1,13 +1,13 @@
 ﻿using AIDemoUI.Commands;
+using AIDemoUI.Factories;
 using AIDemoUI.Views;
-using DeepLearningDataProvider;
 using Microsoft.Win32;
 using NeuralNetBuilder;
 using System;
-using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -17,73 +17,51 @@ namespace AIDemoUI.ViewModels
     {
         #region ctor & fields
 
-        IRelayCommand exitCommand;
-        IAsyncCommand 
-            loadParametersCommandAsync, saveInitializedNetCommandAsync, saveParametersCommandAsync, 
-            loadInitializedNetCommandAsync, enterLogNameCommandAsync;
+        //private readonly ISessionContext _sessionContext;
 
-        public MainWindowVM()
+        public MainWindowVM(NetParametersVM netParametersVM, StartStopVM startStopVM, StatusVM statusVM, SampleImportWindow sampleImportWindow, LayerParametersVMFactory layerParametersVMFactory)
         {
-            NetParametersVM = new NetParametersVM(this);
-            StartStopVM = new StartStopVM(this);
-            StatusVM = new StatusVM(this);
-            SampleImportWindowVM = new SampleImportWindowVM(this);
-            SampleImportWindow = new SampleImportWindow()
-            { DataContext = SampleImportWindowVM };  // ...s..
+            //_sessionContext = sessionContext;
 
-            NetParametersVM.SubViewModelChanged += StatusVM.NetParametersVM_SubViewModelChanged;    // Consider a central SubViewModelChanged handling method in MainVM?
-            StartStopVM.SubViewModelChanged += StatusVM.StartStopVM_SubViewModelChanged;            // Consider a central SubViewModelChanged handling method in MainVM?
+            NetParametersVM = netParametersVM;
+            StartStopVM = startStopVM;
+            StatusVM = statusVM;
+            SampleImportWindow = sampleImportWindow;
+            LayerParametersVMFactory = layerParametersVMFactory;
 
-            SetDefaultValues();
+            // NetParametersVM.SubViewModelChanged += StatusVM.NetParametersVM_SubViewModelChanged;    // Consider a central SubViewModelChanged handling method in MainVM?
+            // StartStopVM.SubViewModelChanged += StatusVM.StartStopVM_SubViewModelChanged;            // Consider a central SubViewModelChanged handling method in MainVM?
         }
-
-        #region helpers
-
-        private void SetDefaultValues()
-        {
-            
-        }
-
-        #endregion
 
         #endregion
 
         #region public
 
-        public NetParametersVM NetParametersVM { get; set; }
-        public StatusVM StatusVM { get; set; }
-        public StartStopVM StartStopVM { get; set; }
-        public SampleImportWindowVM SampleImportWindowVM { get; set; }
-        public SampleImportWindow SampleImportWindow { get; set; }
-        public SampleSetParameters SampleSetParameters { get; set; }
+        public NetParametersVM NetParametersVM { get; }
+        public StatusVM StatusVM { get; }
+        public StartStopVM StartStopVM { get; }
+        public SampleImportWindow SampleImportWindow { get; }
+        // public SampleSetParameters SampleSetParameters { get; set; }
+        public LayerParametersVMFactory LayerParametersVMFactory { get; }
 
         #endregion
 
         #region Commands
 
-        public IRelayCommand ExitCommand
+        public IRelayCommand ExitCommand { get; set; }
+        public IAsyncCommand LoadParametersCommandAsync { get; set; }
+        public IAsyncCommand SaveParametersCommandAsync { get; set; }
+        public IAsyncCommand LoadInitializedNetCommandAsync { get; set; }
+        public IAsyncCommand SaveInitializedNetCommandAsync { get; set; }
+        public IAsyncCommand EnterLogNameCommandAsync { get; set; }
+
+        #region Executes
+
+        public void Exit(object parameter)
         {
-            get
-            {
-                if (exitCommand == null)
-                {
-                    exitCommand = new RelayCommand(x => Application.Current.Shutdown(), x => true);
-                }
-                return exitCommand;
-            }
+            Application.Current.Shutdown();
         }
-        public IAsyncCommand LoadParametersCommandAsync
-        {
-            get
-            {
-                if (loadParametersCommandAsync == null)
-                {
-                    loadParametersCommandAsync = new AsyncRelayCommand(LoadParametersCommand_ExecuteAsync, x => true);
-                }
-                return loadParametersCommandAsync;
-            }
-        }
-        async Task LoadParametersCommand_ExecuteAsync(object parameter)
+        public async Task LoadParametersAsync(object parameter)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "Load Parameters";
@@ -98,7 +76,7 @@ namespace AIDemoUI.ViewModels
                         SerializedParameters sp = GetSerializedParameters(openFileDialog);
                         SetLoadedValues(sp);
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         MessageBox.Show($"That didn't work.\n({e.Message})");
                         return;
@@ -106,18 +84,7 @@ namespace AIDemoUI.ViewModels
                 });
             }
         }
-        public IAsyncCommand SaveParametersCommandAsync
-        {
-            get
-            {
-                if (saveParametersCommandAsync == null)
-                {
-                    saveParametersCommandAsync = new AsyncRelayCommand(SaveParameters_ExecuteAsync, x => true);
-                }
-                return saveParametersCommandAsync;
-            }
-        }
-        async Task SaveParameters_ExecuteAsync(object parameter)
+        public async Task SaveParametersAsync(object parameter)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Save Parameters";
@@ -144,18 +111,7 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public IAsyncCommand LoadInitializedNetCommandAsync
-        {
-            get
-            {
-                if (loadInitializedNetCommandAsync == null)
-                {
-                    loadInitializedNetCommandAsync = new AsyncRelayCommand(LoadInitializedNetCommand_ExecuteAsync, x => true);
-                }
-                return loadInitializedNetCommandAsync;
-            }
-        }
-        async Task LoadInitializedNetCommand_ExecuteAsync(object parameter)
+        public async Task LoadInitializedNetAsync(object parameter)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "Load Initialized Net";
@@ -178,18 +134,7 @@ namespace AIDemoUI.ViewModels
                 });
             }
         }
-        public IAsyncCommand SaveInitializedNetCommandAsync
-        {
-            get
-            {
-                if (saveInitializedNetCommandAsync == null)
-                {
-                    saveInitializedNetCommandAsync = new AsyncRelayCommand(SaveInitializedNetCommand_ExecuteAsync, x => true);
-                }
-                return saveInitializedNetCommandAsync;
-            }
-        }
-        async Task SaveInitializedNetCommand_ExecuteAsync(object parameter)
+        public async Task SaveInitializedNetAsync(object parameter)
         {
             if (StartStopVM.Net == null)
             {
@@ -212,18 +157,7 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public IAsyncCommand EnterLogNameCommandAsync
-        {
-            get
-            {
-                if (enterLogNameCommandAsync == null)
-                {
-                    enterLogNameCommandAsync = new AsyncRelayCommand(EnterLogName_ExecuteAsync, x => StartStopVM.IsLogged);
-                }
-                return enterLogNameCommandAsync;
-            }
-        }
-        async Task EnterLogName_ExecuteAsync(object parameter)
+        public async Task EnterLogNameAsync(object parameter)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Enter LogName";
@@ -254,8 +188,11 @@ namespace AIDemoUI.ViewModels
         void SetLoadedValues(SerializedParameters sp)
         {
             NetParametersVM.NetParameters = sp.NetParameters;
-            NetParametersVM.LayerParameterVMs = new ObservableCollection<LayerParametersVM>(
-                sp.NetParameters.LayersParameters.Select(x => new LayerParametersVM(this, x)));
+            NetParametersVM.LayerParametersVMCollection.Clear();
+            foreach (var layerParameters in sp.NetParameters.LayersParameters)  // ta naming: layerParameters != LayersParameters
+            {
+                NetParametersVM.LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(layerParameters.Id));
+            }
             NetParametersVM.TrainerParameters = sp.TrainerParameters;
 
             // After loading serialized parameters each local property gets set to it's stored value.
@@ -291,6 +228,65 @@ namespace AIDemoUI.ViewModels
         }
 
         #endregion
+
+        #endregion
+
+        #endregion
+
+        #region events
+
+        public void SampleSet_StatusChanged(object sender, DeepLearningDataProvider.StatusChangedEventArgs e)
+        {
+            StatusVM.ProgressBarText = e.Info;
+            Thread.Sleep(200);
+        }
+        public void Trainer_StatusChanged(object sender, NeuralNetBuilder.StatusChangedEventArgs e)
+        {
+            StatusVM.ProgressBarText = e.Info;
+        }
+        public void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            ITrainer trainer = sender as ITrainer;
+
+            if (trainer != null)
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(trainer.CurrentSample):
+                        StatusVM.CurrentSample = trainer.CurrentSample;
+                        break;
+                    case nameof(trainer.CurrentTotalCost):
+                        StatusVM.CurrentTotalCost = trainer.CurrentTotalCost;
+                        break;
+                    case nameof(trainer.LastEpochsAccuracy):
+                        StatusVM.LastEpochsAccuracy = trainer.LastEpochsAccuracy;
+                        StatusVM.ProgressBarText = $"Training...\n(Last Epoch's Accuracy: {trainer.LastEpochsAccuracy})";
+                        break;
+                    case nameof(trainer.CurrentEpoch):
+                        StatusVM.CurrentEpoch = trainer.CurrentEpoch;
+                        StatusVM.ProgressBarValue = StatusVM.CurrentEpoch;
+                        break;
+                    case nameof(trainer.LearningRate):
+                        break;
+                    case nameof(trainer.Epochs):
+                        StatusVM.Epochs = trainer.Epochs;
+                        StatusVM.ProgressBarMax = StatusVM.Epochs;
+                        break;
+                    case nameof(trainer.IsStarted):
+                        StatusVM.ProgressBarMax = trainer.Epochs;
+                        StatusVM.ProgressBarText = $"Training...\nLast Epoch's Accuracy: {StatusVM.LastEpochsAccuracy}";
+                        break;
+                    case nameof(trainer.IsPaused):
+                        StatusVM.ProgressBarText = $"Training paused...\nLast Epoch's Accuracy: {StatusVM.LastEpochsAccuracy}";
+                        break;
+                    case nameof(trainer.IsFinished):
+                        StatusVM.ProgressBarText = $"Training finished.\nLast Epoch's Accuracy: {StatusVM.LastEpochsAccuracy}";
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
 
         #endregion
     }

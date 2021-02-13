@@ -4,18 +4,31 @@ using System.Threading;
 
 namespace AIDemoUI.ViewModels
 {
-    public class StatusVM : BaseSubVM
+    public interface IStatusVM
+    {
+        int CurrentEpoch { get; set; }
+        int CurrentSample { get; set; }
+        float CurrentTotalCost { get; set; }
+        int Epochs { get; set; }
+        float LastEpochsAccuracy { get; set; }
+        int ProgressBarMax { get; set; }
+        string ProgressBarText { get; set; }
+        int ProgressBarValue { get; set; }
+    }
+
+    public class StatusVM : BaseSubVM//, IStatusVM
     {
         #region fields & ctor
 
         int epochs, currentEpoch, currentSample, progressBarValue, progressBarMax;
         float lastEpochsAccuracy, currentTotalCost;
         string progressBarText;
+        private readonly ISessionContext _sessionContext;
 
-        public StatusVM(MainWindowVM mainVM)
-            : base(mainVM)
+        public StatusVM(ISessionContext sessionContext)
         {
             SetDefaultValues();
+            _sessionContext = sessionContext;
             //_mainVM.Trainer.StatusChanged += 
         }
 
@@ -154,76 +167,14 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public void StartStopVM_SubViewModelChanged(object s, SubViewModelChangedEventArgs e)
-        {
+        //public void StartStopVM_SubViewModelChanged(object s, SubViewModelChangedEventArgs e)
+        //{
 
-        }
-        public void NetParametersVM_SubViewModelChanged(object s, SubViewModelChangedEventArgs e)
-        {
-            // Compute ProgressBarValue in percent!
-        }
-
-        #endregion
-
-        #region events
-
-        // Consider general (common) EventsLib or use (eg) INPC.
-        public void Anything_StatusChanged(object s, StatusChangedEventArgs e)
-        {
-
-        }
-        public void SampleSet_StatusChanged(object sender, DeepLearningDataProvider.StatusChangedEventArgs e)
-        {
-            ProgressBarText = e.Info;
-            Thread.Sleep(200);
-        }
-        public void Trainer_StatusChanged(object sender, NeuralNetBuilder.StatusChangedEventArgs e)
-        {
-            ProgressBarText = e.Info;
-        }
-        public void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            ITrainer trainer = sender as ITrainer;
-
-            if (trainer != null)
-            {
-                switch (e.PropertyName)
-                {
-                    case nameof(trainer.CurrentSample):
-                        CurrentSample = trainer.CurrentSample;
-                        break;
-                    case nameof(trainer.CurrentTotalCost):
-                        CurrentTotalCost = trainer.CurrentTotalCost;
-                        break;
-                    case nameof(trainer.LastEpochsAccuracy):
-                        LastEpochsAccuracy = trainer.LastEpochsAccuracy;
-                        ProgressBarText = $"Training...\n(Last Epoch's Accuracy: {trainer.LastEpochsAccuracy})";
-                        break;
-                    case nameof(trainer.CurrentEpoch):
-                        CurrentEpoch = trainer.CurrentEpoch;
-                        ProgressBarValue = CurrentEpoch;
-                        break;
-                    case nameof(trainer.LearningRate):
-                        break;
-                    case nameof(trainer.Epochs):
-                        Epochs = trainer.Epochs;
-                        ProgressBarMax = Epochs;
-                        break;
-                    case nameof(trainer.IsStarted):
-                        _mainVM.StatusVM.ProgressBarMax = trainer.Epochs;
-                        _mainVM.StatusVM.ProgressBarText = $"Training...\nLast Epoch's Accuracy: {LastEpochsAccuracy}";
-                        break;
-                    case nameof(trainer.IsPaused):
-                        _mainVM.StatusVM.ProgressBarText = $"Training paused...\nLast Epoch's Accuracy: {LastEpochsAccuracy}";
-                        break;
-                    case nameof(trainer.IsFinished):
-                        _mainVM.StatusVM.ProgressBarText = $"Training finished.\nLast Epoch's Accuracy: {LastEpochsAccuracy}";
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
+        //}
+        //public void NetParametersVM_SubViewModelChanged(object s, SubViewModelChangedEventArgs e)
+        //{
+        //    // Compute ProgressBarValue in percent!
+        //}
 
         #endregion
     }

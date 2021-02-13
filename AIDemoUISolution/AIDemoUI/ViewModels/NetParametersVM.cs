@@ -1,18 +1,14 @@
-﻿using AIDemoUI.Commands;
+﻿using AIDemoUI.Factories;
 using DeepLearningDataProvider;
-using Microsoft.Win32;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
-using System.Windows;
 
 namespace AIDemoUI.ViewModels
 {
@@ -25,22 +21,23 @@ namespace AIDemoUI.ViewModels
         IEnumerable<ActivationType> activationTypes;
         IEnumerable<CostType> costTypes;
         IEnumerable<WeightInitType> weightInitTypes;
-        ObservableCollection<LayerParametersVM> layerParameterVMs;
         bool areParametersGlobal;
         float weightMin_Global, weightMax_Global, biasMin_Global, biasMax_Global;
+        private readonly ISessionContext _sessionContext;
 
-        public NetParametersVM(MainWindowVM mainVM)
-            : base(mainVM)
+        public NetParametersVM(ISessionContext sessionContext, INetParameters netParameters, ITrainerParameters trainerParameters, LayerParametersVMFactory layerParametersVMFactory)//ILayerParametersVM
         {
-            NetParameters = new NetParameters();
-            TrainerParameters = new TrainerParameters();
-            
+            NetParameters = netParameters;
+            TrainerParameters = trainerParameters;
+            LayerParametersVMFactory = layerParametersVMFactory;
+
             SetDefaultValues();
+            _sessionContext = sessionContext;
         }
 
         #region helpers
         // In parameters class ?
-        void SetDefaultValues()
+        internal void SetDefaultValues()
         {
             AreParametersGlobal = true;
             WeightMin_Global = -1;
@@ -50,13 +47,11 @@ namespace AIDemoUI.ViewModels
             CostType = CostType.SquaredMeanError;
             WeightInitType = WeightInitType.Xavier;
 
-            LayerParameterVMs = new ObservableCollection<LayerParametersVM>(); 
-            LayerParameterVMs.CollectionChanged += LayerParameterVMs_CollectionChanged;
-            LayerParameterVMs.Add(new LayerParametersVM(_mainVM, 0));
-            LayerParameterVMs.Add(new LayerParametersVM(_mainVM, 1));
-            LayerParameterVMs.Add(new LayerParametersVM(_mainVM, 2));
-            LayerParameterVMs.Add(new LayerParametersVM(_mainVM, 3));
-            LayerParameterVMs.Add(new LayerParametersVM(_mainVM, 4));
+            LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(0));
+            LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(1));
+            LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(2));
+            LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(3));
+            LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(4));
 
             LearningRate = .1f;
             LearningRateChange = .9f;
@@ -83,18 +78,8 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public ObservableCollection<LayerParametersVM> LayerParameterVMs
-        {
-            get { return layerParameterVMs; }
-            set
-            {
-                if (layerParameterVMs != value)
-                {
-                    layerParameterVMs = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
+        public LayerParametersVMFactory LayerParametersVMFactory { get; }
+        public ObservableCollection<LayerParametersVM> LayerParametersVMCollection { get; }
         public bool AreParametersGlobal
         {
             get { return areParametersGlobal; }
@@ -229,9 +214,9 @@ namespace AIDemoUI.ViewModels
 
         #region LayerParametersVM_CollectionChanged
 
-        private void LayerParameterVMs_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        public void LayerParametersVMs_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            NetParameters.LayersParameters = LayerParameterVMs.Select(x => x.LayerParameters).ToArray();
+            NetParameters.LayersParameters = _sessionContext.LayerParametersVMs.Select(x => x.LayerParameters).ToArray();
         }
 
         #endregion
@@ -256,11 +241,11 @@ namespace AIDemoUI.ViewModels
         /// </summary>
         void SwitchBetweenGlobalAndLocalParameters()
         {
-            if (LayerParameterVMs == null) return;
+            if (_sessionContext.LayerParametersVMs == null) return;
 
             if (AreParametersGlobal)
             {
-                foreach (var layerVM in LayerParameterVMs)
+                foreach (var layerVM in _sessionContext.LayerParametersVMs)
                 {
                     layerVM.LayerParameters.WeightMin = WeightMin_Global;
                     layerVM.LayerParameters.WeightMax = WeightMax_Global;
@@ -270,7 +255,7 @@ namespace AIDemoUI.ViewModels
             }
             else
             {
-                foreach (var layerVM in LayerParameterVMs)
+                foreach (var layerVM in _sessionContext.LayerParametersVMs)
                 {
                     layerVM.LayerParameters.WeightMin = layerVM.WeightMin;
                     layerVM.LayerParameters.WeightMax = layerVM.WeightMax;

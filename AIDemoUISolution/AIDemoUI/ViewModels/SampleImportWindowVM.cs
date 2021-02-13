@@ -16,11 +16,12 @@ namespace AIDemoUI.ViewModels
 
         IAsyncCommand okCommandAsync, setSamplesLocationCommandAsync;
         SampleSetParameters selectedSampleSetParameters;
+        private readonly ISessionContext _sessionContext;
 
-        public SampleImportWindowVM(MainWindowVM mainVM)
-            :base(mainVM)
+        public SampleImportWindowVM(ISessionContext sessionContext)
         {
             SetDefaultValues();
+            _sessionContext = sessionContext;
         }
 
         #region helpers
@@ -220,10 +221,10 @@ namespace AIDemoUI.ViewModels
 
             // Use a local variable to store the sample set in.
             // So the TrainCommandAsync_CanExecute (enabling the 'Train' button) won't return 'true' too early.
-            SampleSet sampleSet = Creator.GetSampleSet((_mainVM.SampleImportWindow.DataContext as SampleImportWindowVM).SelectedTemplate);
-            sampleSet.StatusChanged += _mainVM.StatusVM.SampleSet_StatusChanged;  // DIC
+            SampleSet sampleSet = Creator.GetSampleSet(SelectedTemplate);
+            // sampleSet.StatusChanged += _sessionContext.StatusVM.SampleSet_StatusChanged;  // DIC
             await sampleSet.SetSamples();
-            _mainVM.StartStopVM.SampleSet = sampleSet;
+            _sessionContext.StartStopVM.SampleSet = sampleSet;
         }
         bool OkCommandAsync_CanExecute(object parameter)
         {

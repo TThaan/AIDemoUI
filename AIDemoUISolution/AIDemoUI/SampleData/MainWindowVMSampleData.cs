@@ -1,5 +1,5 @@
 ﻿using AIDemoUI.ViewModels;
-using System;
+using static AIDemoUI.SampleData.SampleDataBootStrapper;
 
 namespace AIDemoUI.SampleData
 {
@@ -8,10 +8,11 @@ namespace AIDemoUI.SampleData
         #region ctor
 
         public MainWindowVMSampleData()
+            : base(SampleNetParametersVM, SampleStartStopVM, SampleStatusVM, SampleSampleImportWindow, SampleLayerParametersVMFactory)
         {
-            NetParametersVM = new NetParametersVMSampleData(this);
-            StatusVM = new StatusVMSampleData(this);
-            StartStopVM = new StartStopVMSampleData(this);
+            // NetParametersVM = new NetParametersVMSampleData();
+            // StatusVM = new StatusVMSampleData();
+            // StartStopVM = new StartStopVMSampleData();
         }
 
         #endregion

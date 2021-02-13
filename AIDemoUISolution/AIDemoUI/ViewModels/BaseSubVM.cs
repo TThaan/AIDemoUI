@@ -7,12 +7,22 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        protected readonly MainWindowVM _mainVM;
+        // protected MainWindowVM _mainVM;
 
-        public BaseSubVM(MainWindowVM mainVM)
+        public BaseSubVM()
         {
-            _mainVM = mainVM ?? throw new NullReferenceException($"{GetType().Name}.ctor");
+            // _mainVM = mainVM ?? throw new NullReferenceException($"{GetType().Name}.ctor");
         }
+
+        #endregion
+
+        #region public
+
+        //public MainWindowVM MainVM 
+        //{
+        //    get { return _mainVM; }
+        //    set { _mainVM = value; }
+        //}
 
         #endregion
 

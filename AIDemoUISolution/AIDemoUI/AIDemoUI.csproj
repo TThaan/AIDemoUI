@@ -7,6 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac" Version="6.1.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
@@ -23,6 +26,10 @@
     <Reference Include="NeuralNetBuilder">
       <HintPath>..\..\..\NeuralNetBuilder\NeuralNetBuilderSolution\NeuralNetBuilder\bin\Debug\netcoreapp3.1\NeuralNetBuilder.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Commands\LayerParametersVMCommands\" />
   </ItemGroup>
 
 </Project>

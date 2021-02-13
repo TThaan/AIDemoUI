@@ -17,11 +17,12 @@ namespace AIDemoUI.ViewModels
         string logName;
         IAsyncCommand initializeNetCommandAsync, trainCommandAsync;
         IRelayCommand importSamplesCommand;
-        
-        public StartStopVM(MainWindowVM mainVM)
-            : base(mainVM)
+        private readonly ISessionContext _sessionContext;
+
+        public StartStopVM(ISessionContext sessionContext)
         {
             SetDefaultValues();
+            _sessionContext = sessionContext;
         }
 
         #region helpers
@@ -213,7 +214,7 @@ namespace AIDemoUI.ViewModels
         }
         private async Task InitializeNetCommandAsync_Execute(object parameter)
         {
-            Net = await Task.Run(() => Initializer.GetNet(_mainVM.NetParametersVM.NetParameters));
+            Net = await Task.Run(() => Initializer.GetNet(_sessionContext.NetParametersVM.NetParameters));
         }
         public IRelayCommand ImportSamplesCommand
         {
@@ -228,7 +229,7 @@ namespace AIDemoUI.ViewModels
         }
         void ImportSamplesCommand_Execute(object parameter)
         {
-            _mainVM.SampleImportWindow.Show();
+            _sessionContext.SampleImportWindow.Show();
         }
         bool ImportSamplesCommand_CanExecute(object parameter)
         {
@@ -245,14 +246,14 @@ namespace AIDemoUI.ViewModels
                 return trainCommandAsync;
             }
         }
-        private async Task TrainCommandAsync_Execute(object parameter)
+        private async Task TrainCommandAsync_Execute(object parameter)  // Trainer = DIC-injected?
         {
             bool isStepModeOn = (bool)parameter;
 
             if (Trainer == null)
             {
-                Trainer = await Task.Run(() => Initializer.GetTrainer(Net.GetCopy(), _mainVM.NetParametersVM.TrainerParameters, SampleSet));
-                Trainer.PropertyChanged += _mainVM.StatusVM.Trainer_PropertyChanged;
+                Trainer = await Task.Run(() => Initializer.GetTrainer(Net.GetCopy(), _sessionContext.NetParametersVM.TrainerParameters, SampleSet));
+                // Trainer.PropertyChanged += _sessionContext.MainWindowVM.Trainer_PropertyChanged;
             }
 
             if (IsStarted)

@@ -8,24 +8,24 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand;
+        private IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand;
+        private readonly ISessionContext _sessionContext;
 
-        public LayerParametersVM(MainWindowVM mainVM, int id)
-            : base(mainVM)
+        // First ctor redundant?
+        public LayerParametersVM(ISessionContext sessionContext)
         {
-            LayerParameters = new LayerParameters();
+            _sessionContext = sessionContext;
+        }
+        public LayerParametersVM(ISessionContext sessionContext, int id)
+            :this(sessionContext)
+        {
             Id = id;
             SetDefaultValues();
-        }
-        public LayerParametersVM(MainWindowVM mainVM, ILayerParameters layerParameters)
-            : base(mainVM)
-        {
-            LayerParameters = layerParameters;
         }
 
         #region helpers
 
-        void SetDefaultValues()
+        private void SetDefaultValues()
         {
             N = 4;
             WeightMin = -1;
@@ -129,29 +129,20 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region LayerDetails Commands
+        #region Commands
 
-        public IRelayCommand AddCommand
+        public IRelayCommand AddCommand { get; set;}
+
+        #region Executes and CanExecutes
+
+        public void Add(object parameter)
         {
-            get
-            {
-                if (addCommand == null)
-                {
-                    addCommand = new RelayCommand(AddCommand_Execute, AddCommand_CanExecute);
-                }
-                return addCommand;
-            }
-        }
-        void AddCommand_Execute(object parameter)
-        {
-            // OnPropertyChanged();
             int newIndex = Id + 1;
-            LayerParametersVM newLayerParametersVM = new LayerParametersVM(_mainVM, newIndex);
-            // newLayerParametersVM.PropertyChanged += LayerParametersVM_PropertyChanged;
-            _mainVM.NetParametersVM.LayerParameterVMs.Insert(newIndex, newLayerParametersVM);
+            LayerParametersVM newLayerParametersVM = _sessionContext.LayerParametersVMFactory.CreateLayerParametersVM(newIndex);
+            _sessionContext.LayerParametersVMs.Insert(newIndex, newLayerParametersVM);
             AdjustIdsToNewPositions();
         }
-        bool AddCommand_CanExecute(object parameter)
+        public bool Add_CanExecute(object parameter)
         {
             return true;
         }
@@ -170,7 +161,7 @@ namespace AIDemoUI.ViewModels
         {
             // wa LayerParameters & ..VMs as IDisposable?
             // OnPropertyChanged();
-            _mainVM.NetParametersVM.LayerParameterVMs.Remove(this);
+            _sessionContext.LayerParametersVMs.Remove(this);
             AdjustIdsToNewPositions();
         }
         bool DeleteCommand_CanExecute(object parameter)
@@ -192,7 +183,7 @@ namespace AIDemoUI.ViewModels
         {
             // OnPropertyChanged();
             int currentIndex = Id;
-            _mainVM.NetParametersVM.LayerParameterVMs.Move(
+            _sessionContext.LayerParametersVMs.Move(
                 currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
             AdjustIdsToNewPositions();
         }
@@ -215,8 +206,8 @@ namespace AIDemoUI.ViewModels
         {
             // OnPropertyChanged();
             int currentIndex = Id;
-            _mainVM.NetParametersVM.LayerParameterVMs.Move(
-                currentIndex, currentIndex < _mainVM.NetParametersVM.LayerParameterVMs.Count - 1 ? currentIndex + 1 : 0);
+            _sessionContext.LayerParametersVMs.Move(
+                currentIndex, currentIndex < _sessionContext.LayerParametersVMs.Count - 1 ? currentIndex + 1 : 0);
             AdjustIdsToNewPositions();
         }
         bool MoveRightCommand_CanExecute(object parameter)
@@ -228,14 +219,16 @@ namespace AIDemoUI.ViewModels
 
         private void AdjustIdsToNewPositions()
         {
-            for (int i = 0; i < _mainVM.NetParametersVM.LayerParameterVMs.Count; i++)
+            for (int i = 0; i < _sessionContext.LayerParametersVMs.Count; i++)
             {
-                _mainVM.NetParametersVM.LayerParameterVMs[i].Id = i;
+                _sessionContext.LayerParametersVMs[i].Id = i;
             }
         }
 
         #endregion
-        
+
+        #endregion
+
         #endregion
     }
 }

@@ -6,14 +6,8 @@ namespace AIDemoUI.SampleData
     {
         #region ctor
 
-        /// <summary>
-        /// Ctor used by SampleImportWindowVMSampleData
-        /// </summary>
-        public SampleImportWindowVMSampleData() : base(new MainWindowVM()) { }
-        /// <summary>
-        /// Ctor used by MainVMSampleData
-        /// </summary>
-        public SampleImportWindowVMSampleData(MainWindowVM mainVM) : base(mainVM) { }
+        public SampleImportWindowVMSampleData()
+            : base(SampleDataBootStrapper.SampleSessionContext) { }
 
         #endregion
     }
