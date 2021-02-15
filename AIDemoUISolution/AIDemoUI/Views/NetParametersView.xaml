@@ -30,7 +30,7 @@
         <Grid Grid.Column="0">
 
             <ListBox VerticalAlignment="Stretch"
-                     ItemsSource="{Binding LayerParameterVMs}" VerticalContentAlignment="Stretch">
+                     ItemsSource="{Binding LayerParametersVMCollection}" VerticalContentAlignment="Stretch">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal"/>

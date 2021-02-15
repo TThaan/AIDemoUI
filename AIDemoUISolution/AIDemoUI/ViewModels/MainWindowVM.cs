@@ -4,8 +4,10 @@ using AIDemoUI.Views;
 using Microsoft.Win32;
 using NeuralNetBuilder;
 using System;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,20 +19,23 @@ namespace AIDemoUI.ViewModels
     {
         #region ctor & fields
 
-        //private readonly ISessionContext _sessionContext;
-
-        public MainWindowVM(NetParametersVM netParametersVM, StartStopVM startStopVM, StatusVM statusVM, SampleImportWindow sampleImportWindow, LayerParametersVMFactory layerParametersVMFactory)
+        public MainWindowVM(NetParametersVM netParametersVM, StartStopVM startStopVM, StatusVM statusVM, SampleImportWindow sampleImportWindow, LayerParametersVMFactory layerParametersVMFactory, SimpleMediator mediator)
+            :base(mediator)
         {
-            //_sessionContext = sessionContext;
-
             NetParametersVM = netParametersVM;
             StartStopVM = startStopVM;
             StatusVM = statusVM;
             SampleImportWindow = sampleImportWindow;
             LayerParametersVMFactory = layerParametersVMFactory;
 
+            _mediator.Register("Token: MainWindowVM", MainWindowVMCallback);
+
             // NetParametersVM.SubViewModelChanged += StatusVM.NetParametersVM_SubViewModelChanged;    // Consider a central SubViewModelChanged handling method in MainVM?
             // StartStopVM.SubViewModelChanged += StatusVM.StartStopVM_SubViewModelChanged;            // Consider a central SubViewModelChanged handling method in MainVM?
+        }
+        void MainWindowVMCallback(object obj)
+        {
+
         }
 
         #endregion
@@ -287,6 +292,12 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
+        public void LayerParametersVMCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            NetParametersVM.NetParameters.LayersParameters = 
+                NetParametersVM.LayerParametersVMCollection.Select(x => x.LayerParameters).ToArray();
+        }
+
 
         #endregion
     }

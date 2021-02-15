@@ -1,11 +1,12 @@
 ﻿using AIDemoUI.ViewModels;
+using static AIDemoUI.SampleData.SampleDataBootStrapper;
 
 namespace AIDemoUI.SampleData
 {
     public class StatusVMSampleData : StatusVM
     {
         public StatusVMSampleData()
-            : base(SampleDataBootStrapper.SampleSessionContext)
+            : base(SampleSessionContext, null)
         {
             ProgressBarMax = 100;
             ProgressBarValue = 38;

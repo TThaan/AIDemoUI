@@ -7,9 +7,15 @@ namespace AIDemoUI.ViewModels
 {
     public class BaseVM : INotifyPropertyChanged
     {
-        #region fields
+        #region fields & ctor
 
+        protected readonly SimpleMediator _mediator;
         IRelayCommand unfocusCommand;
+
+        public BaseVM(SimpleMediator mediator)
+        {
+            _mediator = mediator;
+        }
 
         #endregion
 

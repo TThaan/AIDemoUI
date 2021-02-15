@@ -1,7 +1,9 @@
 ﻿using AIDemoUI.Commands;
+using AIDemoUI.Factories;
 using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -12,16 +14,25 @@ namespace AIDemoUI.ViewModels
 {
     public class SampleImportWindowVM : BaseSubVM
     {
-        #region ctor & fields
+        #region fields & ctor
 
         IAsyncCommand okCommandAsync, setSamplesLocationCommandAsync;
         SampleSetParameters selectedSampleSetParameters;
-        private readonly ISessionContext _sessionContext;
+        private readonly ISamplesSteward _samplesSteward;
 
-        public SampleImportWindowVM(ISessionContext sessionContext)
+        public SampleImportWindowVM(ISessionContext sessionContext, SimpleMediator mediator, ISamplesSteward samplesSteward)
+            : base(sessionContext, mediator)
         {
+            _samplesSteward = samplesSteward;
+
             SetDefaultValues();
-            _sessionContext = sessionContext;
+
+            _mediator.Register("Token: MainWindowVM", SampleImportWindowVMCallback);
+        }
+
+        private void SampleImportWindowVMCallback(object obj)
+        {
+            throw new NotImplementedException();
         }
 
         #region helpers
@@ -37,7 +48,7 @@ namespace AIDemoUI.ViewModels
 
         #region public
         
-        public Dictionary<SetName, SampleSetParameters> Templates => Creator.Templates;
+        public Dictionary<SetName, SampleSetParameters> Templates => _samplesSteward.Templates;
         public ObservableCollection<SetName> TemplateNames => Templates.Keys.ToObservableCollection();
         public SampleSetParameters SelectedTemplate
         {
@@ -218,13 +229,7 @@ namespace AIDemoUI.ViewModels
         async Task OkCommandAsync_Execute(object parameter)
         {
             (parameter as SampleImportWindow)?.Hide();
-
-            // Use a local variable to store the sample set in.
-            // So the TrainCommandAsync_CanExecute (enabling the 'Train' button) won't return 'true' too early.
-            SampleSet sampleSet = Creator.GetSampleSet(SelectedTemplate);
-            // sampleSet.StatusChanged += _sessionContext.StatusVM.SampleSet_StatusChanged;  // DIC
-            await sampleSet.SetSamples();
-            _sessionContext.StartStopVM.SampleSet = sampleSet;
+            await _samplesSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here? Like: _mediator.GetSampleSet_StatusChanged()..
         }
         bool OkCommandAsync_CanExecute(object parameter)
         {

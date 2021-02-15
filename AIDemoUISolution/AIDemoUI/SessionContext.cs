@@ -1,6 +1,8 @@
 ﻿using AIDemoUI.Factories;
+using AIDemoUI.FactoriesAndStewards;
 using AIDemoUI.ViewModels;
 using AIDemoUI.Views;
+using DeepLearningDataProvider;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System.Collections.ObjectModel;
 
@@ -8,14 +10,14 @@ namespace AIDemoUI
 {
     public interface ISessionContext
     {
-        // MainWindowVM MainWindowVM { get; }
-        StartStopVM StartStopVM { get; }
-        StatusVM StatusVM { get; }
-        NetParametersVM NetParametersVM { get; }
-        ObservableCollection<LayerParametersVM> LayerParametersVMs { get; }
+        INetParameters NetParameters { get; }
         ILayerParameters LayerParameters { get; }
+        ITrainerParameters TrainerParameters { get; }
+        ObservableCollection<LayerParametersVM> LayerParametersVMCollection { get; }
         ILayerParametersVMFactory LayerParametersVMFactory { get; }
-        SampleImportWindow SampleImportWindow { get; }  // ?
+        //SampleImportWindow SampleImportWindow { get; }  // ?
+        ISampleSetParametersSteward SampleSetParametersSteward { get; set; }
+        // StatusChangedEventHandler SampleSet_StatusChanged { get; set; }
     }
 
     /// <summary>
@@ -25,30 +27,32 @@ namespace AIDemoUI
     {
         #region ctor
 
-        public SessionContext(MainWindowVM mainWindowVM, StartStopVM startStopVM, StatusVM statusVM, NetParametersVM netParametersVM,
-            ILayerParameters layerParameters, ILayerParametersVMFactory layerParametersVMFactory, ObservableCollection<LayerParametersVM> layerParametersVMs, //ILayerParametersVM
-            SampleImportWindow sampleImportWindow)
+        public SessionContext(INetParameters netParameters,ILayerParameters layerParameters, ITrainerParameters trainerParameters, ILayerParametersVMFactory layerParametersVMFactory, ObservableCollection<LayerParametersVM> layerParametersVMCollection, // ILayerParametersVM
+            //SampleImportWindow sampleImportWindow,
+            ISampleSetParametersSteward sampleSetParametersSteward)//StatusChangedEventHandler sampleSet_StatusChanged
         {
-            MainWindowVM = mainWindowVM;
-            StartStopVM = startStopVM;
-            StatusVM = statusVM;
-            NetParametersVM = netParametersVM;
-            LayerParametersVMs = layerParametersVMs;
+            NetParameters = netParameters;
             LayerParameters = layerParameters;
+            TrainerParameters = trainerParameters;
+            LayerParametersVMCollection = layerParametersVMCollection;
             LayerParametersVMFactory = layerParametersVMFactory;
-            SampleImportWindow = sampleImportWindow;
+            //SampleImportWindow = sampleImportWindow;
+
+            SampleSetParametersSteward = sampleSetParametersSteward;
+            //SampleSet_StatusChanged = sampleSet_StatusChanged;
         }
 
         #endregion
 
-        public MainWindowVM MainWindowVM { get; }
-        public StartStopVM StartStopVM { get; }
-        public StatusVM StatusVM { get; }
-        public ObservableCollection<LayerParametersVM> LayerParametersVMs { get; } // Later: Use only ObservableCollection<LayerParameter> in SessionContext!
+        public INetParameters NetParameters { get; }
         public ILayerParameters LayerParameters { get; }
+        public ITrainerParameters TrainerParameters { get; }
+        public ObservableCollection<LayerParametersVM> LayerParametersVMCollection { get; } // Later: Use only ObservableCollection<LayerParameter> in SessionContext!
         public ILayerParametersVMFactory LayerParametersVMFactory { get; }
         public ILayerParametersVMCollectionFactory LayerParametersVMsFactory { get; }
-        public NetParametersVM NetParametersVM { get; }
-        public SampleImportWindow SampleImportWindow { get; }
+        //public SampleImportWindow SampleImportWindow { get; }
+
+        public ISampleSetParametersSteward SampleSetParametersSteward { get; set; }
+        //public StatusChangedEventHandler SampleSet_StatusChanged { get; set; }
     }
 }

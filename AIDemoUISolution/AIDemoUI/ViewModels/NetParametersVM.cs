@@ -5,8 +5,6 @@ using NeuralNetBuilder.FactoriesAndParameters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -23,16 +21,23 @@ namespace AIDemoUI.ViewModels
         IEnumerable<WeightInitType> weightInitTypes;
         bool areParametersGlobal;
         float weightMin_Global, weightMax_Global, biasMin_Global, biasMax_Global;
-        private readonly ISessionContext _sessionContext;
 
-        public NetParametersVM(ISessionContext sessionContext, INetParameters netParameters, ITrainerParameters trainerParameters, LayerParametersVMFactory layerParametersVMFactory)//ILayerParametersVM
+        public NetParametersVM(ISessionContext sessionContext, SimpleMediator mediator, INetParameters netParameters, ITrainerParameters trainerParameters, LayerParametersVMFactory layerParametersVMFactory, ObservableCollection<LayerParametersVM> layerParametersVMCollection)//ILayerParametersVM
+            : base(sessionContext, mediator)
         {
             NetParameters = netParameters;
             TrainerParameters = trainerParameters;
             LayerParametersVMFactory = layerParametersVMFactory;
+            LayerParametersVMCollection = layerParametersVMCollection;
+
+            _mediator.Register("Token: MainWindowVM", NetParametersVMCallback);
 
             SetDefaultValues();
-            _sessionContext = sessionContext;
+        }
+
+        private void NetParametersVMCallback(object obj)
+        {
+            throw new NotImplementedException();
         }
 
         #region helpers
@@ -212,15 +217,6 @@ namespace AIDemoUI.ViewModels
         
         #endregion
 
-        #region LayerParametersVM_CollectionChanged
-
-        public void LayerParametersVMs_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            NetParameters.LayersParameters = _sessionContext.LayerParametersVMs.Select(x => x.LayerParameters).ToArray();
-        }
-
-        #endregion
-
         #region INotifyPropertyChanged
 
         protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -241,11 +237,11 @@ namespace AIDemoUI.ViewModels
         /// </summary>
         void SwitchBetweenGlobalAndLocalParameters()
         {
-            if (_sessionContext.LayerParametersVMs == null) return;
+            if (LayerParametersVMCollection == null) return;
 
             if (AreParametersGlobal)
             {
-                foreach (var layerVM in _sessionContext.LayerParametersVMs)
+                foreach (var layerVM in LayerParametersVMCollection)
                 {
                     layerVM.LayerParameters.WeightMin = WeightMin_Global;
                     layerVM.LayerParameters.WeightMax = WeightMax_Global;
@@ -255,7 +251,7 @@ namespace AIDemoUI.ViewModels
             }
             else
             {
-                foreach (var layerVM in _sessionContext.LayerParametersVMs)
+                foreach (var layerVM in LayerParametersVMCollection)
                 {
                     layerVM.LayerParameters.WeightMin = layerVM.WeightMin;
                     layerVM.LayerParameters.WeightMax = layerVM.WeightMax;

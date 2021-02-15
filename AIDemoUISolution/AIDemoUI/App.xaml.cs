@@ -1,11 +1,12 @@
 ﻿using AIDemoUI.Commands;
 using AIDemoUI.Factories;
+using AIDemoUI.FactoriesAndStewards;
 using AIDemoUI.SampleData;
 using AIDemoUI.ViewModels;
 using AIDemoUI.Views;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
+using DeepLearningDataProvider;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System;
 using System.Collections.ObjectModel;
@@ -24,21 +25,34 @@ namespace AIDemoUI
 
             #region ServiceProvider
 
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddScoped(typeof(ISessionContext), typeof(SessionContext));
+            // var serviceCollection = new ServiceCollection();
+            // serviceCollection.AddScoped(typeof(ISessionContext), typeof(SessionContext));
 
             #endregion
 
             #region Autofac
 
             var builder = new ContainerBuilder();
-            builder.Populate(serviceCollection);    // After registering all services!  // Later??
+            // builder.Populate(serviceCollection);    // After registering all services!  // Later??
+
+            #region Parameters
+
+            // List<Parameter> allParameters = new List<Parameter>();
+            // allParameters.Add(new NamedParameter("setName_FourPixelCamera", SetName.FourPixelCamera));
+
+            #endregion
 
             #region Libraries' Containers/ServiceProviders
 
             builder.RegisterType<NetParameters>().As<INetParameters>().SingleInstance();
             builder.RegisterType<LayerParameters>().As<ILayerParameters>();
             builder.RegisterType<TrainerParameters>().As<ITrainerParameters>().SingleInstance();    // Single?
+            
+            // Or SampleSetFactory?
+            // builder.RegisterType<SampleSet>();  // .AsSelf()?
+            builder.Register(x => new SamplesSteward(x.Resolve<MainWindowVM>().SampleSet_StatusChanged))
+                .As<ISamplesSteward>();
+            builder.RegisterType<SampleSetParameters>();
 
             #endregion
 
@@ -76,10 +90,10 @@ namespace AIDemoUI
             builder.Register(x => 
             {
                 var result = new ObservableCollection<LayerParametersVM>();//ILayerParametersVM // Use Factory..?
-                result.CollectionChanged += x.Resolve<NetParametersVM>().LayerParametersVMs_CollectionChanged;
                 return result;
             })
-                .SingleInstance();
+                .SingleInstance()
+                .OnActivated(x => x.Instance.CollectionChanged += x.Context.Resolve<MainWindowVM>().LayerParametersVMCollection_CollectionChanged);
 
             #endregion
 
@@ -107,13 +121,15 @@ namespace AIDemoUI
             #region Sample Import (View and VM)
 
             builder.RegisterType<SampleImportWindowVM>().SingleInstance();
-            builder.Register(x => new SampleImportWindow() { DataContext = x.Resolve<SampleImportWindow>()}).SingleInstance();
+            builder.Register(x => new SampleImportWindow() { DataContext = x.Resolve<SampleImportWindowVM>()}).SingleInstance();
 
             #endregion
 
-            #region Factories
+            #region Factories and Stewards
 
             builder.RegisterType<LayerParametersVMFactory>();
+            builder.RegisterType<SamplesSteward>().As<ISamplesSteward>();
+            builder.RegisterType<SampleSetParametersSteward>().As<ISampleSetParametersSteward>();
 
             #endregion
 
@@ -123,9 +139,23 @@ namespace AIDemoUI
 
             #endregion
 
+            #region Mediator
+
+            builder.RegisterType<SimpleMediator>();
+
+            #endregion
+
+            #region Event Handlers
+
+            // Single?
+            // builder.Register(x => new DeepLearningDataProvider.StatusChangedEventHandler(x.Resolve<MainWindowVM>().SampleSet_StatusChanged));//.Named<StatusChangedEventHandler>("sampleSet_StatusChanged")
+            // builder.Register(x => new NotifyCollectionChangedEventHandler(x.Resolve<MainWindowVM>().LayerParametersVMCollection_CollectionChanged));//.Named<NotifyCollectionChangedEventHandler>("layerParametersVMCollection_StatusChanged")
+
+            #endregion
+
             Container = builder.Build();
             
-            new AutofacServiceProvider(Container);
+            ServiceProvider = new AutofacServiceProvider(Container);
 
             var mainWindowVM = Container.Resolve<MainWindowVM>();
 

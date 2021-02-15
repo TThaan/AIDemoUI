@@ -13,11 +13,11 @@ namespace AIDemoUI.Factories
     {
         #region fields & ctor
 
-        private readonly IServiceProvider _serviceProvider;
+        private readonly IComponentContext _context;
 
-        public LayerParametersVMFactory(IServiceProvider serviceProvider)
+        public LayerParametersVMFactory(IComponentContext context)
         {
-            _serviceProvider = serviceProvider;
+            _context = context;
         }
 
         #endregion
@@ -27,10 +27,10 @@ namespace AIDemoUI.Factories
         public LayerParametersVM CreateLayerParametersVM(int index)
         {
             // Consider scope!
-            var session = _serviceProvider.GetService(typeof(ISessionContext)) as ISessionContext;
-            var container = _serviceProvider.GetService(typeof(IContainer)) as IContainer;
-            return container.Resolve<LayerParametersVM>(
-                new TypedParameter(typeof(ISessionContext), session), 
+            var session = _context.Resolve<ISessionContext>();
+            return _context.Resolve<LayerParametersVM>(
+                new TypedParameter(typeof(ISessionContext), session),
+                new TypedParameter(typeof(SimpleMediator), _context.Resolve<SimpleMediator>()),
                 new TypedParameter(typeof(int), index));
         }
 

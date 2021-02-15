@@ -1,5 +1,6 @@
 ﻿using DeepLearningDataProvider;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
 
@@ -9,9 +10,18 @@ namespace AIDemoUI.Converters
     {
         #region IValueConverter
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object values, Type targetType, object parameter, CultureInfo culture)
         {
-            SampleSetParameters setParameters = value as SampleSetParameters;
+            SampleSetParameters setParameters = values as SampleSetParameters;
+
+            var t0 = values.GetType().Name;
+            // var t1 = values[1].GetType().Name;
+            // var t2 = values[2].GetType().Name;
+            // var t3 = values[3].GetType().Name;
+            // var t4 = values[4].GetType().Name;
+
+            // redundant.. (incl multi converter/binding)
+            // Dictionary<SetName, SampleSetParameters> templates = values[1] as Dictionary<SetName, SampleSetParameters>;
 
             try
             {
@@ -22,18 +32,19 @@ namespace AIDemoUI.Converters
                 throw;
             }
         }
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)
         {
-            SetName templateName = (SetName)value;
+            throw new NotSupportedException();
+            //SetName templateName = (SetName)value;
 
-            try
-            {
-                return Creator.Templates[templateName];
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            //try
+            //{
+            //    return Creator.Templates[templateName];
+            //}
+            //catch (Exception)
+            //{
+            //    throw;
+            //}
         }
 
         #endregion

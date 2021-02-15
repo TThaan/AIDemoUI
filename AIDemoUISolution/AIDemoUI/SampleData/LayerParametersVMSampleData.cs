@@ -1,12 +1,12 @@
 ﻿using AIDemoUI.ViewModels;
-using System;
+using static AIDemoUI.SampleData.SampleDataBootStrapper;
 
 namespace AIDemoUI.SampleData
 {
     public class LayerParametersVMSampleData : LayerParametersVM
     {
         public LayerParametersVMSampleData()
-            : base(SampleDataBootStrapper.SampleSessionContext, 1234)
+            : base(SampleSessionContext, SampleLayerParameters, null, 1234)
         {
 
         }

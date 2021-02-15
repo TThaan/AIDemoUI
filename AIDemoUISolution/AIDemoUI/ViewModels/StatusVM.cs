@@ -1,4 +1,5 @@
 ﻿using NeuralNetBuilder;
+using System;
 using System.ComponentModel;
 using System.Threading;
 
@@ -23,13 +24,18 @@ namespace AIDemoUI.ViewModels
         int epochs, currentEpoch, currentSample, progressBarValue, progressBarMax;
         float lastEpochsAccuracy, currentTotalCost;
         string progressBarText;
-        private readonly ISessionContext _sessionContext;
 
-        public StatusVM(ISessionContext sessionContext)
+        public StatusVM(ISessionContext sessionContext, SimpleMediator mediator)
+            : base(sessionContext, mediator)
         {
+            _mediator.Register("Token: MainWindowVM", StatusVMCallback);
             SetDefaultValues();
-            _sessionContext = sessionContext;
             //_mainVM.Trainer.StatusChanged += 
+        }
+
+        private void StatusVMCallback(object obj)
+        {
+            throw new NotImplementedException();
         }
 
         #region helpers

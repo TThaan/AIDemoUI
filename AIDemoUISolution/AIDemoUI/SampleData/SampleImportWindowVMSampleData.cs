@@ -1,4 +1,5 @@
 ﻿using AIDemoUI.ViewModels;
+using static AIDemoUI.SampleData.SampleDataBootStrapper;
 
 namespace AIDemoUI.SampleData
 {
@@ -7,7 +8,7 @@ namespace AIDemoUI.SampleData
         #region ctor
 
         public SampleImportWindowVMSampleData()
-            : base(SampleDataBootStrapper.SampleSessionContext) { }
+            : base(SampleSessionContext, null, SampleSamplesSteward) { }
 
         #endregion
     }

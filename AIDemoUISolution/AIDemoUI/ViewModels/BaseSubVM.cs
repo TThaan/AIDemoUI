@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace AIDemoUI.ViewModels
 {
@@ -7,22 +6,13 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        // protected MainWindowVM _mainVM;
+        protected readonly ISessionContext _sessionContext;
 
-        public BaseSubVM()
+        public BaseSubVM(ISessionContext sessionContext, SimpleMediator mediator)
+            : base(mediator)
         {
-            // _mainVM = mainVM ?? throw new NullReferenceException($"{GetType().Name}.ctor");
+            _sessionContext = sessionContext;
         }
-
-        #endregion
-
-        #region public
-
-        //public MainWindowVM MainVM 
-        //{
-        //    get { return _mainVM; }
-        //    set { _mainVM = value; }
-        //}
 
         #endregion
 

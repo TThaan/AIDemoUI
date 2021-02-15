@@ -1,6 +1,8 @@
 ﻿using AIDemoUI.Commands;
+using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using NeuralNetBuilder;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -17,12 +19,19 @@ namespace AIDemoUI.ViewModels
         string logName;
         IAsyncCommand initializeNetCommandAsync, trainCommandAsync;
         IRelayCommand importSamplesCommand;
-        private readonly ISessionContext _sessionContext;
+        private readonly SampleImportWindow _sampleImportWindow;
 
-        public StartStopVM(ISessionContext sessionContext)
+        public StartStopVM(ISessionContext sessionContext, SimpleMediator mediator, SampleImportWindow sampleImportWindow)
+            : base(sessionContext, mediator)
         {
+            _mediator.Register("Token: MainWindowVM", StartStopVMCallback);
+            _sampleImportWindow = sampleImportWindow;
             SetDefaultValues();
-            _sessionContext = sessionContext;
+        }
+
+        private void StartStopVMCallback(object obj)
+        {
+            throw new NotImplementedException();
         }
 
         #region helpers
@@ -214,7 +223,7 @@ namespace AIDemoUI.ViewModels
         }
         private async Task InitializeNetCommandAsync_Execute(object parameter)
         {
-            Net = await Task.Run(() => Initializer.GetNet(_sessionContext.NetParametersVM.NetParameters));
+            Net = await Task.Run(() => Initializer.GetNet(_sessionContext.NetParameters));
         }
         public IRelayCommand ImportSamplesCommand
         {
@@ -229,7 +238,7 @@ namespace AIDemoUI.ViewModels
         }
         void ImportSamplesCommand_Execute(object parameter)
         {
-            _sessionContext.SampleImportWindow.Show();
+            _sampleImportWindow.Show();
         }
         bool ImportSamplesCommand_CanExecute(object parameter)
         {
@@ -246,13 +255,14 @@ namespace AIDemoUI.ViewModels
                 return trainCommandAsync;
             }
         }
+
         private async Task TrainCommandAsync_Execute(object parameter)  // Trainer = DIC-injected?
         {
             bool isStepModeOn = (bool)parameter;
 
             if (Trainer == null)
             {
-                Trainer = await Task.Run(() => Initializer.GetTrainer(Net.GetCopy(), _sessionContext.NetParametersVM.TrainerParameters, SampleSet));
+                Trainer = await Task.Run(() => Initializer.GetTrainer(Net.GetCopy(), _sessionContext.TrainerParameters, SampleSet));
                 // Trainer.PropertyChanged += _sessionContext.MainWindowVM.Trainer_PropertyChanged;
             }
 

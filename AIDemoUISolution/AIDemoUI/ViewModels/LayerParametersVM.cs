@@ -1,6 +1,7 @@
 ﻿using AIDemoUI.Commands;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
+using System;
 
 namespace AIDemoUI.ViewModels
 {
@@ -9,15 +10,21 @@ namespace AIDemoUI.ViewModels
         #region fields & ctor
 
         private IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand;
-        private readonly ISessionContext _sessionContext;
 
         // First ctor redundant?
-        public LayerParametersVM(ISessionContext sessionContext)
+        public LayerParametersVM(ISessionContext sessionContext, ILayerParameters layerParameters, SimpleMediator mediator)
+            : base(sessionContext, mediator)
         {
-            _sessionContext = sessionContext;
+            _mediator.Register("Token: MainWindowVM", LayerParametersVMCallback);
+            LayerParameters = layerParameters;
         }
-        public LayerParametersVM(ISessionContext sessionContext, int id)
-            :this(sessionContext)
+        private void LayerParametersVMCallback(object obj)
+        {
+            throw new NotImplementedException();
+        }
+
+        public LayerParametersVM(ISessionContext sessionContext, ILayerParameters layerParameters, SimpleMediator mediator, int id)
+            : this(sessionContext, layerParameters, mediator)
         {
             Id = id;
             SetDefaultValues();
@@ -139,7 +146,7 @@ namespace AIDemoUI.ViewModels
         {
             int newIndex = Id + 1;
             LayerParametersVM newLayerParametersVM = _sessionContext.LayerParametersVMFactory.CreateLayerParametersVM(newIndex);
-            _sessionContext.LayerParametersVMs.Insert(newIndex, newLayerParametersVM);
+            _sessionContext.LayerParametersVMCollection.Insert(newIndex, newLayerParametersVM);
             AdjustIdsToNewPositions();
         }
         public bool Add_CanExecute(object parameter)
@@ -161,7 +168,7 @@ namespace AIDemoUI.ViewModels
         {
             // wa LayerParameters & ..VMs as IDisposable?
             // OnPropertyChanged();
-            _sessionContext.LayerParametersVMs.Remove(this);
+            _sessionContext.LayerParametersVMCollection.Remove(this);
             AdjustIdsToNewPositions();
         }
         bool DeleteCommand_CanExecute(object parameter)
@@ -183,7 +190,7 @@ namespace AIDemoUI.ViewModels
         {
             // OnPropertyChanged();
             int currentIndex = Id;
-            _sessionContext.LayerParametersVMs.Move(
+            _sessionContext.LayerParametersVMCollection.Move(
                 currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
             AdjustIdsToNewPositions();
         }
@@ -206,8 +213,8 @@ namespace AIDemoUI.ViewModels
         {
             // OnPropertyChanged();
             int currentIndex = Id;
-            _sessionContext.LayerParametersVMs.Move(
-                currentIndex, currentIndex < _sessionContext.LayerParametersVMs.Count - 1 ? currentIndex + 1 : 0);
+            _sessionContext.LayerParametersVMCollection.Move(
+                currentIndex, currentIndex < _sessionContext.LayerParametersVMCollection.Count - 1 ? currentIndex + 1 : 0);
             AdjustIdsToNewPositions();
         }
         bool MoveRightCommand_CanExecute(object parameter)
@@ -219,9 +226,9 @@ namespace AIDemoUI.ViewModels
 
         private void AdjustIdsToNewPositions()
         {
-            for (int i = 0; i < _sessionContext.LayerParametersVMs.Count; i++)
+            for (int i = 0; i < _sessionContext.LayerParametersVMCollection.Count; i++)
             {
-                _sessionContext.LayerParametersVMs[i].Id = i;
+                _sessionContext.LayerParametersVMCollection[i].Id = i;
             }
         }
 

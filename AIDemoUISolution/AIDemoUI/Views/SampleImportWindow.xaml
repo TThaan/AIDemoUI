@@ -7,6 +7,7 @@
         xmlns:sd="clr-namespace:AIDemoUI.SampleData"
         xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
         xmlns:conv="clr-namespace:AIDemoUI.Converters"
+        xmlns:factories="clr-namespace:AIDemoUI.Factories"
         mc:Ignorable="d"
         Title="                                                                     S a m p l e   I m p o r t" 
         Height="450" Width="600"
@@ -28,9 +29,27 @@
     <StackPanel Name="thisRootElement">
         
         <!-- Import Sample Set -->
-
+        
         <ComboBox Name="SampleTemplates" Grid.Row="0" MinHeight="50"
-                  ItemsSource="{Binding TemplateNames}" SelectedItem="{Binding SelectedTemplate, Converter={StaticResource SampleSetParametersToTemplateNameConverter}}"/>
+                  ItemsSource="{Binding TemplateNames}"
+                  SelectedItem="{Binding SelectedTemplate, Mode=OneWay, Converter={StaticResource SampleSetParametersToTemplateNameConverter}}">
+            <!--<ComboBox.SelectedItem>
+                <MultiBinding Converter="{StaticResource SampleSetParametersToTemplateNameConverter}">
+                    <Binding ElementName="SampleTemplates" Path="DataContext.SelectedTemplate" Mode="OneWay"/>
+                    <Binding ElementName="SampleTemplates" Path="DataContext.Templates" Mode="OneWay"/>
+                </MultiBinding>
+            </ComboBox.SelectedItem>-->
+        </ComboBox>
+        
+        <!--<ComboBox Name="SampleTemplates" Grid.Row="0" MinHeight="50"
+                  ItemsSource="{Binding TemplateNames}">
+            <ComboBox.SelectedItem>
+                <MultiBinding Converter="{StaticResource SampleSetParametersToTemplateNameConverter}">
+                    <Binding ElementName="SampleTemplates" Path="DataContext.SelectedTemplate" Mode="OneWay"/>
+                    <Binding ElementName="SampleTemplates" Path="DataContext.Templates" Mode="OneWay"/>
+                </MultiBinding>
+            </ComboBox.SelectedItem>
+        </ComboBox>-->
 
         <!-- Amount of Samples -->
 
