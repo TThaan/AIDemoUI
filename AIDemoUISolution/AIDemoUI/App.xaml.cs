@@ -66,20 +66,29 @@ namespace AIDemoUI
 
             #region MainWindowVM
 
-            builder.RegisterType<MainWindowVM>().SingleInstance();
+            builder.RegisterType<MainWindowVM>().SingleInstance()
+                .OnActivated(x =>
+                {
+                    x.Instance.ExitCommand = new RelayCommand(x.Context.Resolve<MainWindowVM>().Exit, y => true);
+                    x.Instance.LoadParametersCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().LoadParametersAsync, y => true);
+                    x.Instance.SaveParametersCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().SaveParametersAsync, y => true);
+                    x.Instance.LoadInitializedNetCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().LoadInitializedNetAsync, y => true);
+                    x.Instance.SaveInitializedNetCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().SaveInitializedNetAsync, y => true);
+                    x.Instance.EnterLogNameCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().EnterLogNameAsync, y => true);
+                });
 
-            builder.Register(x => new RelayCommand(x.Resolve<MainWindowVM>().Exit, y => true))
-                .Named<IRelayCommand>("ExitCommand");
-            builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().LoadParametersAsync, y => true))
-                .Named<IAsyncCommand>("LoadParametersCommandAsync");
-            builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().SaveParametersAsync, y => true))
-                .Named<IAsyncCommand>("SaveParametersCommandAsync");
-            builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().LoadInitializedNetAsync, y => true))
-                .Named<IAsyncCommand>("LoadInitializedNetCommandAsync");
-            builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().SaveInitializedNetAsync, y => true))
-                .Named<IAsyncCommand>("SaveInitializedNetCommandAsync");
-            builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().EnterLogNameAsync, y => true))
-                .Named<IAsyncCommand>("EnterLogNameCommandAsync");
+            //builder.Register(x => new RelayCommand(x.Resolve<MainWindowVM>().Exit, y => true))
+            //    .Named<IRelayCommand>("ExitCommand");
+            //builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().LoadParametersAsync, y => true))
+            //    .Named<IAsyncCommand>("LoadParametersCommandAsync");
+            //builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().SaveParametersAsync, y => true))
+            //    .Named<IAsyncCommand>("SaveParametersCommandAsync");
+            //builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().LoadInitializedNetAsync, y => true))
+            //    .Named<IAsyncCommand>("LoadInitializedNetCommandAsync");
+            //builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().SaveInitializedNetAsync, y => true))
+            //    .Named<IAsyncCommand>("SaveInitializedNetCommandAsync");
+            //builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().EnterLogNameAsync, y => true))
+            //    .Named<IAsyncCommand>("EnterLogNameCommandAsync");
 
             #endregion
 

@@ -54,11 +54,11 @@ namespace AIDemoUI.ViewModels
         #region Commands
 
         public IRelayCommand ExitCommand { get; set; }
-        public IAsyncCommand LoadParametersCommandAsync { get; set; }
-        public IAsyncCommand SaveParametersCommandAsync { get; set; }
-        public IAsyncCommand LoadInitializedNetCommandAsync { get; set; }
-        public IAsyncCommand SaveInitializedNetCommandAsync { get; set; }
-        public IAsyncCommand EnterLogNameCommandAsync { get; set; }
+        public IAsyncCommand LoadParametersCommand { get; set; }
+        public IAsyncCommand SaveParametersCommand { get; set; }
+        public IAsyncCommand LoadInitializedNetCommand { get; set; }
+        public IAsyncCommand SaveInitializedNetCommand { get; set; }
+        public IAsyncCommand EnterLogNameCommand { get; set; }
 
         #region Executes
 

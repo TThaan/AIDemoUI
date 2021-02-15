@@ -57,23 +57,23 @@
 
                 <Label Content="Load Parameters" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                     <Label.InputBindings>
-                        <MouseBinding Gesture="LeftClick" Command="{Binding LoadParametersCommandAsync}"/>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding LoadParametersCommand}"/>
                     </Label.InputBindings>
                 </Label>
                 <Label Content="Save Parameters" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                     <Label.InputBindings>
-                        <MouseBinding Gesture="LeftClick" Command="{Binding SaveParametersCommandAsync}"/>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding SaveParametersCommand}"/>
                     </Label.InputBindings>
                 </Label>
                 <Separator/>
                 <Label Content="Load Initialized Net" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                     <Label.InputBindings>
-                        <MouseBinding Gesture="LeftClick" Command="{Binding LoadInitializedNetCommandAsync}"/>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding LoadInitializedNetCommand}"/>
                     </Label.InputBindings>
                 </Label>
                 <Label Content="Save Initialized Net" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                     <Label.InputBindings>
-                        <MouseBinding Gesture="LeftClick" Command="{Binding SaveInitializedNetCommandAsync}"/>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding SaveInitializedNetCommand}"/>
                     </Label.InputBindings>
                 </Label>
                 <MenuItem IsCheckable="True" IsChecked="{Binding StartStopVM.IsLogged}" StaysOpenOnClick="True" HorizontalContentAlignment="Right">
@@ -83,7 +83,7 @@
                 </MenuItem>
                 <Label Content="LogName" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
                     <Label.InputBindings>
-                        <MouseBinding Gesture="LeftClick" Command="{Binding EnterLogNameCommandAsync}"/>
+                        <MouseBinding Gesture="LeftClick" Command="{Binding EnterLogNameCommand}"/>
                     </Label.InputBindings>
                 </Label>
                 
