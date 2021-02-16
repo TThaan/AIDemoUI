@@ -1,10 +1,11 @@
-﻿using AIDemoUI.Factories;
+﻿using AIDemoUI.FactoriesAndStewards;
 using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -39,11 +40,19 @@ namespace AIDemoUI.ViewModels
         {
             throw new NotImplementedException();
         }
+        static int debuggingCounter = 0;
 
         #region helpers
         // In parameters class ?
         internal void SetDefaultValues()
         {
+            // Checking if this lives as a singleton.
+            if (debuggingCounter>0)
+            {
+
+            }
+            debuggingCounter++;
+
             AreParametersGlobal = true;
             WeightMin_Global = -1;
             WeightMax_Global = 1;
@@ -214,7 +223,6 @@ namespace AIDemoUI.ViewModels
             }
         }
 
-        
         #endregion
 
         #region INotifyPropertyChanged

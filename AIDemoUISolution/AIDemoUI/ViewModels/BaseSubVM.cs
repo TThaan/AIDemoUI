@@ -2,6 +2,9 @@
 
 namespace AIDemoUI.ViewModels
 {
+    /// <summary>
+    /// (Make) Redundant?
+    /// </summary>
     public class BaseSubVM : BaseVM, INotifySubViewModelChanged
     {
         #region fields & ctor

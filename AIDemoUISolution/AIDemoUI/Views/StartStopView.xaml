@@ -37,14 +37,14 @@
 
         <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2">
             <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="Initialize Net" Command="{Binding InitializeNetCommandAsync}"/>
+                    Content="Initialize Net" Command="{Binding InitializeNetCommand}"/>
         </Grid>
 
         <!-- Get Samples Button -->
 
         <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
             <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="Get Samples" Command="{Binding ImportSamplesCommand}"/>
+                    Content="Get Samples" Command="{Binding ShowSampleImportWindowCommand}"/>
         </Grid>
 
         <!-- Train/Step Buttons -->
@@ -56,9 +56,9 @@
             </Grid.ColumnDefinitions>
 
             <Button Name="StartButton" Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="{Binding TrainButtonText}" Command="{Binding TrainCommandAsync}" CommandParameter="{StaticResource False}"/>
+                    Content="{Binding TrainButtonText}" Command="{Binding TrainCommand}" CommandParameter="{StaticResource False}"/>
             <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="{Binding StepButtonText}" Command="{Binding TrainCommandAsync}" CommandParameter="{StaticResource True}"/>
+                    Content="{Binding StepButtonText}" Command="{Binding TrainCommand}" CommandParameter="{StaticResource True}"/>
         </Grid>
 
     </Grid>

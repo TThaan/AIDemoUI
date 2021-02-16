@@ -1,8 +1,5 @@
-﻿using AIDemoUI.Factories;
-using AIDemoUI.FactoriesAndStewards;
+﻿using AIDemoUI.FactoriesAndStewards;
 using AIDemoUI.ViewModels;
-using AIDemoUI.Views;
-using DeepLearningDataProvider;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System.Collections.ObjectModel;
 
@@ -14,7 +11,7 @@ namespace AIDemoUI
         ILayerParameters LayerParameters { get; }
         ITrainerParameters TrainerParameters { get; }
         ObservableCollection<LayerParametersVM> LayerParametersVMCollection { get; }
-        ILayerParametersVMFactory LayerParametersVMFactory { get; }
+        //ILayerParametersVMFactory LayerParametersVMFactory { get; }
         //SampleImportWindow SampleImportWindow { get; }  // ?
         ISampleSetParametersSteward SampleSetParametersSteward { get; set; }
         // StatusChangedEventHandler SampleSet_StatusChanged { get; set; }
@@ -27,15 +24,15 @@ namespace AIDemoUI
     {
         #region ctor
 
-        public SessionContext(INetParameters netParameters,ILayerParameters layerParameters, ITrainerParameters trainerParameters, ILayerParametersVMFactory layerParametersVMFactory, ObservableCollection<LayerParametersVM> layerParametersVMCollection, // ILayerParametersVM
-            //SampleImportWindow sampleImportWindow,
+        public SessionContext(INetParameters netParameters,ILayerParameters layerParameters, ITrainerParameters trainerParameters, ObservableCollection<LayerParametersVM> layerParametersVMCollection, // ILayerParametersVM, ILayerParametersVMFactory layerParametersVMFactory
+                                                                                                                                                                                                        //SampleImportWindow sampleImportWindow,
             ISampleSetParametersSteward sampleSetParametersSteward)//StatusChangedEventHandler sampleSet_StatusChanged
         {
             NetParameters = netParameters;
             LayerParameters = layerParameters;
             TrainerParameters = trainerParameters;
             LayerParametersVMCollection = layerParametersVMCollection;
-            LayerParametersVMFactory = layerParametersVMFactory;
+            //LayerParametersVMFactory = layerParametersVMFactory;
             //SampleImportWindow = sampleImportWindow;
 
             SampleSetParametersSteward = sampleSetParametersSteward;
@@ -48,7 +45,7 @@ namespace AIDemoUI
         public ILayerParameters LayerParameters { get; }
         public ITrainerParameters TrainerParameters { get; }
         public ObservableCollection<LayerParametersVM> LayerParametersVMCollection { get; } // Later: Use only ObservableCollection<LayerParameter> in SessionContext!
-        public ILayerParametersVMFactory LayerParametersVMFactory { get; }
+        //public ILayerParametersVMFactory LayerParametersVMFactory { get; }
         public ILayerParametersVMCollectionFactory LayerParametersVMsFactory { get; }
         //public SampleImportWindow SampleImportWindow { get; }
 

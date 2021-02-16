@@ -1,5 +1,5 @@
 ﻿using AIDemoUI.Commands;
-using AIDemoUI.Factories;
+using AIDemoUI.FactoriesAndStewards;
 using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using Microsoft.Win32;
@@ -16,7 +16,6 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        IAsyncCommand okCommandAsync, setSamplesLocationCommandAsync;
         SampleSetParameters selectedSampleSetParameters;
         private readonly ISamplesSteward _samplesSteward;
 
@@ -164,22 +163,14 @@ namespace AIDemoUI.ViewModels
             }
         }
 
-        #endregion
+        #region Commands
 
-        #region RelayCommand
+        public IAsyncCommand SetSamplesLocationCommand { get; set; }
+        public IAsyncCommand OkCommand { get; set; }
 
-        public IAsyncCommand SetSamplesLocationCommandAsync
-        {
-            get
-            {
-                if (setSamplesLocationCommandAsync == null)
-                {
-                    setSamplesLocationCommandAsync = new AsyncRelayCommand(SetSamplesLocationCommand_Execute, SetSamplesLocationCommand_CanExecute);
-                }
-                return setSamplesLocationCommandAsync;
-            }
-        }
-        async Task SetSamplesLocationCommand_Execute(object parameter)
+        #region Executes and CanExecutes
+
+        public async Task SetSamplesLocationAsync(object parameter)
         {
             string url = parameter as string;
 
@@ -211,27 +202,16 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        bool SetSamplesLocationCommand_CanExecute(object parameter)
+        public bool SetSamplesLocationAsync_CanExecute(object parameter)
         {
             return true;
         }
-        public IAsyncCommand OkCommandAsync
-        {
-            get
-            {
-                if (okCommandAsync == null)
-                {
-                    okCommandAsync = new AsyncRelayCommand(OkCommandAsync_Execute, OkCommandAsync_CanExecute);
-                }
-                return okCommandAsync;
-            }
-        }
-        async Task OkCommandAsync_Execute(object parameter)
+        public async Task OkAsync(object parameter)
         {
             (parameter as SampleImportWindow)?.Hide();
             await _samplesSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here? Like: _mediator.GetSampleSet_StatusChanged()..
         }
-        bool OkCommandAsync_CanExecute(object parameter)
+        public bool OkAsync_CanExecute(object parameter)
         {
             //if (string.IsNullOrEmpty(Url_TrainingLabels) ||
             //    string.IsNullOrEmpty(Url_TrainingImages) ||
@@ -244,6 +224,12 @@ namespace AIDemoUI.ViewModels
         }
 
         #endregion
+
+        #endregion
+
+        #endregion
+
+
 
         #region SampleSetChanged
 

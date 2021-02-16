@@ -1,4 +1,4 @@
-﻿using AIDemoUI.Factories;
+﻿using AIDemoUI.FactoriesAndStewards;
 using AIDemoUI.ViewModels;
 using AIDemoUI.Views;
 using DeepLearningDataProvider;

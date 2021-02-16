@@ -210,53 +210,21 @@ namespace AIDemoUI.ViewModels
 
         #region Commands
 
-        public IAsyncCommand InitializeNetCommandAsync
-        {
-            get
-            {
-                if (initializeNetCommandAsync == null)
-                {
-                    initializeNetCommandAsync = new AsyncRelayCommand(InitializeNetCommandAsync_Execute, x => true);
-                }
-                return initializeNetCommandAsync;
-            }
-        }
-        private async Task InitializeNetCommandAsync_Execute(object parameter)
+        public IAsyncCommand InitializeNetCommand { get; set; }
+        public IRelayCommand ShowSampleImportWindowCommand { get; set; }
+        public IAsyncCommand TrainCommand { get; set; }
+
+        #region Executes and CanExecutes
+
+        public async Task InitializeNetAsync(object parameter)
         {
             Net = await Task.Run(() => Initializer.GetNet(_sessionContext.NetParameters));
         }
-        public IRelayCommand ImportSamplesCommand
-        {
-            get
-            {
-                if (importSamplesCommand == null)
-                {
-                    importSamplesCommand = new RelayCommand(ImportSamplesCommand_Execute, ImportSamplesCommand_CanExecute);
-                }
-                return importSamplesCommand;
-            }
-        }
-        void ImportSamplesCommand_Execute(object parameter)
+        public void ShowSampleImportWindow(object parameter)
         {
             _sampleImportWindow.Show();
         }
-        bool ImportSamplesCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
-        public IAsyncCommand TrainCommandAsync
-        {
-            get
-            {
-                if (trainCommandAsync == null)
-                {
-                    trainCommandAsync = new AsyncRelayCommand(TrainCommandAsync_Execute, TrainCommandAsync_CanExecute);
-                }
-                return trainCommandAsync;
-            }
-        }
-
-        private async Task TrainCommandAsync_Execute(object parameter)  // Trainer = DIC-injected?
+        public async Task TrainAsync(object parameter)
         {
             bool isStepModeOn = (bool)parameter;
 
@@ -293,10 +261,12 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        private bool TrainCommandAsync_CanExecute(object parameter)
+        public bool TrainAsync_CanExecute(object parameter)
         {
             return SampleSet != null && Net != null;
         }
+
+        #endregion
 
         #endregion
     }

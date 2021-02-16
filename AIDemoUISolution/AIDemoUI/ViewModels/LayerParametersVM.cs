@@ -1,20 +1,23 @@
 ﻿using AIDemoUI.Commands;
+using AIDemoUI.FactoriesAndStewards;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System;
 
 namespace AIDemoUI.ViewModels
 {
+    // wa LayerParameters & ..VMs as IDisposable?
     public class LayerParametersVM : BaseSubVM
     {
         #region fields & ctor
 
-        private IRelayCommand addCommand, deleteCommand, moveLeftCommand, moveRightCommand;
+        private readonly ILayerParametersVMFactory _layerParametersVMFactory;
 
         // First ctor redundant?
-        public LayerParametersVM(ISessionContext sessionContext, ILayerParameters layerParameters, SimpleMediator mediator)
+        public LayerParametersVM(ISessionContext sessionContext, ILayerParameters layerParameters, ILayerParametersVMFactory layerParametersVMFactory, SimpleMediator mediator)
             : base(sessionContext, mediator)
         {
+            _layerParametersVMFactory = layerParametersVMFactory;
             _mediator.Register("Token: MainWindowVM", LayerParametersVMCallback);
             LayerParameters = layerParameters;
         }
@@ -23,8 +26,8 @@ namespace AIDemoUI.ViewModels
             throw new NotImplementedException();
         }
 
-        public LayerParametersVM(ISessionContext sessionContext, ILayerParameters layerParameters, SimpleMediator mediator, int id)
-            : this(sessionContext, layerParameters, mediator)
+        public LayerParametersVM(ISessionContext sessionContext, ILayerParameters layerParameters, ILayerParametersVMFactory layerParametersVMFactory, SimpleMediator mediator, int id)
+            : this(sessionContext, layerParameters, layerParametersVMFactory, mediator)
         {
             Id = id;
             SetDefaultValues();
@@ -138,88 +141,38 @@ namespace AIDemoUI.ViewModels
 
         #region Commands
 
-        public IRelayCommand AddCommand { get; set;}
+        public IRelayCommand AddCommand { get; set; }
+        public IRelayCommand DeleteCommand { get; set; }
+        public IRelayCommand MoveLeftCommand { get; set; }
+        public IRelayCommand MoveRightCommand { get; set; }
 
         #region Executes and CanExecutes
 
         public void Add(object parameter)
         {
-            int newIndex = Id + 1;
-            LayerParametersVM newLayerParametersVM = _sessionContext.LayerParametersVMFactory.CreateLayerParametersVM(newIndex);
-            _sessionContext.LayerParametersVMCollection.Insert(newIndex, newLayerParametersVM);
+            int newLayerId = Id + 1;
+            LayerParametersVM newLayerParametersVM = _layerParametersVMFactory.CreateLayerParametersVM(newLayerId);
+            _sessionContext.LayerParametersVMCollection.Insert(newLayerId, newLayerParametersVM);
             AdjustIdsToNewPositions();
         }
-        public bool Add_CanExecute(object parameter)
+        public void Delete(object parameter)
         {
-            return true;
-        }
-        public IRelayCommand DeleteCommand
-        {
-            get
-            {
-                if (deleteCommand == null)
-                {
-                    deleteCommand = new RelayCommand(DeleteCommand_Execute, DeleteCommand_CanExecute);
-                }
-                return deleteCommand;
-            }
-        }
-        void DeleteCommand_Execute(object parameter)
-        {
-            // wa LayerParameters & ..VMs as IDisposable?
-            // OnPropertyChanged();
             _sessionContext.LayerParametersVMCollection.Remove(this);
             AdjustIdsToNewPositions();
         }
-        bool DeleteCommand_CanExecute(object parameter)
+        public void MoveLeft(object parameter)
         {
-            return true;
-        }
-        public IRelayCommand MoveLeftCommand
-        {
-            get
-            {
-                if (moveLeftCommand == null)
-                {
-                    moveLeftCommand = new RelayCommand(MoveLeftCommand_Execute, MoveLeftCommand_CanExecute);
-                }
-                return moveLeftCommand;
-            }
-        }
-        void MoveLeftCommand_Execute(object parameter)
-        {
-            // OnPropertyChanged();
-            int currentIndex = Id;
+            int currentLayerId = Id;
             _sessionContext.LayerParametersVMCollection.Move(
-                currentIndex, currentIndex > 0 ? currentIndex - 1 : 0);
+                currentLayerId, currentLayerId > 0 ? currentLayerId - 1 : 0);
             AdjustIdsToNewPositions();
         }
-        bool MoveLeftCommand_CanExecute(object parameter)
+        public void MoveRight(object parameter)
         {
-            return true;
-        }
-        public IRelayCommand MoveRightCommand
-        {
-            get
-            {
-                if (moveRightCommand == null)
-                {
-                    moveRightCommand = new RelayCommand(MoveRightCommand_Execute, MoveRightCommand_CanExecute);
-                }
-                return moveRightCommand;
-            }
-        }
-        void MoveRightCommand_Execute(object parameter)
-        {
-            // OnPropertyChanged();
-            int currentIndex = Id;
+            int currentLayerId = Id;
             _sessionContext.LayerParametersVMCollection.Move(
-                currentIndex, currentIndex < _sessionContext.LayerParametersVMCollection.Count - 1 ? currentIndex + 1 : 0);
+                currentLayerId, currentLayerId < _sessionContext.LayerParametersVMCollection.Count - 1 ? currentLayerId + 1 : 0);
             AdjustIdsToNewPositions();
-        }
-        bool MoveRightCommand_CanExecute(object parameter)
-        {
-            return true;
         }
 
         #region helpers

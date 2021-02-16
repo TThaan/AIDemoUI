@@ -1,5 +1,4 @@
 ﻿using AIDemoUI.Commands;
-using AIDemoUI.Factories;
 using AIDemoUI.FactoriesAndStewards;
 using AIDemoUI.SampleData;
 using AIDemoUI.ViewModels;
@@ -64,6 +63,16 @@ namespace AIDemoUI
 
             #endregion
 
+            #region BaseVM
+
+            builder.RegisterType<BaseVM>()
+                .OnActivated(x =>
+                {
+                    x.Instance.UnfocusCommand = new RelayCommand(x.Context.Resolve<BaseVM>().Unfocus, y => true);
+                });
+
+            #endregion
+
             #region MainWindowVM
 
             builder.RegisterType<MainWindowVM>().SingleInstance()
@@ -76,19 +85,6 @@ namespace AIDemoUI
                     x.Instance.SaveInitializedNetCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().SaveInitializedNetAsync, y => true);
                     x.Instance.EnterLogNameCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().EnterLogNameAsync, y => true);
                 });
-
-            //builder.Register(x => new RelayCommand(x.Resolve<MainWindowVM>().Exit, y => true))
-            //    .Named<IRelayCommand>("ExitCommand");
-            //builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().LoadParametersAsync, y => true))
-            //    .Named<IAsyncCommand>("LoadParametersCommandAsync");
-            //builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().SaveParametersAsync, y => true))
-            //    .Named<IAsyncCommand>("SaveParametersCommandAsync");
-            //builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().LoadInitializedNetAsync, y => true))
-            //    .Named<IAsyncCommand>("LoadInitializedNetCommandAsync");
-            //builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().SaveInitializedNetAsync, y => true))
-            //    .Named<IAsyncCommand>("SaveInitializedNetCommandAsync");
-            //builder.Register(x => new AsyncRelayCommand(x.Resolve<MainWindowVM>().EnterLogNameAsync, y => true))
-            //    .Named<IAsyncCommand>("EnterLogNameCommandAsync");
 
             #endregion
 
@@ -108,16 +104,26 @@ namespace AIDemoUI
 
             #region LayerParametersVM
 
-            builder.RegisterType<LayerParametersVM>();//.As<ILayerParametersVM>()
-
-            builder.Register(x => new RelayCommand(x.Resolve<LayerParametersVM>().Add, x.Resolve<LayerParametersVM>().Add_CanExecute))
-                .As<IRelayCommand>();
+            builder.RegisterType<LayerParametersVM>()//.As<ILayerParametersVM>()
+                .OnActivated(x =>
+                {
+                    x.Instance.AddCommand = new RelayCommand(x.Instance.Add, y => true);
+                    x.Instance.DeleteCommand = new RelayCommand(x.Instance.Delete, y => true);
+                    x.Instance.MoveLeftCommand = new RelayCommand(x.Instance.MoveLeft, y => true);
+                    x.Instance.MoveRightCommand = new RelayCommand(x.Instance.MoveRight, y => true);
+                });
 
             #endregion
 
             #region StartStopVM
 
-            builder.RegisterType<StartStopVM>().SingleInstance();
+            builder.RegisterType<StartStopVM>().SingleInstance()
+                .OnActivated(x=>
+                {
+                    x.Instance.InitializeNetCommand = new AsyncRelayCommand(x.Context.Resolve<StartStopVM>().InitializeNetAsync, y => true);
+                    x.Instance.ShowSampleImportWindowCommand = new RelayCommand(x.Context.Resolve<StartStopVM>().ShowSampleImportWindow, y => true);
+                    x.Instance.TrainCommand = new AsyncRelayCommand(x.Context.Resolve<StartStopVM>().TrainAsync, x.Context.Resolve<StartStopVM>().TrainAsync_CanExecute);
+                });
 
             #endregion
 
@@ -129,7 +135,12 @@ namespace AIDemoUI
 
             #region Sample Import (View and VM)
 
-            builder.RegisterType<SampleImportWindowVM>().SingleInstance();
+            builder.RegisterType<SampleImportWindowVM>().SingleInstance()
+                .OnActivated(x =>
+                {
+                    x.Instance.SetSamplesLocationCommand = new AsyncRelayCommand(x.Context.Resolve<SampleImportWindowVM>().SetSamplesLocationAsync, x.Context.Resolve<SampleImportWindowVM>().SetSamplesLocationAsync_CanExecute);
+                    x.Instance.OkCommand = new AsyncRelayCommand(x.Context.Resolve<SampleImportWindowVM>().OkAsync, x.Context.Resolve<SampleImportWindowVM>().OkAsync_CanExecute);
+                });
             builder.Register(x => new SampleImportWindow() { DataContext = x.Resolve<SampleImportWindowVM>()}).SingleInstance();
 
             #endregion
@@ -166,14 +177,13 @@ namespace AIDemoUI
             
             ServiceProvider = new AutofacServiceProvider(Container);
 
-            var mainWindowVM = Container.Resolve<MainWindowVM>();
+            //var mainWindowVM = Container.Resolve<MainWindowVM>();
 
             #region Show
 
             using (var scope = Container.BeginLifetimeScope())
             {
-                //var mainWindowVM = scope.Resolve<MainWindowVM>();
-
+                var mainWindowVM = scope.Resolve<MainWindowVM>();
                 MainWindow = new MainWindow() { DataContext = mainWindowVM };
                 MainWindow.Show();
             }

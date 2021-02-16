@@ -1,5 +1,5 @@
 ﻿using AIDemoUI.Commands;
-using AIDemoUI.Factories;
+using AIDemoUI.FactoriesAndStewards;
 using AIDemoUI.Views;
 using Microsoft.Win32;
 using NeuralNetBuilder;
@@ -29,9 +29,6 @@ namespace AIDemoUI.ViewModels
             LayerParametersVMFactory = layerParametersVMFactory;
 
             _mediator.Register("Token: MainWindowVM", MainWindowVMCallback);
-
-            // NetParametersVM.SubViewModelChanged += StatusVM.NetParametersVM_SubViewModelChanged;    // Consider a central SubViewModelChanged handling method in MainVM?
-            // StartStopVM.SubViewModelChanged += StatusVM.StartStopVM_SubViewModelChanged;            // Consider a central SubViewModelChanged handling method in MainVM?
         }
         void MainWindowVMCallback(object obj)
         {
@@ -46,7 +43,6 @@ namespace AIDemoUI.ViewModels
         public StatusVM StatusVM { get; }
         public StartStopVM StartStopVM { get; }
         public SampleImportWindow SampleImportWindow { get; }
-        // public SampleSetParameters SampleSetParameters { get; set; }
         public LayerParametersVMFactory LayerParametersVMFactory { get; }
 
         #endregion

@@ -1,7 +1,4 @@
-﻿using NeuralNetBuilder;
-using System;
-using System.ComponentModel;
-using System.Threading;
+﻿using System;
 
 namespace AIDemoUI.ViewModels
 {
@@ -17,7 +14,7 @@ namespace AIDemoUI.ViewModels
         int ProgressBarValue { get; set; }
     }
 
-    public class StatusVM : BaseSubVM//, IStatusVM
+    public class StatusVM : BaseSubVM, IStatusVM
     {
         #region fields & ctor
 
@@ -173,14 +170,6 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        //public void StartStopVM_SubViewModelChanged(object s, SubViewModelChangedEventArgs e)
-        //{
-
-        //}
-        //public void NetParametersVM_SubViewModelChanged(object s, SubViewModelChangedEventArgs e)
-        //{
-        //    // Compute ProgressBarValue in percent!
-        //}
 
         #endregion
     }

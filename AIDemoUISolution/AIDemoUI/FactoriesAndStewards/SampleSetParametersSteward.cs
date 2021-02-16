@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using DeepLearningDataProvider;
-using System;
 
 namespace AIDemoUI.FactoriesAndStewards
 {

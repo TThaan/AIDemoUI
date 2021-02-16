@@ -3,7 +3,7 @@ using Autofac;
 using System;
 using System.Collections.ObjectModel;
 
-namespace AIDemoUI.Factories
+namespace AIDemoUI.FactoriesAndStewards
 {
     public interface ILayerParametersVMCollectionFactory
     {

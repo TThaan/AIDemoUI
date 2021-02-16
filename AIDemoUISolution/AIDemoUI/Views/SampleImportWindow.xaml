@@ -7,7 +7,7 @@
         xmlns:sd="clr-namespace:AIDemoUI.SampleData"
         xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
         xmlns:conv="clr-namespace:AIDemoUI.Converters"
-        xmlns:factories="clr-namespace:AIDemoUI.Factories"
+        xmlns:factories="clr-namespace:AIDemoUI.FactoriesAndStewards"
         mc:Ignorable="d"
         Title="                                                                     S a m p l e   I m p o r t" 
         Height="450" Width="600"
@@ -129,7 +129,7 @@
                     <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                 </TextBox.InputBindings>
             </TextBox>
-            <Button Grid.Row="1" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TrainingLabels"
+            <Button Grid.Row="1" Grid.Column="1" Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TrainingLabels"
                         Content="File"/>
 
             <TextBlock Grid.Row="2" Text="Url/Path for Training Images" HorizontalAlignment="Center"/>
@@ -138,7 +138,7 @@
                     <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                 </TextBox.InputBindings>
             </TextBox>
-            <Button Grid.Row="3" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TrainingImages"
+            <Button Grid.Row="3" Grid.Column="1" Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TrainingImages"
                         Content="File"/>
 
             <TextBlock Grid.Row="4" Text="Url/Path for Testing Labels" HorizontalAlignment="Center"/>
@@ -147,7 +147,7 @@
                     <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                 </TextBox.InputBindings>
             </TextBox>
-            <Button Grid.Row="5" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TestingLabels"
+            <Button Grid.Row="5" Grid.Column="1" Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TestingLabels"
                         Content="File"/>
 
             <TextBlock Grid.Row="6" Text="Url/Path for Testing Images" HorizontalAlignment="Center"/>
@@ -156,7 +156,7 @@
                     <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                 </TextBox.InputBindings>
             </TextBox>
-            <Button Grid.Row="7" Grid.Column="1" Command="{Binding SetSamplesLocationCommandAsync}" CommandParameter="Url_TestingImages"
+            <Button Grid.Row="7" Grid.Column="1" Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TestingImages"
                         Content="File"/>
         </Grid>
 
@@ -164,7 +164,7 @@
         
         <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
                         Content="O K"
-                        Command="{Binding OkCommandAsync}" CommandParameter="{Binding ElementName=thisWindow}"/>
+                        Command="{Binding OkCommand}" CommandParameter="{Binding ElementName=thisWindow}"/>
 
     </StackPanel>
 </Window>

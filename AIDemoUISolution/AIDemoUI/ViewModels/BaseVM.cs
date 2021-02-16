@@ -10,7 +10,6 @@ namespace AIDemoUI.ViewModels
         #region fields & ctor
 
         protected readonly SimpleMediator _mediator;
-        IRelayCommand unfocusCommand;
 
         public BaseVM(SimpleMediator mediator)
         {
@@ -21,27 +20,18 @@ namespace AIDemoUI.ViewModels
 
         #region Commands
 
-        public IRelayCommand UnfocusCommand
-        {
-            get
-            {
-                if (unfocusCommand == null)
-                {
-                    unfocusCommand = new RelayCommand(UnfocusCommand_Execute, UnfocusCommand_CanExecute);
-                }
-                return unfocusCommand;
-            }
-        }
-        void UnfocusCommand_Execute(object parameter)
+        public IRelayCommand UnfocusCommand { get; set; }
+
+        #region Executes and CanExecutes
+
+        public void Unfocus(object parameter)
         {
             var element = parameter as UIElement;
             element.Focusable = true;
             element.Focus();
         }
-        bool UnfocusCommand_CanExecute(object parameter)
-        {
-            return true;
-        }
+
+        #endregion
 
         #endregion
 

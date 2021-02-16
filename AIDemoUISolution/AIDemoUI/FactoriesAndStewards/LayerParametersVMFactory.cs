@@ -1,8 +1,7 @@
 ﻿using AIDemoUI.ViewModels;
 using Autofac;
-using System;
 
-namespace AIDemoUI.Factories
+namespace AIDemoUI.FactoriesAndStewards
 {
     public interface ILayerParametersVMFactory
     {
