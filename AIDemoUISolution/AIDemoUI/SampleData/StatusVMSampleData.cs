@@ -6,7 +6,7 @@ namespace AIDemoUI.SampleData
     public class StatusVMSampleData : StatusVM
     {
         public StatusVMSampleData()
-            : base(SampleSessionContext, null)
+            : base(SampleSessionContext, SampleMediator)
         {
             ProgressBarMax = 100;
             ProgressBarValue = 38;

@@ -8,7 +8,7 @@ namespace AIDemoUI.SampleData
         #region ctor
 
         public MainWindowVMSampleData()
-            : base(SampleNetParametersVM, SampleStartStopVM, SampleStatusVM, SampleSampleImportWindow, SampleLayerParametersVMFactory, null)
+            : base(SampleNetParametersVM, SampleStartStopVM, SampleStatusVM, SampleSampleImportWindow, SampleLayerParametersVMFactory, SampleMediator)
         {
             // NetParametersVM = new NetParametersVMSampleData();
             // StatusVM = new StatusVMSampleData();

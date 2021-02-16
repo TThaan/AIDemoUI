@@ -8,7 +8,9 @@ namespace AIDemoUI.SampleData
         #region ctor
 
         public NetParametersVMSampleData()
-            : base(SampleSessionContext, null, SampleNetParameters, SampleTrainerParameters, SampleLayerParametersVMFactory, SampleLayerParametersVMCollection) { }
+            : base(SampleSessionContext, SampleMediator, SampleNetParameters, SampleTrainerParameters, SampleLayerParametersVMFactory, SampleLayerParametersVMCollection)
+        {
+        }
 
         #endregion
     }

@@ -6,7 +6,7 @@ namespace AIDemoUI.SampleData
     public class LayerParametersVMSampleData : LayerParametersVM
     {
         public LayerParametersVMSampleData()
-            : base(SampleSessionContext, SampleLayerParameters, SampleLayerParametersVMFactory, null, 1234)
+            : base(SampleSessionContext, SampleLayerParameters, SampleLayerParametersVMFactory, SampleMediator, 1234)
         {
 
         }

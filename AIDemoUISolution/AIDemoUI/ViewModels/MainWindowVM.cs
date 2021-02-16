@@ -19,7 +19,7 @@ namespace AIDemoUI.ViewModels
     {
         #region ctor & fields
 
-        public MainWindowVM(NetParametersVM netParametersVM, StartStopVM startStopVM, StatusVM statusVM, SampleImportWindow sampleImportWindow, LayerParametersVMFactory layerParametersVMFactory, SimpleMediator mediator)
+        public MainWindowVM(NetParametersVM netParametersVM, StartStopVM startStopVM, StatusVM statusVM, SampleImportWindow sampleImportWindow, ILayerParametersVMFactory layerParametersVMFactory, SimpleMediator mediator)
             :base(mediator)
         {
             NetParametersVM = netParametersVM;
@@ -43,7 +43,7 @@ namespace AIDemoUI.ViewModels
         public StatusVM StatusVM { get; }
         public StartStopVM StartStopVM { get; }
         public SampleImportWindow SampleImportWindow { get; }
-        public LayerParametersVMFactory LayerParametersVMFactory { get; }
+        public ILayerParametersVMFactory LayerParametersVMFactory { get; }
 
         #endregion
 

@@ -6,7 +6,10 @@ namespace AIDemoUI
     public class SimpleMediator
     {
         IDictionary<string, Action<object>> actions = new Dictionary<string, Action<object>>();
+        public SimpleMediator()
+        {
 
+        }
         public void Register(string token, Action<object> callback)
         {
             actions[token] = callback;

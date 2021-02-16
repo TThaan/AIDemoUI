@@ -11,7 +11,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     
     <d:UserControl.DataContext>
-        <sd:LayerParametersVMSampleData/>
+        <sd:NetParametersVMSampleData/>
     </d:UserControl.DataContext>
 
     <!--<UserControl.Resources>

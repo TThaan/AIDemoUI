@@ -23,7 +23,7 @@ namespace AIDemoUI.ViewModels
         bool areParametersGlobal;
         float weightMin_Global, weightMax_Global, biasMin_Global, biasMax_Global;
 
-        public NetParametersVM(ISessionContext sessionContext, SimpleMediator mediator, INetParameters netParameters, ITrainerParameters trainerParameters, LayerParametersVMFactory layerParametersVMFactory, ObservableCollection<LayerParametersVM> layerParametersVMCollection)//ILayerParametersVM
+        public NetParametersVM(ISessionContext sessionContext, SimpleMediator mediator, INetParameters netParameters, ITrainerParameters trainerParameters, ILayerParametersVMFactory layerParametersVMFactory, ObservableCollection<LayerParametersVM> layerParametersVMCollection)//ILayerParametersVM
             : base(sessionContext, mediator)
         {
             NetParameters = netParameters;
@@ -92,7 +92,7 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public LayerParametersVMFactory LayerParametersVMFactory { get; }
+        public ILayerParametersVMFactory LayerParametersVMFactory { get; }
         public ObservableCollection<LayerParametersVM> LayerParametersVMCollection { get; }
         public bool AreParametersGlobal
         {
