@@ -6,7 +6,7 @@ namespace AIDemoUI.SampleData
     public class StartStopVMSampleData : StartStopVM
     {
         public StartStopVMSampleData()
-            : base(SampleSessionContext, SampleMediator, SampleSampleImportWindow)
+            : base(SampleMediator, SampleSampleImportWindow, SampleNetParameters, SampleTrainerParameters)
         {
         }
     }

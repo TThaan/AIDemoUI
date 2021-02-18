@@ -10,12 +10,12 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        protected readonly ISessionContext _sessionContext;
+        //protected readonly ISessionContext _sessionContext;
 
-        public BaseSubVM(ISessionContext sessionContext, SimpleMediator mediator)
+        public BaseSubVM(ISimpleMediator mediator)//ISessionContext sessionContext, 
             : base(mediator)
         {
-            _sessionContext = sessionContext;
+            //_sessionContext = sessionContext;
         }
 
         #endregion

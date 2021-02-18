@@ -1,6 +1,5 @@
 ﻿using AIDemoUI.Commands;
 using AIDemoUI.FactoriesAndStewards;
-using AIDemoUI.Views;
 using Microsoft.Win32;
 using NeuralNetBuilder;
 using System;
@@ -15,18 +14,44 @@ using System.Windows;
 
 namespace AIDemoUI.ViewModels
 {
-    public class MainWindowVM : BaseVM
+    public interface IMainWindowVM
     {
-        #region ctor & fields
+        INetParametersVM NetParametersVM { get; }
+        IStartStopVM StartStopVM { get; }
+        IStatusVM StatusVM { get; }
 
-        public MainWindowVM(NetParametersVM netParametersVM, StartStopVM startStopVM, StatusVM statusVM, SampleImportWindow sampleImportWindow, ILayerParametersVMFactory layerParametersVMFactory, SimpleMediator mediator)
-            :base(mediator)
+        IAsyncCommand EnterLogNameCommand { get; set; }
+        IAsyncCommand LoadParametersCommand { get; set; }
+        IAsyncCommand SaveParametersCommand { get; set; }
+        IAsyncCommand LoadInitializedNetCommand { get; set; }
+        IAsyncCommand SaveInitializedNetCommand { get; set; }
+        IRelayCommand ExitCommand { get; set; }
+        Task EnterLogNameAsync(object parameter);
+        void LayerParametersCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e);
+        Task LoadParametersAsync(object parameter);
+        Task SaveParametersAsync(object parameter);
+        Task LoadInitializedNetAsync(object parameter);
+        Task SaveInitializedNetAsync(object parameter);
+        void Exit(object parameter);
+        void SampleSet_StatusChanged(object sender, DeepLearningDataProvider.StatusChangedEventArgs e);
+        void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e);
+        void Trainer_StatusChanged(object sender, StatusChangedEventArgs e);
+    }
+
+    public class MainWindowVM : BaseVM, IMainWindowVM
+    {
+        #region fields & ctor
+
+        private ILayerParametersFactory _layerParametersFactory;
+
+        public MainWindowVM(INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM,
+            ILayerParametersFactory layerParametersVMFactory, ISimpleMediator mediator)
+            : base(mediator)
         {
             NetParametersVM = netParametersVM;
             StartStopVM = startStopVM;
             StatusVM = statusVM;
-            SampleImportWindow = sampleImportWindow;
-            LayerParametersVMFactory = layerParametersVMFactory;
+            _layerParametersFactory = layerParametersVMFactory;
 
             _mediator.Register("Token: MainWindowVM", MainWindowVMCallback);
         }
@@ -39,28 +64,40 @@ namespace AIDemoUI.ViewModels
 
         #region public
 
-        public NetParametersVM NetParametersVM { get; }
-        public StatusVM StatusVM { get; }
-        public StartStopVM StartStopVM { get; }
-        public SampleImportWindow SampleImportWindow { get; }
-        public ILayerParametersVMFactory LayerParametersVMFactory { get; }
+        public INetParametersVM NetParametersVM { get; }
+        public IStatusVM StatusVM { get; }
+        public IStartStopVM StartStopVM { get; }
 
         #endregion
 
         #region Commands
 
-        public IRelayCommand ExitCommand { get; set; }
+        public IAsyncCommand EnterLogNameCommand { get; set; }
         public IAsyncCommand LoadParametersCommand { get; set; }
         public IAsyncCommand SaveParametersCommand { get; set; }
         public IAsyncCommand LoadInitializedNetCommand { get; set; }
         public IAsyncCommand SaveInitializedNetCommand { get; set; }
-        public IAsyncCommand EnterLogNameCommand { get; set; }
+        public IRelayCommand ExitCommand { get; set; }
 
         #region Executes
 
-        public void Exit(object parameter)
+        public async Task EnterLogNameAsync(object parameter)
         {
-            Application.Current.Shutdown();
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Title = "Enter LogName";
+            saveFileDialog.Filter = "Text| *.txt";
+            saveFileDialog.DefaultExt = ".txt";
+
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                if (!string.IsNullOrEmpty(saveFileDialog.FileName))
+                {
+                    await Task.Run(() =>
+                    {
+                        StartStopVM.LogName = saveFileDialog.FileName;
+                    });
+                }
+            }
         }
         public async Task LoadParametersAsync(object parameter)
         {
@@ -158,23 +195,9 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public async Task EnterLogNameAsync(object parameter)
+        public void Exit(object parameter)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Title = "Enter LogName";
-            saveFileDialog.Filter = "Text| *.txt";
-            saveFileDialog.DefaultExt = ".txt";
-
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                if (!string.IsNullOrEmpty(saveFileDialog.FileName))
-                {
-                    await Task.Run(() =>
-                    {
-                        StartStopVM.LogName = saveFileDialog.FileName;
-                    });
-                }
-            }
+            Application.Current.Shutdown();
         }
 
         #region helpers
@@ -189,10 +212,11 @@ namespace AIDemoUI.ViewModels
         void SetLoadedValues(SerializedParameters sp)
         {
             NetParametersVM.NetParameters = sp.NetParameters;
-            NetParametersVM.LayerParametersVMCollection.Clear();
+            NetParametersVM.LayerParametersCollection.Clear();
             foreach (var layerParameters in sp.NetParameters.LayersParameters)  // ta naming: layerParameters != LayersParameters
             {
-                NetParametersVM.LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(layerParameters.Id));
+                NetParametersVM.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters());
+                NetParametersVM.LayerParametersCollection.Last().Id = layerParameters.Id;
             }
             NetParametersVM.TrainerParameters = sp.TrainerParameters;
 
@@ -204,6 +228,7 @@ namespace AIDemoUI.ViewModels
             NetParametersVM.AreParametersGlobal = false;
             NetParametersVM.WeightMin_Global = sp.NetParameters.LayersParameters[0].WeightMin;
             NetParametersVM.WeightMax_Global = sp.NetParameters.LayersParameters[0].WeightMax;
+            //throw new ArgumentException($"Location: {GetType().Name}\nIsPropertyChangedNull: {IsPropertyChangedNull()}");
             NetParametersVM.BiasMin_Global = sp.NetParameters.LayersParameters[0].BiasMin;
             NetParametersVM.BiasMax_Global = sp.NetParameters.LayersParameters[0].BiasMax;
 
@@ -288,10 +313,11 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public void LayerParametersVMCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        // Redundant?
+        public void LayerParametersCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            NetParametersVM.NetParameters.LayersParameters = 
-                NetParametersVM.LayerParametersVMCollection.Select(x => x.LayerParameters).ToArray();
+            //NetParametersVM.NetParameters.LayersParameters = 
+            //    NetParametersVM.LayerParametersCollection.Select(x => x.LayerParameters).ToArray();
         }
 
 

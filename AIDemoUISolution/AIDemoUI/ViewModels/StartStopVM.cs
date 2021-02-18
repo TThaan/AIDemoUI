@@ -2,13 +2,34 @@
 using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using NeuralNetBuilder;
+using NeuralNetBuilder.FactoriesAndParameters;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
 {
-    public class StartStopVM : BaseSubVM
+    public interface IStartStopVM
+    {
+        INet Net { get; set; }
+        ITrainer Trainer { get; set; }
+        SampleSet SampleSet { get; set; }
+        bool IsLogged { get; set; }
+        bool IsPaused { get; set; }
+        bool IsStarted { get; set; }
+        string LogName { get; set; }
+        string StepButtonText { get; }
+        string TrainButtonText { get; }
+
+        IAsyncCommand InitializeNetCommand { get; set; }
+        IRelayCommand ShowSampleImportWindowCommand { get; set; }
+        IAsyncCommand TrainCommand { get; set; }
+        Task InitializeNetAsync(object parameter);
+        void ShowSampleImportWindow(object parameter);
+        Task TrainAsync(object parameter);
+        bool TrainAsync_CanExecute(object parameter);
+    }
+
+    public class StartStopVM : BaseSubVM, IStartStopVM
     {
         #region fields & ctor
 
@@ -17,33 +38,22 @@ namespace AIDemoUI.ViewModels
         ITrainer trainer;
         bool isStarted, isLogged;
         string logName;
-        IAsyncCommand initializeNetCommandAsync, trainCommandAsync;
-        IRelayCommand importSamplesCommand;
         private readonly SampleImportWindow _sampleImportWindow;
+        private readonly INetParameters _netParameters;
+        private readonly ITrainerParameters _trainerParameters;
 
-        public StartStopVM(ISessionContext sessionContext, SimpleMediator mediator, SampleImportWindow sampleImportWindow)
-            : base(sessionContext, mediator)
+        public StartStopVM(ISimpleMediator mediator, SampleImportWindow sampleImportWindow, INetParameters netParameters, ITrainerParameters trainerParameters)
+            : base(mediator)
         {
             _mediator.Register("Token: MainWindowVM", StartStopVMCallback);
             _sampleImportWindow = sampleImportWindow;
-            SetDefaultValues();
+            _netParameters = netParameters;
+            _trainerParameters = trainerParameters;
         }
-
         private void StartStopVMCallback(object obj)
         {
             throw new NotImplementedException();
         }
-
-        #region helpers
-
-        void SetDefaultValues()
-        {
-            IsStarted = false;
-            IsLogged = false;
-            LogName = Path.GetTempPath() + "AIDemoUI.txt";
-        }
-
-        #endregion
 
         #endregion
 
@@ -218,11 +228,11 @@ namespace AIDemoUI.ViewModels
 
         public async Task InitializeNetAsync(object parameter)
         {
-            Net = await Task.Run(() => Initializer.GetNet(_sessionContext.NetParameters));
+            Net = await Task.Run(() => Initializer.GetNet(_netParameters));
         }
         public void ShowSampleImportWindow(object parameter)
         {
-            _sampleImportWindow.Show();
+            _sampleImportWindow.Show(); // use a delegate?
         }
         public async Task TrainAsync(object parameter)
         {
@@ -230,7 +240,7 @@ namespace AIDemoUI.ViewModels
 
             if (Trainer == null)
             {
-                Trainer = await Task.Run(() => Initializer.GetTrainer(Net.GetCopy(), _sessionContext.TrainerParameters, SampleSet));
+                Trainer = await Task.Run(() => Initializer.GetTrainer(Net.GetCopy(), _trainerParameters, SampleSet));
                 // Trainer.PropertyChanged += _sessionContext.MainWindowVM.Trainer_PropertyChanged;
             }
 

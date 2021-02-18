@@ -15,7 +15,10 @@
     </d:UserControl.DataContext>
 
     <UserControl.Resources>
+        <conv:TestConverter x:Key="TestConverter"/>
         <DataTemplate x:Key="LayerParametersView">
+            <!-- DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=DataContext, Converter={StaticResource TestConverter}}"-->
+            <!-- DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext}"-->
             <views:LayerParametersView/>
         </DataTemplate>
     </UserControl.Resources>
@@ -30,7 +33,7 @@
         <Grid Grid.Column="0">
 
             <ListBox VerticalAlignment="Stretch"
-                     ItemsSource="{Binding LayerParametersVMCollection}" VerticalContentAlignment="Stretch">
+                     ItemsSource="{Binding LayerParametersCollection}" VerticalContentAlignment="Stretch">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal"/>
@@ -39,8 +42,8 @@
                 
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <ContentControl 
-                            Content="{Binding}"
+                        <!--DataContext="{Binding ElementName=thisRootElement, Path=DataContext}"-->
+                        <ContentControl                            
                             ContentTemplate="{StaticResource LayerParametersView}"/>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

@@ -1,19 +1,45 @@
-﻿using AIDemoUI.FactoriesAndStewards;
-using DeepLearningDataProvider;
+﻿using AIDemoUI.Commands;
+using AIDemoUI.FactoriesAndStewards;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
 {
-    public delegate Task OkBtnEventHandler(INetParameters netParameters, bool isTurnBased, SampleSetParameters sampleSetParameters);
+    public interface INetParametersVM
+    {
+        INetParameters NetParameters { get; set; }
+        ITrainerParameters TrainerParameters { get; set; }
+        ObservableCollection<ILayerParameters> LayerParametersCollection { get; }
+        IEnumerable<ActivationType> ActivationTypes { get; }
+        IEnumerable<CostType> CostTypes { get; }
+        IEnumerable<WeightInitType> WeightInitTypes { get; }
+        CostType CostType { get; set; }//Selected?
+        WeightInitType WeightInitType { get; set; }//Selected?
+        bool AreParametersGlobal { get; set; }
+        float BiasMin_Global { get; set; }
+        float BiasMax_Global { get; set; }
+        float WeightMin_Global { get; set; }
+        float WeightMax_Global { get; set; }
+        int EpochCount { get; set; }
+        float LearningRate { get; set; }
+        float LearningRateChange { get; set; }
+        string FileName { get; set; }
 
-    public class NetParametersVM : BaseSubVM
+        IRelayCommand AddCommand { get; set; }
+        IRelayCommand DeleteCommand { get; set; }
+        IRelayCommand MoveLeftCommand { get; set; }
+        IRelayCommand MoveRightCommand { get; set; }
+        void Add(object parameter);
+        void Delete(object parameter);
+        void MoveLeft(object parameter);
+        void MoveRight(object parameter);
+    }
+
+    public class NetParametersVM : BaseSubVM, INetParametersVM
     {
         #region fields & ctor
 
@@ -22,63 +48,32 @@ namespace AIDemoUI.ViewModels
         IEnumerable<WeightInitType> weightInitTypes;
         bool areParametersGlobal;
         float weightMin_Global, weightMax_Global, biasMin_Global, biasMax_Global;
+        ILayerParametersFactory _layerParametersFactory;
 
-        public NetParametersVM(ISessionContext sessionContext, SimpleMediator mediator, INetParameters netParameters, ITrainerParameters trainerParameters, ILayerParametersVMFactory layerParametersVMFactory, ObservableCollection<LayerParametersVM> layerParametersVMCollection)//ILayerParametersVM
-            : base(sessionContext, mediator)
+        public NetParametersVM(ISimpleMediator mediator,
+            INetParameters netParameters, ITrainerParameters trainerParameters,
+            ObservableCollection<ILayerParameters> layerParametersCollection, ILayerParametersFactory layerParametersFactory)
+            : base(mediator)
         {
             NetParameters = netParameters;
+            LayerParametersCollection = layerParametersCollection;
             TrainerParameters = trainerParameters;
-            LayerParametersVMFactory = layerParametersVMFactory;
-            LayerParametersVMCollection = layerParametersVMCollection;
+            _layerParametersFactory = layerParametersFactory;
 
             _mediator.Register("Token: MainWindowVM", NetParametersVMCallback);
-
-            SetDefaultValues();
         }
 
         private void NetParametersVMCallback(object obj)
         {
             throw new NotImplementedException();
         }
-        static int debuggingCounter = 0;
-
-        #region helpers
-        // In parameters class ?
-        internal void SetDefaultValues()
-        {
-            // Checking if this lives as a singleton.
-            if (debuggingCounter>0)
-            {
-
-            }
-            debuggingCounter++;
-
-            AreParametersGlobal = true;
-            WeightMin_Global = -1;
-            WeightMax_Global = 1;
-            BiasMin_Global = 0;
-            BiasMax_Global = 0;
-            CostType = CostType.SquaredMeanError;
-            WeightInitType = WeightInitType.Xavier;
-
-            LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(0));
-            LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(1));
-            LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(2));
-            LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(3));
-            LayerParametersVMCollection.Add(LayerParametersVMFactory.CreateLayerParametersVM(4));
-
-            LearningRate = .1f;
-            LearningRateChange = .9f;
-            EpochCount = 10;
-        }
-
-        #endregion
 
         #endregion
 
         #region public
 
         public INetParameters NetParameters { get; set; }
+        public ObservableCollection<ILayerParameters> LayerParametersCollection { get; }
         public ITrainerParameters TrainerParameters { get; set; }
         public string FileName
         {
@@ -92,8 +87,6 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public ILayerParametersVMFactory LayerParametersVMFactory { get; }
-        public ObservableCollection<LayerParametersVM> LayerParametersVMCollection { get; }
         public bool AreParametersGlobal
         {
             get { return areParametersGlobal; }
@@ -225,6 +218,71 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
+        #region Commands
+
+        public IRelayCommand AddCommand { get; set; }
+        public IRelayCommand DeleteCommand { get; set; }
+        public IRelayCommand MoveLeftCommand { get; set; }
+        public IRelayCommand MoveRightCommand { get; set; }
+
+        #region Executes and CanExecutes
+
+        public void Add(object parameter)
+        {
+            ILayerParameters lp = parameter as ILayerParameters;
+            if (lp == null) return;
+
+            int newLayerId = lp.Id + 1;
+            ILayerParameters newLayerParameters = _layerParametersFactory.CreateLayerParameters();
+            newLayerParameters.Id = newLayerId;
+            LayerParametersCollection.Insert(newLayerId, newLayerParameters);
+            AdjustIdsToNewPositions();
+        }
+        public void Delete(object parameter)
+        {
+            ILayerParameters lp = parameter as ILayerParameters;
+            if (lp == null) return;
+
+            LayerParametersCollection.Remove(lp);
+            AdjustIdsToNewPositions();
+        }
+        public void MoveLeft(object parameter)
+        {
+            ILayerParameters lp = parameter as ILayerParameters;
+            if (lp == null) return;
+
+            int currentLayerId = lp.Id;
+            LayerParametersCollection.Move(
+                currentLayerId, currentLayerId > 0 ? currentLayerId - 1 : 0);
+            AdjustIdsToNewPositions();
+        }
+        public void MoveRight(object parameter)
+        {
+            ILayerParameters lp = parameter as ILayerParameters;
+            if (lp == null) return;
+
+            int currentLayerId = lp.Id;
+            LayerParametersCollection.Move(
+                currentLayerId, currentLayerId < LayerParametersCollection.Count - 1 ? currentLayerId + 1 : 0);
+            AdjustIdsToNewPositions();
+        }
+
+        #region helpers
+
+        private void AdjustIdsToNewPositions()
+        {
+            for (int i = 0; i < LayerParametersCollection.Count; i++)
+            {
+                LayerParametersCollection[i].Id = i;
+            }
+        }
+
+        #endregion
+
+        #endregion
+
+        #endregion
+
         #region INotifyPropertyChanged
 
         protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -245,26 +303,26 @@ namespace AIDemoUI.ViewModels
         /// </summary>
         void SwitchBetweenGlobalAndLocalParameters()
         {
-            if (LayerParametersVMCollection == null) return;
+            if (LayerParametersCollection == null) return;
 
             if (AreParametersGlobal)
             {
-                foreach (var layerVM in LayerParametersVMCollection)
+                foreach (var layerParams in LayerParametersCollection)
                 {
-                    layerVM.LayerParameters.WeightMin = WeightMin_Global;
-                    layerVM.LayerParameters.WeightMax = WeightMax_Global;
-                    layerVM.LayerParameters.BiasMin = BiasMin_Global;
-                    layerVM.LayerParameters.BiasMax = BiasMax_Global;
+                    layerParams.WeightMin = WeightMin_Global;
+                    layerParams.WeightMax = WeightMax_Global;
+                    layerParams.BiasMin = BiasMin_Global;
+                    layerParams.BiasMax = BiasMax_Global;
                 }
             }
             else
             {
-                foreach (var layerVM in LayerParametersVMCollection)
+                foreach (var layerParams in LayerParametersCollection)
                 {
-                    layerVM.LayerParameters.WeightMin = layerVM.WeightMin;
-                    layerVM.LayerParameters.WeightMax = layerVM.WeightMax;
-                    layerVM.LayerParameters.BiasMin = layerVM.BiasMin;
-                    layerVM.LayerParameters.BiasMax = layerVM.BiasMax;
+                    layerParams.WeightMin = layerParams.WeightMin;
+                    layerParams.WeightMax = layerParams.WeightMax;
+                    layerParams.BiasMin = layerParams.BiasMin;
+                    layerParams.BiasMax = layerParams.BiasMax;
                 }
             }
         }

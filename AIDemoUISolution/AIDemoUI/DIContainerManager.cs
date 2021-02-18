@@ -5,16 +5,22 @@ using AIDemoUI.ViewModels;
 using AIDemoUI.Views;
 using Autofac;
 using DeepLearningDataProvider;
+using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
+using System;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 
 namespace AIDemoUI
 {
+    /// <summary>
+    /// Use file (json?) with default values??
+    /// </summary>
     public class DIContainerManager
     {
         static IContainer container;
         public static IContainer Container => container ?? (container = GetContainer());
-
 
         private static IContainer GetContainer()
         {
@@ -38,17 +44,18 @@ namespace AIDemoUI
 
             // Or SampleSetFactory?
             // builder.RegisterType<SampleSet>();  // .AsSelf()?
-            builder.Register(x => new SamplesSteward(x.Resolve<MainWindowVM>().SampleSet_StatusChanged))
+            builder.Register(x => new SamplesSteward(x.Resolve<IMainWindowVM>().SampleSet_StatusChanged))
                 .As<ISamplesSteward>();
-            builder.RegisterType<SampleSetParameters>();
+            builder.RegisterType<SampleSetParameters>()
+                .As<ISampleSetParameters>();
 
             #endregion
 
             #region SessionContext
 
-            builder.RegisterType<SessionContext>().As<ISessionContext>().SingleInstance();
+            // builder.RegisterType<SessionContext>().As<ISessionContext>().SingleInstance();
 
-            builder.RegisterType<LayerParametersVMFactory>().As<ILayerParametersVMFactory>();
+            builder.RegisterType<LayerParametersFactory>().As<ILayerParametersFactory>();
 
             #endregion
 
@@ -57,43 +64,46 @@ namespace AIDemoUI
             builder.RegisterType<BaseVM>()
                 .OnActivated(x =>
                 {
-                    x.Instance.UnfocusCommand = new RelayCommand(x.Context.Resolve<BaseVM>().Unfocus, y => true);
+                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);
                 });
 
             #endregion
 
             #region MainWindowVM
 
-            builder.RegisterType<MainWindowVM>().SingleInstance()
+            builder.RegisterType<MainWindowVM>()
+                .SingleInstance()
+                .As<IMainWindowVM>()
                 .OnActivated(x =>
                 {
-                    x.Instance.ExitCommand = new RelayCommand(x.Context.Resolve<MainWindowVM>().Exit, y => true);
-                    x.Instance.LoadParametersCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().LoadParametersAsync, y => true);
-                    x.Instance.SaveParametersCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().SaveParametersAsync, y => true);
-                    x.Instance.LoadInitializedNetCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().LoadInitializedNetAsync, y => true);
-                    x.Instance.SaveInitializedNetCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().SaveInitializedNetAsync, y => true);
-                    x.Instance.EnterLogNameCommand = new AsyncRelayCommand(x.Context.Resolve<MainWindowVM>().EnterLogNameAsync, y => true);
+                    x.Instance.ExitCommand = new RelayCommand(x.Instance.Exit, y => true);
+                    x.Instance.LoadParametersCommand = new AsyncRelayCommand(x.Instance.LoadParametersAsync, y => true);
+                    x.Instance.SaveParametersCommand = new AsyncRelayCommand(x.Instance.SaveParametersAsync, y => true);
+                    x.Instance.LoadInitializedNetCommand = new AsyncRelayCommand(x.Instance.LoadInitializedNetAsync, y => true);
+                    x.Instance.SaveInitializedNetCommand = new AsyncRelayCommand(x.Instance.SaveInitializedNetAsync, y => true);
+                    x.Instance.EnterLogNameCommand = new AsyncRelayCommand(x.Instance.EnterLogNameAsync, y => true);
                 });
 
             #endregion
 
             #region NetParametersVM
 
-            builder.RegisterType<NetParametersVM>().SingleInstance();
-
-            builder.Register(x =>
-            {
-                var result = new ObservableCollection<LayerParametersVM>();//ILayerParametersVM // Use Factory..?
-                return result;
-            })
+            builder.RegisterType<NetParametersVM>()
                 .SingleInstance()
-                .OnActivated(x => x.Instance.CollectionChanged += x.Context.Resolve<MainWindowVM>().LayerParametersVMCollection_CollectionChanged);
-
-            #endregion
-
-            #region LayerParametersVM
-
-            builder.RegisterType<LayerParametersVM>()//.As<ILayerParametersVM>()
+                .As<INetParametersVM>()
+                .OnActivating(x =>
+                {
+                    x.Instance.AreParametersGlobal = true;
+                    x.Instance.WeightMin_Global = -1;
+                    x.Instance.WeightMax_Global = 1;
+                    x.Instance.BiasMin_Global = 0;
+                    x.Instance.BiasMax_Global = 0;
+                    x.Instance.CostType = CostType.SquaredMeanError;
+                    x.Instance.WeightInitType = WeightInitType.Xavier;
+                    x.Instance.LearningRate = .1f;
+                    x.Instance.LearningRateChange = .9f;
+                    x.Instance.EpochCount = 10;
+                })
                 .OnActivated(x =>
                 {
                     x.Instance.AddCommand = new RelayCommand(x.Instance.Add, y => true);
@@ -102,43 +112,75 @@ namespace AIDemoUI
                     x.Instance.MoveRightCommand = new RelayCommand(x.Instance.MoveRight, y => true);
                 });
 
+            builder.Register(x =>
+            {
+                var result = new ObservableCollection<ILayerParameters>()
+                {
+                    new LayerParameters(){Id = 0, NeuronsPerLayer = 4, ActivationType=ActivationType.NullActivator, BiasMin = 0, BiasMax = 0, WeightMin = -1, WeightMax = 1},
+                    new LayerParameters(){Id = 1, NeuronsPerLayer = 8, ActivationType=ActivationType.Tanh, BiasMin = 0, BiasMax = 0, WeightMin = -1, WeightMax = 1},
+                    new LayerParameters(){Id = 2, NeuronsPerLayer = 4, ActivationType=ActivationType.LeakyReLU, BiasMin = 0, BiasMax = 0, WeightMin = -1, WeightMax = 1}
+                };
+                return result;
+            })
+                .SingleInstance()
+                .OnActivated(x => x.Instance.CollectionChanged += x.Context.Resolve<IMainWindowVM>().LayerParametersCollection_CollectionChanged);
+
             #endregion
 
             #region StartStopVM
 
-            builder.RegisterType<StartStopVM>().SingleInstance()
+            builder.RegisterType<StartStopVM>()
+                .SingleInstance()
+                .As<IStartStopVM>()
                 .OnActivated(x =>
                 {
-                    x.Instance.InitializeNetCommand = new AsyncRelayCommand(x.Context.Resolve<StartStopVM>().InitializeNetAsync, y => true);
-                    x.Instance.ShowSampleImportWindowCommand = new RelayCommand(x.Context.Resolve<StartStopVM>().ShowSampleImportWindow, y => true);
-                    x.Instance.TrainCommand = new AsyncRelayCommand(x.Context.Resolve<StartStopVM>().TrainAsync, x.Context.Resolve<StartStopVM>().TrainAsync_CanExecute);
+                    x.Instance.InitializeNetCommand = new AsyncRelayCommand(x.Instance.InitializeNetAsync, y => true);
+                    x.Instance.ShowSampleImportWindowCommand = new RelayCommand(x.Instance.ShowSampleImportWindow, y => true);
+                    x.Instance.TrainCommand = new AsyncRelayCommand(x.Instance.TrainAsync, x.Context.Resolve<IStartStopVM>().TrainAsync_CanExecute);
+                    x.Instance.IsStarted = false;
+                    x.Instance.IsLogged = false;
+                    x.Instance.LogName = Path.GetTempPath() + "AIDemoUI.txt";
                 });
 
             #endregion
 
             #region StatusVM
 
-            builder.RegisterType<StatusVM>().SingleInstance();//.As<IStatusVM>()
+            builder.RegisterType<StatusVM>()
+                .As<IStatusVM>()
+                .SingleInstance()
+                .OnActivated(x =>
+                {
+                    x.Instance.ProgressBarValue = 0;
+                    x.Instance.ProgressBarMax = 100;
+                    x.Instance.ProgressBarText = "Wpf AI Demo";
+                });//
 
             #endregion
 
             #region Sample Import (View and VM)
 
-            builder.RegisterType<SampleImportWindowVM>().SingleInstance()
+            builder.RegisterType<SampleImportWindowVM>()
+                .SingleInstance()
+                .As<ISampleImportWindowVM>()
                 .OnActivated(x =>
                 {
-                    x.Instance.SetSamplesLocationCommand = new AsyncRelayCommand(x.Context.Resolve<SampleImportWindowVM>().SetSamplesLocationAsync, x.Context.Resolve<SampleImportWindowVM>().SetSamplesLocationAsync_CanExecute);
-                    x.Instance.OkCommand = new AsyncRelayCommand(x.Context.Resolve<SampleImportWindowVM>().OkAsync, x.Context.Resolve<SampleImportWindowVM>().OkAsync_CanExecute);
+                    x.Instance.SetSamplesLocationCommand = new AsyncRelayCommand(x.Instance.SetSamplesLocationAsync, x.Context.Resolve<ISampleImportWindowVM>().SetSamplesLocationAsync_CanExecute);
+                    x.Instance.OkCommand = new AsyncRelayCommand(x.Instance.OkAsync, x.Context.Resolve<ISampleImportWindowVM>().OkAsync_CanExecute);
+                    x.Instance.SelectedTemplate = x.Instance.Templates.Values.First();
                 });
-            builder.Register(x => new SampleImportWindow() { DataContext = x.Resolve<SampleImportWindowVM>() }).SingleInstance();
+            builder.Register(x => new SampleImportWindow() { DataContext = x.Resolve<ISampleImportWindowVM>() }).SingleInstance();   //hm..
 
             #endregion
 
             #region Factories and Stewards
 
-            builder.RegisterType<LayerParametersVMFactory>();
-            builder.RegisterType<SamplesSteward>().As<ISamplesSteward>();
-            builder.RegisterType<SampleSetParametersSteward>().As<ISampleSetParametersSteward>();
+            builder.RegisterType<LayerParametersFactory>()
+                .As<ILayerParametersFactory>();
+            builder.RegisterType<SamplesSteward>()
+                .As<ISamplesSteward>();
+            builder.RegisterType<SampleSetParametersSteward>()
+                .As<ISampleSetParametersSteward>();
 
             #endregion
 
@@ -150,15 +192,16 @@ namespace AIDemoUI
 
             #region Mediator
 
-            builder.RegisterType<SimpleMediator>();
+            builder.RegisterType<SimpleMediator>()
+                .As<ISimpleMediator>();
 
             #endregion
 
             #region Event Handlers
 
             // Single?
-            // builder.Register(x => new DeepLearningDataProvider.StatusChangedEventHandler(x.Resolve<MainWindowVM>().SampleSet_StatusChanged));//.Named<StatusChangedEventHandler>("sampleSet_StatusChanged")
-            // builder.Register(x => new NotifyCollectionChangedEventHandler(x.Resolve<MainWindowVM>().LayerParametersVMCollection_CollectionChanged));//.Named<NotifyCollectionChangedEventHandler>("layerParametersVMCollection_StatusChanged")
+            // builder.Register(x => new DeepLearningDataProvider.StatusChangedEventHandler(x.Resolve<IMainWindowVM>().SampleSet_StatusChanged));//.Named<StatusChangedEventHandler>("sampleSet_StatusChanged")
+            // builder.Register(x => new NotifyCollectionChangedEventHandler(x.Resolve<IMainWindowVM>().LayerParametersVMCollection_CollectionChanged));//.Named<NotifyCollectionChangedEventHandler>("layerParametersVMCollection_StatusChanged")
 
             #endregion
 

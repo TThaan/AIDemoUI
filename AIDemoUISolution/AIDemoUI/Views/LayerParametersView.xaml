@@ -8,18 +8,23 @@
              xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
              xmlns:conv="clr-namespace:AIDemoUI.Converters"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    
+             d:DesignHeight="450" d:DesignWidth="800"
+             Name="rootControl">
+
     <d:UserControl.DataContext>
         <sd:NetParametersVMSampleData/>
     </d:UserControl.DataContext>
 
-    <!--<UserControl.Resources>
-        <conv:IntToBoolConverter x:Key="IntToBoolConverter"/>
-    </UserControl.Resources>-->
+    <UserControl.DataContext>
+        <Binding RelativeSource="{RelativeSource AncestorType=views:NetParametersView}" Path="DataContext"/><!-- redundant? -->
+    </UserControl.DataContext>
+    
+    <UserControl.Resources>
+        <conv:TestConverter x:Key="TestConverter"/>
+    </UserControl.Resources>
 
-    <Grid>
-
+    <StackPanel>
+        <!--<TextBlock IsEnabled="{Binding Converter={StaticResource TestConverter}}"></TextBlock>-->
         <!-- Column 2: 'Layers', 'Inputs' and 'Outputs' (actually: NetView!) -->
         <Grid>
 
@@ -38,24 +43,33 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-
+                
                 <!-- Row 0: Left, Delete, Right, Add -->
+                <!-- 
+                "Binding MoveLeftCommand" would work even though DataContext of this view is shown to be null and 
+                XamlUpdaterDesignDataContextCodeFixProvider encounters an error"
+                Instead: using "Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.MoveLeftCommand" circumvents the errors.
+                See also TiredWarlords answer on: https://social.msdn.microsoft.com/Forums/vstudio/en-US/c4f2644e-844e-4568-bbc9-cdcc5df9820d/datatemplates-datacontext-passedthrough-to-its-nested-usercontrol?forum=wpf
+                -->
                 <Button Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &lt;  " 
-                        Command="{Binding MoveLeftCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}}"/>
+                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.MoveLeftCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=Content}"/>
 
                 <Button Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" FontSize="20" MinWidth="50" Content="  -  " 
-                        Command="{Binding DeleteCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBox}}"/>
+                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.DeleteCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=Content}"/>
 
                 <Button Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" MinWidth="50" FontSize="20" Content="  &gt;  " 
-                        Command="{Binding MoveRightCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.MoveRightCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=Content}"/>
 
                 <Button Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" MinWidth="50" FontSize="20"  Content="  +  " 
-                        Command="{Binding AddCommand}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}}"/>
+                        Command="{Binding RelativeSource={RelativeSource AncestorType={x:Type UserControl}}, Path=DataContext.AddCommand}" CommandParameter="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=Content}"/>
 
                 <!-- Row 1: N -->
                 <TextBlock Grid.Row="1" Text="Neurons" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                <!-- Binding N (and Activation) needs "current" layer id from NetParametersVM (or LayerParametersView specific value..) -->
+
                 <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,5,0,5" 
-                    Name="N_Textbox" Text="{Binding N}">
+                    Name="N_Textbox" Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=Content.NeuronsPerLayer}">
                     <TextBox.InputBindings>
                         <KeyBinding Key="Return" 
                             Command="{Binding ElementName=thisRootElement, Path=DataContext.UnfocusCommand}" 
@@ -66,7 +80,7 @@
                 <!-- Row 2: Activation -->
                 <TextBlock Grid.Row="2" Text="Activation" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Margin="0,5,0,5" 
-                    ItemsSource="{Binding ElementName=thisRootElement, Path=DataContext.ActivationTypes}" SelectedItem="{Binding ActivationType}">
+                    ItemsSource="{Binding ElementName=thisRootElement, Path=DataContext.ActivationTypes}" SelectedItem="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=Content.ActivationType}">
                 </ComboBox>
 
                 <!-- Row 3: ins/outs -->
@@ -88,9 +102,12 @@
 
                 <TextBlock Grid.Row="4" Text="{Binding Id}"/>--> <!-- Id -->
 
+                <!--<TextBox Text="{Binding ElementName=rootControl, Path=DataContext, Converter={StaticResource TestConverter}}"/>-->
+                <!--<TextBox Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=Content, Converter={StaticResource TestConverter}}"/>-->
+                <!--<TextBox Text="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=DataContext, Converter={StaticResource TestConverter}}"/>-->
             </Grid>
 
         </Grid>
 
-    </Grid>
+    </StackPanel>
 </UserControl>

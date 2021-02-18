@@ -22,13 +22,13 @@
     </Window.DataContext>-->
     
     <Window.Resources>
-        <DataTemplate x:Key="NetParametersView">
+        <DataTemplate x:Key="NetParametersView">    <!-- Define DataContext here or in UserControl.Content? -->
             <views:NetParametersView/>
         </DataTemplate>
-        <DataTemplate x:Key="StatusView">
+        <DataTemplate x:Key="StatusView">           <!-- Define DataContext here or in UserControl.Content? -->
             <views:StatusView/>
         </DataTemplate>
-        <DataTemplate x:Key="StartStopView">
+        <DataTemplate x:Key="StartStopView">        <!-- Define DataContext here or in UserControl.Content? -->
             <views:StartStopView/>
         </DataTemplate>
         <!--<DataTemplate DataType="{x:Type vm:SampleImportWindowVM}">

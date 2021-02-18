@@ -29,6 +29,7 @@ namespace AIDemoUI.FactoriesAndStewards
         public ISampleSetParameters CreateSampleSetParameters(SetName setName)
         {
             // Consider scope!
+            // Remove parameter!
             return SampleSetParameters = 
                 _context.Resolve<SampleSetParameters>(new TypedParameter(typeof(SetName), setName));
         }

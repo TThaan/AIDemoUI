@@ -10,9 +10,9 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        protected readonly SimpleMediator _mediator;
+        protected readonly ISimpleMediator _mediator;
 
-        public BaseVM(SimpleMediator mediator)
+        public BaseVM(ISimpleMediator mediator)
         {
             _mediator = mediator;
         }
@@ -46,6 +46,12 @@ namespace AIDemoUI.ViewModels
         protected virtual void OnAllPropertiesChanged()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+        }
+
+        // debug
+        public bool IsPropertyChangedNull()
+        {
+            return PropertyChanged == null;
         }
 
         #endregion

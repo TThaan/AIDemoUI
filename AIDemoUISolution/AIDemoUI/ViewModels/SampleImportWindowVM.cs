@@ -1,52 +1,60 @@
 ﻿using AIDemoUI.Commands;
-using AIDemoUI.FactoriesAndStewards;
 using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
 {
-    public class SampleImportWindowVM : BaseSubVM
+    public interface ISampleImportWindowVM
+    {
+        Dictionary<SetName, SampleSetParameters> Templates { get; }
+        ObservableCollection<SetName> TemplateNames { get; }
+        SampleSetParameters SelectedTemplate { get; set; }
+        int TestingSamples { get; set; }
+        int TrainingSamples { get; set; }
+        string Url_TestingImages { get; set; }
+        string Url_TestingLabels { get; set; }
+        string Url_TrainingImages { get; set; }
+        string Url_TrainingLabels { get; set; }
+        bool UseAllAvailableTestingSamples { get; set; }
+        bool UseAllAvailableTrainingSamples { get; set; }
+
+        IAsyncCommand OkCommand { get; set; }
+        IAsyncCommand SetSamplesLocationCommand { get; set; }
+        Task OkAsync(object parameter);
+        bool OkAsync_CanExecute(object parameter);
+        Task SetSamplesLocationAsync(object parameter);
+        bool SetSamplesLocationAsync_CanExecute(object parameter);
+    }
+
+    public class SampleImportWindowVM : BaseSubVM, ISampleImportWindowVM
     {
         #region fields & ctor
 
         SampleSetParameters selectedSampleSetParameters;
         private readonly ISamplesSteward _samplesSteward;
 
-        public SampleImportWindowVM(ISessionContext sessionContext, SimpleMediator mediator, ISamplesSteward samplesSteward)
-            : base(sessionContext, mediator)
+        public SampleImportWindowVM(ISimpleMediator mediator, ISamplesSteward samplesSteward)
+            : base(mediator)
         {
             _samplesSteward = samplesSteward;
 
-            SetDefaultValues();
-
             _mediator.Register("Token: MainWindowVM", SampleImportWindowVMCallback);
         }
-
         private void SampleImportWindowVMCallback(object obj)
         {
             throw new NotImplementedException();
         }
 
-        #region helpers
-
-        void SetDefaultValues()
-        {
-            SelectedTemplate = Templates.Values.First();
-        }
-
-        #endregion
-
         #endregion
 
         #region public
-        
+
         public Dictionary<SetName, SampleSetParameters> Templates => _samplesSteward.Templates;
         public ObservableCollection<SetName> TemplateNames => Templates.Keys.ToObservableCollection();
         public SampleSetParameters SelectedTemplate
@@ -228,8 +236,6 @@ namespace AIDemoUI.ViewModels
         #endregion
 
         #endregion
-
-
 
         #region SampleSetChanged
 

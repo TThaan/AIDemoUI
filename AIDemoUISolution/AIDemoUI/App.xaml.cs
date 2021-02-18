@@ -1,13 +1,6 @@
-﻿using AIDemoUI.Commands;
-using AIDemoUI.FactoriesAndStewards;
-using AIDemoUI.SampleData;
-using AIDemoUI.ViewModels;
+﻿using AIDemoUI.ViewModels;
 using AIDemoUI.Views;
 using Autofac;
-using DeepLearningDataProvider;
-using NeuralNetBuilder.FactoriesAndParameters;
-using System;
-using System.Collections.ObjectModel;
 using System.Windows;
 
 namespace AIDemoUI
@@ -24,7 +17,6 @@ namespace AIDemoUI
             #region ServiceProvider
 
             // var serviceCollection = new ServiceCollection();
-            // serviceCollection.AddScoped(typeof(ISessionContext), typeof(SessionContext));
 
             #endregion
 
@@ -35,7 +27,7 @@ namespace AIDemoUI
 
             using (var scope = Container.BeginLifetimeScope())
             {
-                var mainWindowVM = scope.Resolve<MainWindowVM>();
+                var mainWindowVM = scope.Resolve<IMainWindowVM>();
                 MainWindow = new MainWindow() { DataContext = mainWindowVM };
                 MainWindow.Show();
             }

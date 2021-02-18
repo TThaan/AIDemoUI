@@ -22,11 +22,10 @@ namespace AIDemoUI.ViewModels
         float lastEpochsAccuracy, currentTotalCost;
         string progressBarText;
 
-        public StatusVM(ISessionContext sessionContext, SimpleMediator mediator)
-            : base(sessionContext, mediator)
+        public StatusVM(ISimpleMediator mediator)
+            : base(mediator)
         {
             _mediator.Register("Token: MainWindowVM", StatusVMCallback);
-            SetDefaultValues();
             //_mainVM.Trainer.StatusChanged += 
         }
 
@@ -34,17 +33,6 @@ namespace AIDemoUI.ViewModels
         {
             throw new NotImplementedException();
         }
-
-        #region helpers
-
-        void SetDefaultValues()
-        {
-            ProgressBarValue = 0;
-            ProgressBarMax = 100;
-            ProgressBarText = "Wpf AI Demo";
-        }
-
-        #endregion
 
         #endregion
 

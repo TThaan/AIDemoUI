@@ -5,51 +5,40 @@ using System.Collections.ObjectModel;
 
 namespace AIDemoUI
 {
-    public interface ISessionContext
-    {
-        INetParameters NetParameters { get; }
-        ILayerParameters LayerParameters { get; }
-        ITrainerParameters TrainerParameters { get; }
-        ObservableCollection<LayerParametersVM> LayerParametersVMCollection { get; }
-        //ILayerParametersVMFactory LayerParametersVMFactory { get; }
-        //SampleImportWindow SampleImportWindow { get; }  // ?
-        ISampleSetParametersSteward SampleSetParametersSteward { get; set; }
-        // StatusChangedEventHandler SampleSet_StatusChanged { get; set; }
-    }
+    //public interface ISessionContext
+    //{
+    //    INetParameters NetParameters { get; }
+    //    ILayerParameters LayerParameters { get; }
+    //    ITrainerParameters TrainerParameters { get; }
+    //    ILayerParametersFactory LayerParametersFactory { get; }
+    //    ISampleSetParametersSteward SampleSetParametersSteward { get; set; }
+    //}
 
     /// <summary>
-    /// Contains shared data of different view models.
+    /// Contains data shared among different view models.
     /// </summary>
-    public class SessionContext : ISessionContext
-    {
-        #region ctor
+    //public class SessionContext : ISessionContext
+    //{
+    //    #region ctor
 
-        public SessionContext(INetParameters netParameters,ILayerParameters layerParameters, ITrainerParameters trainerParameters, ObservableCollection<LayerParametersVM> layerParametersVMCollection, // ILayerParametersVM, ILayerParametersVMFactory layerParametersVMFactory
-                                                                                                                                                                                                        //SampleImportWindow sampleImportWindow,
-            ISampleSetParametersSteward sampleSetParametersSteward)//StatusChangedEventHandler sampleSet_StatusChanged
-        {
-            NetParameters = netParameters;
-            LayerParameters = layerParameters;
-            TrainerParameters = trainerParameters;
-            LayerParametersVMCollection = layerParametersVMCollection;
-            //LayerParametersVMFactory = layerParametersVMFactory;
-            //SampleImportWindow = sampleImportWindow;
+    //    public SessionContext(INetParameters netParameters,ILayerParameters layerParameters, ITrainerParameters trainerParameters, 
+    //        ILayerParametersFactory layerParametersFactory, ISampleSetParametersSteward sampleSetParametersSteward)
+    //    {
+    //        NetParameters = netParameters;
+    //        LayerParameters = layerParameters;
+    //        TrainerParameters = trainerParameters;
+    //        LayerParametersFactory = layerParametersFactory;
 
-            SampleSetParametersSteward = sampleSetParametersSteward;
-            //SampleSet_StatusChanged = sampleSet_StatusChanged;
-        }
+    //        SampleSetParametersSteward = sampleSetParametersSteward;
+    //    }
 
-        #endregion
+    //    #endregion
 
-        public INetParameters NetParameters { get; }
-        public ILayerParameters LayerParameters { get; }
-        public ITrainerParameters TrainerParameters { get; }
-        public ObservableCollection<LayerParametersVM> LayerParametersVMCollection { get; } // Later: Use only ObservableCollection<LayerParameter> in SessionContext!
-        //public ILayerParametersVMFactory LayerParametersVMFactory { get; }
-        public ILayerParametersVMCollectionFactory LayerParametersVMsFactory { get; }
-        //public SampleImportWindow SampleImportWindow { get; }
+    //    public INetParameters NetParameters { get; }
+    //    public ILayerParameters LayerParameters { get; }
+    //    public ITrainerParameters TrainerParameters { get; }
+    //    public ILayerParametersFactory LayerParametersFactory { get; }
 
-        public ISampleSetParametersSteward SampleSetParametersSteward { get; set; }
-        //public StatusChangedEventHandler SampleSet_StatusChanged { get; set; }
-    }
+    //    public ISampleSetParametersSteward SampleSetParametersSteward { get; set; }
+    //}
 }
