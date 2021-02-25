@@ -16,9 +16,8 @@
 
     <UserControl.Resources>
         <conv:TestConverter x:Key="TestConverter"/>
+        <conv:LayerParametersToLayerParametersVMConverter x:Key="LayerParametersToLayerParametersVMConverter"/>
         <DataTemplate x:Key="LayerParametersView">
-            <!-- DataContext="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=DataContext, Converter={StaticResource TestConverter}}"-->
-            <!-- DataContext="{Binding RelativeSource={RelativeSource Mode=Self}, Path=DataContext}"-->
             <views:LayerParametersView/>
         </DataTemplate>
     </UserControl.Resources>
@@ -32,8 +31,8 @@
         <!-- Column 1: 'Layer Parameters' -->
         <Grid Grid.Column="0">
 
-            <ListBox VerticalAlignment="Stretch"
-                     ItemsSource="{Binding LayerParametersCollection}" VerticalContentAlignment="Stretch">
+            <ListBox VerticalContentAlignment="Top" 
+                     ItemsSource="{Binding LayerParametersCollection}">
                 <ListBox.ItemsPanel>
                     <ItemsPanelTemplate>
                         <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal"/>
@@ -42,9 +41,14 @@
                 
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <!--DataContext="{Binding ElementName=thisRootElement, Path=DataContext}"-->
-                        <ContentControl                            
-                            ContentTemplate="{StaticResource LayerParametersView}"/>
+                        <ContentControl ContentTemplate="{StaticResource LayerParametersView}">
+                            <ContentControl.Content>
+                                <MultiBinding Converter="{StaticResource LayerParametersToLayerParametersVMConverter}">
+                                    <Binding/>
+                                    <Binding ElementName="thisRootElement" Path="DataContext.LayerParametersVMFactory"/>
+                                </MultiBinding>
+                            </ContentControl.Content>
+                        </ContentControl>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
@@ -57,22 +61,29 @@
 
             <!-- Weight and Bias Parameters -->
 
+            <!-- UseGlobalParameters -->
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Make Parameters Global" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" FontSize="16"/>
-                    <CheckBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,5" FontSize="16"
-                              IsChecked="{Binding AreParametersGlobal}">
+                    <TextBlock Text="Use Global Parameters" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" FontSize="16"/>
+                    <!-- behaviors:CommandBehaviors.EnablingCommand="{}" -->
+                    <CheckBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,5" FontSize="16"                              
+                              IsChecked="{Binding AreParametersGlobal, Mode=OneWay}"
+                              IsEnabled="{Binding AreParametersGlobal_IsEnabled}">
                         <CheckBox.LayoutTransform>
                             <ScaleTransform ScaleX="2" ScaleY="2"/>
                         </CheckBox.LayoutTransform>
+                        <CheckBox.InputBindings>
+                            <MouseBinding Gesture="LeftClick" Command="{Binding UseGlobalParametersCommand}" CommandParameter="{Binding}"/>
+                        </CheckBox.InputBindings>
                     </CheckBox>
                 </Grid>
             </Border>
 
+            <!-- WeightMin_Global -->
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -90,6 +101,7 @@
                 </Grid>
             </Border>
 
+            <!-- WeightMax_Global -->
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -107,6 +119,7 @@
                 </Grid>
             </Border>
 
+            <!-- BiasMin_Global -->
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -124,6 +137,7 @@
                 </Grid>
             </Border>
 
+            <!-- BiasMax_Global -->
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -141,6 +155,7 @@
                 </Grid>
             </Border>
 
+            <!-- CostTypes -->
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="CostType" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
@@ -149,6 +164,7 @@
                 </StackPanel>
             </Border>
 
+            <!-- WeightInitTypes -->
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="WeightInitType" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>

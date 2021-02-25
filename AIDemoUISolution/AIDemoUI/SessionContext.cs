@@ -1,44 +1,29 @@
-﻿using AIDemoUI.FactoriesAndStewards;
-using AIDemoUI.ViewModels;
-using NeuralNetBuilder.FactoriesAndParameters;
-using System.Collections.ObjectModel;
+﻿using NeuralNetBuilder.FactoriesAndParameters;
 
 namespace AIDemoUI
 {
-    //public interface ISessionContext
-    //{
-    //    INetParameters NetParameters { get; }
-    //    ILayerParameters LayerParameters { get; }
-    //    ITrainerParameters TrainerParameters { get; }
-    //    ILayerParametersFactory LayerParametersFactory { get; }
-    //    ISampleSetParametersSteward SampleSetParametersSteward { get; set; }
-    //}
+    public interface ISessionContext
+    {
+        INetParameters NetParameters { get; set; }
+        ITrainerParameters TrainerParameters { get; set; }
+    }
 
     /// <summary>
     /// Contains data shared among different view models.
     /// </summary>
-    //public class SessionContext : ISessionContext
-    //{
-    //    #region ctor
+    public class SessionContext : ISessionContext
+    {
+        #region ctor
 
-    //    public SessionContext(INetParameters netParameters,ILayerParameters layerParameters, ITrainerParameters trainerParameters, 
-    //        ILayerParametersFactory layerParametersFactory, ISampleSetParametersSteward sampleSetParametersSteward)
-    //    {
-    //        NetParameters = netParameters;
-    //        LayerParameters = layerParameters;
-    //        TrainerParameters = trainerParameters;
-    //        LayerParametersFactory = layerParametersFactory;
+        public SessionContext(INetParameters netParameters, ITrainerParameters trainerParameters)
+        {
+            NetParameters = netParameters;
+            TrainerParameters = trainerParameters;
+        }
 
-    //        SampleSetParametersSteward = sampleSetParametersSteward;
-    //    }
+        #endregion
 
-    //    #endregion
-
-    //    public INetParameters NetParameters { get; }
-    //    public ILayerParameters LayerParameters { get; }
-    //    public ITrainerParameters TrainerParameters { get; }
-    //    public ILayerParametersFactory LayerParametersFactory { get; }
-
-    //    public ISampleSetParametersSteward SampleSetParametersSteward { get; set; }
-    //}
+        public INetParameters NetParameters { get; set; }
+        public ITrainerParameters TrainerParameters { get; set; }
+    }
 }

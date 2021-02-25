@@ -1,4 +1,5 @@
-﻿using NeuralNetBuilder.FactoriesAndParameters;
+﻿using NeuralNetBuilder;
+using NeuralNetBuilder.FactoriesAndParameters;
 using System;
 using System.Globalization;
 using System.Windows.Controls;
@@ -12,12 +13,14 @@ namespace AIDemoUI.Converters
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            throw new System.ArgumentException($"value = null: {value == null}\n");
             if (value != null) 
             { 
-                var v = value.GetType().Name; 
+                var v = value.GetType().Name;
             }
+            // throw new System.ArgumentException($"value type: {value.GetType().Name}\n");
+            // throw new System.ArgumentException($"value: {(ActivationType)value}\n");
             ILayerParameters lp = value as LayerParameters;
-            // throw new ArgumentException($"value = null: {value == null}\n");
             // return ((value as ILayerParameters) == null).ToString();
             if (value == null) return "value is null";
             return "value type: " + value.GetType().Name;

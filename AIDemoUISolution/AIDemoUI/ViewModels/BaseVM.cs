@@ -6,7 +6,19 @@ using System.Windows;
 
 namespace AIDemoUI.ViewModels
 {
-    public class BaseVM : INotifyPropertyChanged
+    public interface IBaseVM
+    {
+        IRelayCommand UnfocusCommand { get; set; }
+        event PropertyChangedEventHandler PropertyChanged;
+        void OnAllPropertiesChanged();
+
+        void Unfocus(object parameter);
+
+        // debugging
+        bool IsPropertyChangedNull();
+    }
+
+    public class BaseVM : INotifyPropertyChanged, IBaseVM
     {
         #region fields & ctor
 
@@ -43,12 +55,12 @@ namespace AIDemoUI.ViewModels
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
-        protected virtual void OnAllPropertiesChanged()
+        public virtual void OnAllPropertiesChanged()
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
         }
 
-        // debug
+        // debugging
         public bool IsPropertyChangedNull()
         {
             return PropertyChanged == null;

@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
 {
-    public interface ISampleImportWindowVM
+    public interface ISampleImportWindowVM : IBaseVM
     {
         Dictionary<SetName, SampleSetParameters> Templates { get; }
         ObservableCollection<SetName> TemplateNames { get; }

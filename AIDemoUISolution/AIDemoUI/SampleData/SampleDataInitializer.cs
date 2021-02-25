@@ -4,36 +4,39 @@ using AIDemoUI.Views;
 using Autofac;
 using DeepLearningDataProvider;
 using NeuralNetBuilder.FactoriesAndParameters;
-using System.Collections.ObjectModel;
 
 namespace AIDemoUI.SampleData
 {
-    public class SampleDataBootStrapper// : SampleDataBootStrapper
+    /// <summary>
+    /// Actually this only provides static properties to be used in VMSampleData constructors.
+    /// They don't bear any default values.
+    /// 
+    /// wa: one class ViewModelsSampleData with parameterless ctor incl props ... nope..
+    /// wa: prop = context.Resolve..?
+    /// </summary>
+    public class SampleDataInitializer// : ISampleDataInitializer
     {
         #region fields & ctors
 
-        static SampleDataBootStrapper()
+        static SampleDataInitializer()
         {
-            var container = DIContainerManager.Container;
-            container.Resolve<SampleDataBootStrapper>();
+            new DIManager().Container.Resolve<SampleDataInitializer>();
         }
-        public SampleDataBootStrapper(
-            INetParameters netParameters, ITrainerParameters trainerParameters, ILayerParameters layerParameters,
-            IMainWindowVM mainWindowVM, INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM, 
-            ObservableCollection<ILayerParameters> layerParametersCollection, 
-            ILayerParametersFactory layerParametersFactory, ISamplesSteward samplesSteward,
+
+        public SampleDataInitializer(
+            ISessionContext sessionContext, ILayerParameters layerParameters,
+            IMainWindowVM mainWindowVM, INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM,
+            ILayerParametersVMFactory layerParametersVMFactory, ILayerParametersFactory layerParametersFactory, ISamplesSteward samplesSteward,
             SampleImportWindow sampleImportWindow, ISimpleMediator mediator)
         {
-            //SampleSessionContext = sessionContext;
+            SampleSessionContext = sessionContext;
             SampleMainWindowVM = mainWindowVM;
-            SampleNetParameters = netParameters;
-            SampleTrainerParameters = trainerParameters;
             SampleLayerParameters = layerParameters;
+            SampleLayerParametersVMFactory = layerParametersVMFactory;
             SampleLayerParametersFactory = layerParametersFactory;
             SampleNetParametersVM = netParametersVM;
             SampleStartStopVM = startStopVM;
             SampleStatusVM = statusVM;
-            SampleLayerParametersCollection = layerParametersCollection;
             SampleSampleImportWindow = sampleImportWindow;
             SampleMediator = mediator;
             SampleSamplesSteward = samplesSteward;
@@ -43,17 +46,15 @@ namespace AIDemoUI.SampleData
 
         #region public
 
-        //public static ISessionContext SampleSessionContext { get; set; }
+        public static ISessionContext SampleSessionContext { get; set; }
         public static IMainWindowVM SampleMainWindowVM { get; set; }
-        public static INetParameters SampleNetParameters { get; set; }
-        public static ITrainerParameters SampleTrainerParameters { get; set; }
         public static ILayerParameters SampleLayerParameters { get; set; }
         public static INetParametersVM SampleNetParametersVM { get; set; }
         public static IStartStopVM SampleStartStopVM { get; set; }
         public static IStatusVM SampleStatusVM { get; set; }
-        public static ObservableCollection<ILayerParameters> SampleLayerParametersCollection { get; set; }
         public static SampleImportWindow SampleSampleImportWindow { get; set; }  // use a adelegate?
         public static ISimpleMediator SampleMediator { get; set; }
+        public static ILayerParametersVMFactory SampleLayerParametersVMFactory { get; set; }
         public static ILayerParametersFactory SampleLayerParametersFactory { get; set; }
         public static ISamplesSteward SampleSamplesSteward { get; set; }
 

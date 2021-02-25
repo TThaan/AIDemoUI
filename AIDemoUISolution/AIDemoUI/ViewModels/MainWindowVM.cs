@@ -6,7 +6,6 @@ using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,11 +13,11 @@ using System.Windows;
 
 namespace AIDemoUI.ViewModels
 {
-    public interface IMainWindowVM
+    public interface IMainWindowVM : IBaseVM
     {
-        INetParametersVM NetParametersVM { get; }
-        IStartStopVM StartStopVM { get; }
-        IStatusVM StatusVM { get; }
+        INetParametersVM NetParametersVM { get; set; }
+        IStartStopVM StartStopVM { get; set; }
+        IStatusVM StatusVM { get; set; }
 
         IAsyncCommand EnterLogNameCommand { get; set; }
         IAsyncCommand LoadParametersCommand { get; set; }
@@ -42,31 +41,72 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        private ILayerParametersFactory _layerParametersFactory;
+        private readonly ISessionContext _sessionContext;
+        // private ILayerParametersVMFactory _layerParametersFactory;
+        private INetParametersVM netParametersVM;
+        private IStatusVM statusVM;
+        private IStartStopVM startStopVM;
 
-        public MainWindowVM(INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM,
-            ILayerParametersFactory layerParametersVMFactory, ISimpleMediator mediator)
+        public MainWindowVM(ISessionContext sessionContext, INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM,
+            ISimpleMediator mediator)//ILayerParametersVMFactory layerParametersVMFactory, 
             : base(mediator)
         {
+            _sessionContext = sessionContext;
             NetParametersVM = netParametersVM;
             StartStopVM = startStopVM;
             StatusVM = statusVM;
-            _layerParametersFactory = layerParametersVMFactory;
+            // _layerParametersFactory = layerParametersVMFactory;
 
             _mediator.Register("Token: MainWindowVM", MainWindowVMCallback);
+
+            //throw new ArgumentException($"{NetParametersVM.LayerParametersVMCollection == null}");
         }
         void MainWindowVMCallback(object obj)
         {
 
         }
 
+
         #endregion
 
         #region public
 
-        public INetParametersVM NetParametersVM { get; }
-        public IStatusVM StatusVM { get; }
-        public IStartStopVM StartStopVM { get; }
+        public INetParametersVM NetParametersVM
+        {
+            get { return netParametersVM; }
+            set
+            {
+                if (netParametersVM != value)
+                {
+                    netParametersVM = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public IStatusVM StatusVM
+        {
+            get { return statusVM; }
+            set
+            {
+                if (statusVM != value)
+                {
+                    statusVM = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public IStartStopVM StartStopVM
+        {
+            get { return startStopVM; }
+            set
+            {
+                if (startStopVM != value)
+                {
+                    startStopVM = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         #endregion
 
@@ -133,8 +173,13 @@ namespace AIDemoUI.ViewModels
             {
                 SerializedParameters sp = new SerializedParameters()
                 {
-                    NetParameters = NetParametersVM.NetParameters,
-                    TrainerParameters = NetParametersVM.TrainerParameters
+                    NetParameters = _sessionContext.NetParameters,
+                    TrainerParameters = _sessionContext.TrainerParameters,
+                    UseGlobalParameters = netParametersVM.AreParametersGlobal,
+                    BiasMin_Global = netParametersVM.BiasMin_Global,
+                    BiasMax_Global = netParametersVM.BiasMax_Global,
+                    WeightMin_Global = netParametersVM.WeightMin_Global,
+                    WeightMax_Global = netParametersVM.WeightMax_Global
                 };
 
                 if (!string.IsNullOrEmpty(saveFileDialog.FileName))
@@ -211,30 +256,27 @@ namespace AIDemoUI.ViewModels
         }
         void SetLoadedValues(SerializedParameters sp)
         {
-            NetParametersVM.NetParameters = sp.NetParameters;
-            NetParametersVM.LayerParametersCollection.Clear();
-            foreach (var layerParameters in sp.NetParameters.LayersParameters)  // ta naming: layerParameters != LayersParameters
-            {
-                NetParametersVM.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters());
-                NetParametersVM.LayerParametersCollection.Last().Id = layerParameters.Id;
-            }
-            NetParametersVM.TrainerParameters = sp.TrainerParameters;
+            _sessionContext.NetParameters = sp.NetParameters;
 
-            // After loading serialized parameters each local property gets set to it's stored value.
-            // So the value of AreParametersGlobal can be set to false here by default
-            // and the global properties can be set to the parameters of the first layer.
-            // This way they are correct in the case of AreParametersGlobal being true
-            // whereas they get ignored otherwise.
-            NetParametersVM.AreParametersGlobal = false;
-            NetParametersVM.WeightMin_Global = sp.NetParameters.LayersParameters[0].WeightMin;
-            NetParametersVM.WeightMax_Global = sp.NetParameters.LayersParameters[0].WeightMax;
-            //throw new ArgumentException($"Location: {GetType().Name}\nIsPropertyChangedNull: {IsPropertyChangedNull()}");
-            NetParametersVM.BiasMin_Global = sp.NetParameters.LayersParameters[0].BiasMin;
-            NetParametersVM.BiasMax_Global = sp.NetParameters.LayersParameters[0].BiasMax;
+            // Refactor!:
+            //NetParametersVM.LayerParametersVMCollection.Clear();
+            //foreach (var layerParameters in sp.NetParameters.LayerParametersCollection)  // ta naming: layerParameters != LayersParameters
+            //{
+            //    // NetParametersVM.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters(NetParametersVM.LayerParametersCollection?.Last()));
+            //    // NetParametersVM.LayerParametersCollection.Last().Id = layerParameters.Id;
+            //}
+
+            _sessionContext.TrainerParameters = sp.TrainerParameters;
+
+            NetParametersVM.AreParametersGlobal = sp.UseGlobalParameters;
+            NetParametersVM.WeightMin_Global = sp.WeightMin_Global;
+            NetParametersVM.WeightMax_Global = sp.WeightMax_Global;
+            NetParametersVM.BiasMin_Global = sp.BiasMin_Global;
+            NetParametersVM.BiasMax_Global = sp.BiasMax_Global;
 
             // Notify the UI (via properties in NetParametersVM  and LayerParametersVMs)
             // about changed values in NetParameters and LayerParameters.
-            OnAllPropertiesChanged();
+            netParametersVM.OnAllPropertiesChanged();//LayerParametersCollection-chg notified??
         }
         static void Serialize<T>(T target, string fileName)
         {
@@ -251,6 +293,15 @@ namespace AIDemoUI.ViewModels
                 BinaryFormatter bf = new BinaryFormatter();
                 return (T)bf.Deserialize(stream);
             }
+        }
+        private void UpdateLocalParameters()
+        {
+            // NetParametersVM.LayerParametersCollection.Clear();
+            //foreach (var layerParameters in LayerParametersCollection)  // ta naming: layerParameters != LayersParameters
+            //{
+            //    NetParametersVM.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters(NetParametersVM.LayerParametersCollection?.Last()));
+            //    NetParametersVM.LayerParametersCollection.Last().Id = layerParameters.Id;
+            //}
         }
 
         #endregion
@@ -319,7 +370,6 @@ namespace AIDemoUI.ViewModels
             //NetParametersVM.NetParameters.LayersParameters = 
             //    NetParametersVM.LayerParametersCollection.Select(x => x.LayerParameters).ToArray();
         }
-
 
         #endregion
     }

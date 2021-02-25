@@ -1,12 +1,12 @@
 ﻿using AIDemoUI.ViewModels;
-using static AIDemoUI.SampleData.SampleDataBootStrapper;
+using static AIDemoUI.SampleData.SampleDataInitializer;
 
 namespace AIDemoUI.SampleData
 {
     public class StartStopVMSampleData : StartStopVM
     {
         public StartStopVMSampleData()
-            : base(SampleMediator, SampleSampleImportWindow, SampleNetParameters, SampleTrainerParameters)
+            : base(SampleSessionContext, SampleMediator, SampleSampleImportWindow)
         {
         }
     }

@@ -6,6 +6,11 @@ using System.Windows.Input;
 
 namespace AIDemoUI.Commands
 {
+    public interface IAsyncCommand : ICommand
+    {
+        Task ExecuteAsync(object parameter);
+    }
+
     public class AsyncRelayCommand : IAsyncCommand
     {
         #region IAsyncCommand fields
@@ -33,16 +38,10 @@ namespace AIDemoUI.Commands
         {
             if (CanExecute())
             {
-                //_isExecuting = true;
-                //await _execute(parameter);
                 try
                 {
                     _isExecuting = true;
                     await _execute(parameter);
-                }
-                catch(Exception e)
-                {
-                    MessageBox.Show($"Exception in {GetType().Name}.{nameof(ExecuteAsync)}.\n({e.Message})");
                 }
                 finally
                 {
@@ -59,7 +58,7 @@ namespace AIDemoUI.Commands
         public bool CanExecute(object parameter = null)
         {
             return
-                // !_isExecuting &&
+                !_isExecuting &&
                 (_canExecute?.Invoke(parameter) ?? true);
         }
         public event EventHandler CanExecuteChanged
@@ -75,15 +74,12 @@ namespace AIDemoUI.Commands
         }
         public void Execute(object parameter)
         {
-            if (_execute != null)
-            {
-                ExecuteAsync(parameter).FireAndForgetSafeAsync();
-            }
-            else { _execute(parameter); }
+            ExecuteAsync(parameter).FireAndForgetSafeAsync();
         }
         public void OnCanExecuteChanged()
         {
             CommandManager.InvalidateRequerySuggested();
+            // CanExecuteChanged?.Invoke(this, EventArgs.Empty);
         }
 
         #endregion

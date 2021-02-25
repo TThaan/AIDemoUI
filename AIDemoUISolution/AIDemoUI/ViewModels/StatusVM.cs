@@ -2,7 +2,7 @@
 
 namespace AIDemoUI.ViewModels
 {
-    public interface IStatusVM
+    public interface IStatusVM : IBaseVM
     {
         int CurrentEpoch { get; set; }
         int CurrentSample { get; set; }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
 {
-    public interface IStartStopVM
+    public interface IStartStopVM : IBaseVM
     {
         INet Net { get; set; }
         ITrainer Trainer { get; set; }
@@ -31,24 +31,25 @@ namespace AIDemoUI.ViewModels
 
     public class StartStopVM : BaseSubVM, IStartStopVM
     {
-        #region fields & ctor
+        #region fields, private properties & ctor
 
+        private readonly ISessionContext _sessionContext;
+        INetParameters _netParameters => _sessionContext.NetParameters;
+        ITrainerParameters _trainerParameters => _sessionContext.TrainerParameters;
         INet net;
-        SampleSet sampleSet;
         ITrainer trainer;
+        SampleSet sampleSet;
         bool isStarted, isLogged;
         string logName;
         private readonly SampleImportWindow _sampleImportWindow;
-        private readonly INetParameters _netParameters;
-        private readonly ITrainerParameters _trainerParameters;
 
-        public StartStopVM(ISimpleMediator mediator, SampleImportWindow sampleImportWindow, INetParameters netParameters, ITrainerParameters trainerParameters)
+        public StartStopVM(ISessionContext sessionContext, ISimpleMediator mediator, SampleImportWindow sampleImportWindow)
             : base(mediator)
         {
-            _mediator.Register("Token: MainWindowVM", StartStopVMCallback);
+            _sessionContext = sessionContext;
+
             _sampleImportWindow = sampleImportWindow;
-            _netParameters = netParameters;
-            _trainerParameters = trainerParameters;
+            _mediator.Register("Token: MainWindowVM", StartStopVMCallback);
         }
         private void StartStopVMCallback(object obj)
         {
@@ -59,23 +60,6 @@ namespace AIDemoUI.ViewModels
 
         #region public
 
-        public SampleSet SampleSet
-        {
-            get
-            {
-                return sampleSet;
-            }
-            set
-            {
-                if (sampleSet != value)
-                {
-                    sampleSet = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(TrainButtonText));
-                    OnSubViewModelChanged();
-                }
-            }
-        }
         public INet Net
         {
             get
@@ -104,6 +88,23 @@ namespace AIDemoUI.ViewModels
                 if (trainer != value)
                 {
                     trainer = value;
+                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(TrainButtonText));
+                    OnSubViewModelChanged();
+                }
+            }
+        }
+        public SampleSet SampleSet
+        {
+            get
+            {
+                return sampleSet;
+            }
+            set
+            {
+                if (sampleSet != value)
+                {
+                    sampleSet = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(TrainButtonText));
                     OnSubViewModelChanged();

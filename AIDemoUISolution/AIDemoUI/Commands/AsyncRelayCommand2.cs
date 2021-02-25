@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AIDemoUI
+namespace AIDemoUI.Commands
 {
-    public class DefaultValues
+    class AsyncRelayCommand2
     {
-
     }
 }

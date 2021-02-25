@@ -1,5 +1,5 @@
 ﻿using AIDemoUI.ViewModels;
-using static AIDemoUI.SampleData.SampleDataBootStrapper;
+using static AIDemoUI.SampleData.SampleDataInitializer;
 
 namespace AIDemoUI.SampleData
 {
