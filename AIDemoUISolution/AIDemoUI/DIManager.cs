@@ -52,7 +52,8 @@ namespace AIDemoUI
             // Or SampleSetFactory?
             // builder.RegisterType<SampleSet>();  // .AsSelf()?
             builder.Register(x => new SamplesSteward(x.Resolve<IMainWindowVM>().SampleSet_StatusChanged))
-                .As<ISamplesSteward>();
+                .As<ISamplesSteward>()
+                .SingleInstance();
             builder.RegisterType<SampleSetParameters>()
                 .As<ISampleSetParameters>();
 
@@ -126,7 +127,7 @@ namespace AIDemoUI
                 {
                     x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
                     x.Instance.InitializeNetCommand = new AsyncRelayCommand(x.Instance.InitializeNetAsync, y => true);
-                    x.Instance.ShowSampleImportWindowCommand = new RelayCommand(x.Instance.ShowSampleImportWindow, y => true);
+                    x.Instance.ShowSampleImportWindowCommand = new AsyncRelayCommand(x.Instance.ShowSampleImportWindow, y => true);
                     x.Instance.TrainCommand = new AsyncRelayCommand(x.Instance.TrainAsync, x.Instance.TrainAsync_CanExecute);
                 });
 

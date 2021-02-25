@@ -37,11 +37,13 @@ namespace AIDemoUI.ViewModels
         #region fields & ctor
 
         SampleSetParameters selectedSampleSetParameters;
+        private readonly ISessionContext _sessionContext;
         private readonly ISamplesSteward _samplesSteward;
 
-        public SampleImportWindowVM(ISimpleMediator mediator, ISamplesSteward samplesSteward)
+        public SampleImportWindowVM(ISessionContext sessionContext, ISimpleMediator mediator, ISamplesSteward samplesSteward)
             : base(mediator)
         {
+            _sessionContext = sessionContext;
             _samplesSteward = samplesSteward;
 
             _mediator.Register("Token: MainWindowVM", SampleImportWindowVMCallback);
@@ -217,7 +219,7 @@ namespace AIDemoUI.ViewModels
         public async Task OkAsync(object parameter)
         {
             (parameter as SampleImportWindow)?.Hide();
-            await _samplesSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here? Like: _mediator.GetSampleSet_StatusChanged()..
+            _sessionContext.SampleSet = await _samplesSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here? Like: _mediator.GetSampleSet_StatusChanged()..
         }
         public bool OkAsync_CanExecute(object parameter)
         {

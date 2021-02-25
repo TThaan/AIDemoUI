@@ -1,4 +1,5 @@
-﻿using NeuralNetBuilder.FactoriesAndParameters;
+﻿using DeepLearningDataProvider;
+using NeuralNetBuilder.FactoriesAndParameters;
 
 namespace AIDemoUI
 {
@@ -6,6 +7,7 @@ namespace AIDemoUI
     {
         INetParameters NetParameters { get; set; }
         ITrainerParameters TrainerParameters { get; set; }
+        SampleSet SampleSet { get; set; }
     }
 
     /// <summary>
@@ -25,5 +27,6 @@ namespace AIDemoUI
 
         public INetParameters NetParameters { get; set; }
         public ITrainerParameters TrainerParameters { get; set; }
+        public SampleSet SampleSet { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace AIDemoUI.SampleData
         #region ctor
 
         public SampleImportWindowVMSampleData()
-            : base(SampleMediator, SampleSamplesSteward) { }
+            : base(SampleSessionContext, SampleMediator, SampleSamplesSteward) { }
 
         #endregion
     }

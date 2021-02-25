@@ -4,7 +4,9 @@ using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace AIDemoUI.ViewModels
 {
@@ -12,7 +14,7 @@ namespace AIDemoUI.ViewModels
     {
         INet Net { get; set; }
         ITrainer Trainer { get; set; }
-        SampleSet SampleSet { get; set; }
+        SampleSet SampleSet { get; }
         bool IsLogged { get; set; }
         bool IsPaused { get; set; }
         bool IsStarted { get; set; }
@@ -21,10 +23,10 @@ namespace AIDemoUI.ViewModels
         string TrainButtonText { get; }
 
         IAsyncCommand InitializeNetCommand { get; set; }
-        IRelayCommand ShowSampleImportWindowCommand { get; set; }
+        IAsyncCommand ShowSampleImportWindowCommand { get; set; }
         IAsyncCommand TrainCommand { get; set; }
         Task InitializeNetAsync(object parameter);
-        void ShowSampleImportWindow(object parameter);
+        Task ShowSampleImportWindow(object parameter);
         Task TrainAsync(object parameter);
         bool TrainAsync_CanExecute(object parameter);
     }
@@ -36,9 +38,8 @@ namespace AIDemoUI.ViewModels
         private readonly ISessionContext _sessionContext;
         INetParameters _netParameters => _sessionContext.NetParameters;
         ITrainerParameters _trainerParameters => _sessionContext.TrainerParameters;
-        INet net;
-        ITrainer trainer;
-        SampleSet sampleSet;
+        INet net;//sessionContext?
+        ITrainer trainer;//sessionContext?
         bool isStarted, isLogged;
         string logName;
         private readonly SampleImportWindow _sampleImportWindow;
@@ -94,23 +95,7 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public SampleSet SampleSet
-        {
-            get
-            {
-                return sampleSet;
-            }
-            set
-            {
-                if (sampleSet != value)
-                {
-                    sampleSet = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(TrainButtonText));
-                    OnSubViewModelChanged();
-                }
-            }
-        }
+        public SampleSet SampleSet => _sessionContext.SampleSet;
         public bool IsStarted
         {
             get
@@ -222,7 +207,7 @@ namespace AIDemoUI.ViewModels
         #region Commands
 
         public IAsyncCommand InitializeNetCommand { get; set; }
-        public IRelayCommand ShowSampleImportWindowCommand { get; set; }
+        public IAsyncCommand ShowSampleImportWindowCommand { get; set; }
         public IAsyncCommand TrainCommand { get; set; }
 
         #region Executes and CanExecutes
@@ -231,9 +216,16 @@ namespace AIDemoUI.ViewModels
         {
             Net = await Task.Run(() => Initializer.GetNet(_netParameters));
         }
-        public void ShowSampleImportWindow(object parameter)
+        public async Task ShowSampleImportWindow(object parameter)// Only use async commands??
         {
-            _sampleImportWindow.Show(); // use a delegate?
+            await Task.Run(() =>
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    _sampleImportWindow.Show(); // use a delegate?
+                });
+            });
+            OnPropertyChanged(nameof(SampleSet));
         }
         public async Task TrainAsync(object parameter)
         {
@@ -272,8 +264,10 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
+        [DebuggerStepThrough]
         public bool TrainAsync_CanExecute(object parameter)
         {
+            OnPropertyChanged(nameof(TrainButtonText));
             return SampleSet != null && Net != null;
         }
 
