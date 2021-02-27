@@ -193,6 +193,12 @@ namespace AIDemoUI
 
             #endregion
 
+            #region MockData
+
+            builder.RegisterType<MockData>().SingleInstance();
+
+            #endregion
+
             #region Mediator
 
             builder.RegisterType<SimpleMediator>()

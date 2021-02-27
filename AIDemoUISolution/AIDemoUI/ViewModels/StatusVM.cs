@@ -44,7 +44,7 @@ namespace AIDemoUI.ViewModels
         public int Epochs => _sessionContext.Trainer.Epochs;
         public int CurrentEpoch => _sessionContext.Trainer.CurrentEpoch;
         public int CurrentSample => _sessionContext.Trainer.CurrentSample;
-        public float CurrentTotalCost => _sessionContext.Trainer.CurrentTotalCost;
+        public float CurrentTotalCost => _sessionContext.Trainer.CurrentTotalCost;  // unused so far..
         public float LastEpochsAccuracy => _sessionContext.Trainer.LastEpochsAccuracy;
         public string Status => $"{_sessionContext.SampleSet?.Status}\n{_sessionContext.Trainer.Status}";   // remove question mark
 

@@ -1,9 +1,6 @@
 ﻿using AIDemoUI.ViewModels;
-using MatrixHelper;
-using NeuralNetBuilder;
-using NeuralNetBuilder.FactoriesAndParameters;
 using System;
-using static AIDemoUI.SampleData.SampleDataInitializer;
+using static AIDemoUI.SampleData.MockData;
 
 namespace AIDemoUI.SampleData
 {
@@ -12,21 +9,14 @@ namespace AIDemoUI.SampleData
         Random rnd;
 
         public LayerParametersVMSampleData()
-            : base(SampleSessionContext, SampleMediator)//
+            : base(MockSessionContext, MockMediator)//
         {
             // Parameters Data
-            LayerParameters = new LayerParameters
-            { 
-                Id = 0 
-            };
-            NeuronsPerLayer = 4;
-            ActivationType = ActivationType.SoftMaxWithCrossEntropyLoss;
-            WeightMin = -.8f;
-            WeightMax = .8f;
+            LayerParameters = MockLayerParameters01;
 
             // Layer Data
 
-            //rnd = new Random();
+            rnd = new Random();
 
             //Layer.Input = new Matrix(new[]
             //{
@@ -47,10 +37,6 @@ namespace AIDemoUI.SampleData
             //        { .23f,-.41f,-.52f,.68f},
             //        { .23f,-.41f,-.52f,.68f}
             //    });
-
-            //throw new System.ArgumentException($"" +
-            //    $"SampleSessionContext.Net.Layers[0].Weights == null: " +
-            //    $"{SampleSessionContext.Net.Layers[0].Weights == null}");
         }
 
         private float GetRndFloat()

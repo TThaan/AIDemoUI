@@ -23,7 +23,7 @@ namespace AIDemoUI
     {
         #region ctor
 
-        public SessionContext(INetParameters netParameters, ITrainerParameters trainerParameters, INet net, ITrainer trainer)   // Also inject net, trainer etc or nothing at all?
+        public SessionContext(INetParameters netParameters, ITrainerParameters trainerParameters, INet net, ITrainer trainer)   // Also inject RawSampleSet?? No, it's runtime only..
         {
             NetParameters = netParameters;
             TrainerParameters = trainerParameters;
@@ -35,9 +35,9 @@ namespace AIDemoUI
 
         public INetParameters NetParameters { get; set; }
         public ITrainerParameters TrainerParameters { get; set; }
-        public SampleSet SampleSet { get; set; }
         public INet Net { get; set; }
         public ITrainer Trainer { get; set; }
+        public SampleSet SampleSet { get; set; }
         public bool IsNetInitialized { get; set; }
         public bool IsSampleSetInitialized { get; set; }
         public bool IsTrainerInitialized { get; set; }

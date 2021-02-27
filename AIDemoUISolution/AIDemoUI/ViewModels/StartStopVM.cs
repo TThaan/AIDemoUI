@@ -215,7 +215,7 @@ namespace AIDemoUI.ViewModels
 
             if (!IsTrainerInitialized)
             {
-                Trainer = await Task.Run(() => Initializer.InitializeTrainer(Trainer, Net.GetCopy(), TrainerParameters, SampleSet));                
+                Trainer = await Task.Run(() => Initializer.InitializeTrainer(Trainer, Net.GetCopy(), TrainerParameters, SampleSet));    // Net.GetCopy()?
                 Trainer.PropertyChanged += _trainer_PropertyChanged_inLayerParametersVM;
                 Trainer.PropertyChanged += _trainer_PropertyChanged_inStatusVM;
                 Trainer.PropertyChanged += Trainer_PropertyChanged;
