@@ -20,23 +20,36 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ProgressBar Grid.RowSpan="2" Grid.Column="1" Minimum="0" Maximum="{Binding ProgressBarMax}" Value="{Binding ProgressBarValue}"/>
-        <TextBlock Grid.Column="1" Text="{Binding ProgressBarText}" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="20"/>
-        <Grid Height="50" Width="400" Grid.Row="1" VerticalAlignment="Top">
+        <ProgressBar Grid.RowSpan="2" Grid.Column="1" Minimum="0" Maximum="{Binding Epochs}" Value="{Binding CurrentEpoch, Mode=OneWay}"/>
+        <TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" 
+                   Text="{Binding Status}"/>
+
+        <Grid Height="50" Width="300" Grid.Row="1" VerticalAlignment="Top">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="4*"/>
+                <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Column="0" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Current Epoch"/>
-            <TextBlock Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" Text="{Binding CurrentEpoch}"/>
-            <TextBlock Grid.Column="0" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Current Sample"/>
-            <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Text="{Binding CurrentSample}"/>
+            <TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" Text="Accuracy"/>
+            <TextBlock Grid.Column="1" Grid.Row="0" VerticalAlignment="Center" Text="{Binding LastEpochsAccuracy}"/>
 
+            <TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" Text="Epoch"/>
+            <TextBlock Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Text="{Binding CurrentEpoch}"/>
+            <TextBlock Grid.Column="2" Grid.Row="1" VerticalAlignment="Center" Text="of"/>
+            <TextBlock Grid.Column="3" Grid.Row="1" VerticalAlignment="Center" Text="{Binding Epochs}"/>
+            
+            <TextBlock Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" Text="Sample"/>
+            <TextBlock Grid.Column="1" Grid.Row="2" VerticalAlignment="Center" Text="{Binding CurrentSample}"/>
+            <TextBlock Grid.Column="2" Grid.Row="2" VerticalAlignment="Center" Text="of"/>
+            <TextBlock Grid.Column="3" Grid.Row="2" VerticalAlignment="Center" Text="{Binding SamplesTotal}"/>
         </Grid>
+
     </Grid>
 </UserControl>

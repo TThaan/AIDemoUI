@@ -2,6 +2,7 @@
 using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using Microsoft.Win32;
+using NeuralNetBuilder;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -23,7 +24,6 @@ namespace AIDemoUI.ViewModels
         string Url_TrainingLabels { get; set; }
         bool UseAllAvailableTestingSamples { get; set; }
         bool UseAllAvailableTrainingSamples { get; set; }
-
         IAsyncCommand OkCommand { get; set; }
         IAsyncCommand SetSamplesLocationCommand { get; set; }
         Task OkAsync(object parameter);
@@ -55,7 +55,20 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region public
+        #region properties
+
+        private SampleSet SampleSet
+        {
+            get => _sessionContext.SampleSet;
+            set => _sessionContext.SampleSet = value;
+        }
+        private bool IsSampleSetInitialized
+        {
+            get => _sessionContext.IsSampleSetInitialized;
+            set => _sessionContext.IsSampleSetInitialized = value;
+        }
+        private ITrainer Trainer => _sessionContext.Trainer;
+        private bool IsTrainerInitialized => _sessionContext.IsTrainerInitialized;
 
         public Dictionary<SetName, SampleSetParameters> Templates => _samplesSteward.Templates;
         public ObservableCollection<SetName> TemplateNames => Templates.Keys.ToObservableCollection();
@@ -218,8 +231,15 @@ namespace AIDemoUI.ViewModels
         }
         public async Task OkAsync(object parameter)
         {
+            IsSampleSetInitialized = false;
             (parameter as SampleImportWindow)?.Hide();
-            _sessionContext.SampleSet = await _samplesSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here? Like: _mediator.GetSampleSet_StatusChanged()..
+            SampleSet = await _samplesSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here? Like: _mediator.GetSampleSet_StatusChanged()..
+            IsSampleSetInitialized = true;
+
+            if (IsTrainerInitialized)
+            {
+                Trainer.SampleSet = SampleSet;
+            }
         }
         public bool OkAsync_CanExecute(object parameter)
         {

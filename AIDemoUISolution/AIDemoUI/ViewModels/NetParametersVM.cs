@@ -8,7 +8,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 
 namespace AIDemoUI.ViewModels
 {
@@ -42,7 +41,7 @@ namespace AIDemoUI.ViewModels
 
     public class NetParametersVM : BaseSubVM, INetParametersVM
     {
-        #region fields, private properties & ctor
+        #region fields & ctor
 
         private readonly ISessionContext _sessionContext;
         protected INetParameters _netParameters => _sessionContext.NetParameters;
@@ -302,7 +301,7 @@ namespace AIDemoUI.ViewModels
                 {
                     // Invoke: block thread until message box is dismissed.
                     // BeginInvoke: only block ui thread (this thread continues execution).
-                    Application.Current.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+                    Application.Current.Dispatcher.Invoke(() =>
                     {
                         if (MessageBox.Show(Application.Current.MainWindow, 
                             "Switching to global parameters will override the current (maybe individual) local values.\n" +
@@ -312,7 +311,7 @@ namespace AIDemoUI.ViewModels
                             AreParametersGlobal = true;
                             OverrideLocalParameters();
                         }
-                    }));
+                    });
                 }
                 void OverrideLocalParameters()
                 {

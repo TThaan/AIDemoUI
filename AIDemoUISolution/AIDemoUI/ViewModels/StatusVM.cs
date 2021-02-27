@@ -1,32 +1,34 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace AIDemoUI.ViewModels
 {
     public interface IStatusVM : IBaseVM
     {
-        int CurrentEpoch { get; set; }
-        int CurrentSample { get; set; }
-        float CurrentTotalCost { get; set; }
-        int Epochs { get; set; }
-        float LastEpochsAccuracy { get; set; }
-        int ProgressBarMax { get; set; }
-        string ProgressBarText { get; set; }
-        int ProgressBarValue { get; set; }
+        int CurrentEpoch { get; }
+        int CurrentSample { get; }
+        float CurrentTotalCost { get; }
+        int SamplesTotal { get; }
+        int Epochs { get; }
+        float LastEpochsAccuracy { get; }
+        string Status { get; }
+        void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e);
+        void SampleSet_PropertyChanged(object sender, PropertyChangedEventArgs e);
     }
 
     public class StatusVM : BaseSubVM, IStatusVM
     {
         #region fields & ctor
 
-        int epochs, currentEpoch, currentSample, progressBarValue, progressBarMax;
-        float lastEpochsAccuracy, currentTotalCost;
-        string progressBarText;
+        // int progressBarValue, progressBarMax;
+        // string progressBarText;
+        private readonly ISessionContext _sessionContext;
 
-        public StatusVM(ISimpleMediator mediator)
+        public StatusVM(ISessionContext sessionContext, ISimpleMediator mediator)
             : base(mediator)
         {
             _mediator.Register("Token: MainWindowVM", StatusVMCallback);
-            //_mainVM.Trainer.StatusChanged += 
+            _sessionContext = sessionContext;       
         }
 
         private void StatusVMCallback(object obj)
@@ -36,127 +38,27 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region public
+        #region properties
 
-        public int Epochs
+        public int SamplesTotal => _sessionContext.Trainer.SamplesTotal;
+        public int Epochs => _sessionContext.Trainer.Epochs;
+        public int CurrentEpoch => _sessionContext.Trainer.CurrentEpoch;
+        public int CurrentSample => _sessionContext.Trainer.CurrentSample;
+        public float CurrentTotalCost => _sessionContext.Trainer.CurrentTotalCost;
+        public float LastEpochsAccuracy => _sessionContext.Trainer.LastEpochsAccuracy;
+        public string Status => $"{_sessionContext.SampleSet?.Status}\n{_sessionContext.Trainer.Status}";   // remove question mark
+
+        #endregion
+
+        #region events
+
+        public void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            get
-            {
-                return epochs;
-            }
-            set
-            {
-                if (epochs != value)
-                {
-                    epochs = value;
-                    OnPropertyChanged();
-                }
-            }
+            OnPropertyChanged(e.PropertyName);
         }
-        public int CurrentEpoch
+        public void SampleSet_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            get
-            {
-                return currentEpoch;
-            }
-            set
-            {
-                if (currentEpoch != value)
-                {
-                    currentEpoch = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public int CurrentSample
-        {
-            get
-            {
-                return currentSample;
-            }
-            set
-            {
-                if (currentSample != value)
-                {
-                    currentSample = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public float CurrentTotalCost
-        {
-            get
-            {
-                return currentTotalCost;
-            }
-            set
-            {
-                if (currentTotalCost != value)
-                {
-                    currentTotalCost = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public float LastEpochsAccuracy
-        {
-            get
-            {
-                return lastEpochsAccuracy;
-            }
-            set
-            {
-                if (lastEpochsAccuracy != value)
-                {
-                    lastEpochsAccuracy = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public int ProgressBarMax
-        {
-            get
-            {
-                return progressBarMax;
-            }
-            set
-            {
-                if (progressBarMax != value)
-                {
-                    progressBarMax = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public int ProgressBarValue
-        {
-            get
-            {
-                return progressBarValue;
-            }
-            set
-            {
-                if (progressBarValue != value)
-                {
-                    progressBarValue = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public string ProgressBarText
-        {
-            get
-            {
-                return progressBarText;
-            }
-            set
-            {
-                if (progressBarText != value)
-                {
-                    progressBarText = value;
-                    OnPropertyChanged();
-                }
-            }
+            OnPropertyChanged(e.PropertyName);
         }
 
         #endregion

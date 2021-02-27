@@ -1,5 +1,4 @@
 ﻿using AIDemoUI.Commands;
-using AIDemoUI.FactoriesAndStewards;
 using Microsoft.Win32;
 using NeuralNetBuilder;
 using System;
@@ -26,15 +25,11 @@ namespace AIDemoUI.ViewModels
         IAsyncCommand SaveInitializedNetCommand { get; set; }
         IRelayCommand ExitCommand { get; set; }
         Task EnterLogNameAsync(object parameter);
-        void LayerParametersCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e);
         Task LoadParametersAsync(object parameter);
         Task SaveParametersAsync(object parameter);
         Task LoadInitializedNetAsync(object parameter);
         Task SaveInitializedNetAsync(object parameter);
         void Exit(object parameter);
-        void SampleSet_StatusChanged(object sender, DeepLearningDataProvider.StatusChangedEventArgs e);
-        void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e);
-        void Trainer_StatusChanged(object sender, StatusChangedEventArgs e);
     }
 
     public class MainWindowVM : BaseVM, IMainWindowVM
@@ -42,24 +37,20 @@ namespace AIDemoUI.ViewModels
         #region fields & ctor
 
         private readonly ISessionContext _sessionContext;
-        // private ILayerParametersVMFactory _layerParametersFactory;
         private INetParametersVM netParametersVM;
         private IStatusVM statusVM;
         private IStartStopVM startStopVM;
 
         public MainWindowVM(ISessionContext sessionContext, INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM,
-            ISimpleMediator mediator)//ILayerParametersVMFactory layerParametersVMFactory, 
+            ISimpleMediator mediator)
             : base(mediator)
         {
             _sessionContext = sessionContext;
             NetParametersVM = netParametersVM;
             StartStopVM = startStopVM;
             StatusVM = statusVM;
-            // _layerParametersFactory = layerParametersVMFactory;
 
             _mediator.Register("Token: MainWindowVM", MainWindowVMCallback);
-
-            //throw new ArgumentException($"{NetParametersVM.LayerParametersVMCollection == null}");
         }
         void MainWindowVMCallback(object obj)
         {
@@ -69,7 +60,7 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region public
+        #region properties
 
         public INetParametersVM NetParametersVM
         {
@@ -207,7 +198,7 @@ namespace AIDemoUI.ViewModels
                     try
                     {
                         NetParametersVM.FileName = openFileDialog.FileName;
-                        StartStopVM.Net = DeSerialize<INet>(openFileDialog.FileName);
+                        _sessionContext.Net = DeSerialize<INet>(openFileDialog.FileName);
                     }
                     catch (Exception e)
                     {
@@ -219,7 +210,7 @@ namespace AIDemoUI.ViewModels
         }
         public async Task SaveInitializedNetAsync(object parameter)
         {
-            if (StartStopVM.Net == null)
+            if (_sessionContext.Net == null)
             {
                 MessageBox.Show("No net created yet!");
             }
@@ -235,7 +226,7 @@ namespace AIDemoUI.ViewModels
                     await Task.Run(() =>
                     {
                         NetParametersVM.FileName = saveFileDialog.FileName;
-                        Serialize(StartStopVM.Net, NetParametersVM.FileName);
+                        Serialize(_sessionContext.Net, NetParametersVM.FileName);
                     });
                 }
             }
@@ -294,82 +285,10 @@ namespace AIDemoUI.ViewModels
                 return (T)bf.Deserialize(stream);
             }
         }
-        private void UpdateLocalParameters()
-        {
-            // NetParametersVM.LayerParametersCollection.Clear();
-            //foreach (var layerParameters in LayerParametersCollection)  // ta naming: layerParameters != LayersParameters
-            //{
-            //    NetParametersVM.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters(NetParametersVM.LayerParametersCollection?.Last()));
-            //    NetParametersVM.LayerParametersCollection.Last().Id = layerParameters.Id;
-            //}
-        }
 
         #endregion
 
         #endregion
-
-        #endregion
-
-        #region events
-
-        public void SampleSet_StatusChanged(object sender, DeepLearningDataProvider.StatusChangedEventArgs e)
-        {
-            StatusVM.ProgressBarText = e.Info;
-            Thread.Sleep(200);
-        }
-        public void Trainer_StatusChanged(object sender, NeuralNetBuilder.StatusChangedEventArgs e)
-        {
-            StatusVM.ProgressBarText = e.Info;
-        }
-        public void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            ITrainer trainer = sender as ITrainer;
-
-            if (trainer != null)
-            {
-                switch (e.PropertyName)
-                {
-                    case nameof(trainer.CurrentSample):
-                        StatusVM.CurrentSample = trainer.CurrentSample;
-                        break;
-                    case nameof(trainer.CurrentTotalCost):
-                        StatusVM.CurrentTotalCost = trainer.CurrentTotalCost;
-                        break;
-                    case nameof(trainer.LastEpochsAccuracy):
-                        StatusVM.LastEpochsAccuracy = trainer.LastEpochsAccuracy;
-                        StatusVM.ProgressBarText = $"Training...\n(Last Epoch's Accuracy: {trainer.LastEpochsAccuracy})";
-                        break;
-                    case nameof(trainer.CurrentEpoch):
-                        StatusVM.CurrentEpoch = trainer.CurrentEpoch;
-                        StatusVM.ProgressBarValue = StatusVM.CurrentEpoch;
-                        break;
-                    case nameof(trainer.LearningRate):
-                        break;
-                    case nameof(trainer.Epochs):
-                        StatusVM.Epochs = trainer.Epochs;
-                        StatusVM.ProgressBarMax = StatusVM.Epochs;
-                        break;
-                    case nameof(trainer.IsStarted):
-                        StatusVM.ProgressBarMax = trainer.Epochs;
-                        StatusVM.ProgressBarText = $"Training...\nLast Epoch's Accuracy: {StatusVM.LastEpochsAccuracy}";
-                        break;
-                    case nameof(trainer.IsPaused):
-                        StatusVM.ProgressBarText = $"Training paused...\nLast Epoch's Accuracy: {StatusVM.LastEpochsAccuracy}";
-                        break;
-                    case nameof(trainer.IsFinished):
-                        StatusVM.ProgressBarText = $"Training finished.\nLast Epoch's Accuracy: {StatusVM.LastEpochsAccuracy}";
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-        // Redundant?
-        public void LayerParametersCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            //NetParametersVM.NetParameters.LayersParameters = 
-            //    NetParametersVM.LayerParametersCollection.Select(x => x.LayerParameters).ToArray();
-        }
 
         #endregion
     }

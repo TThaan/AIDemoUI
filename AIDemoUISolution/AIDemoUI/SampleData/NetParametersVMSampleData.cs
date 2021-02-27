@@ -1,6 +1,4 @@
 ﻿using AIDemoUI.ViewModels;
-using System.Collections.ObjectModel;
-using System.Collections.Generic;
 using NeuralNetBuilder.FactoriesAndParameters;
 using NeuralNetBuilder;
 using static AIDemoUI.SampleData.SampleDataInitializer;

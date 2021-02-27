@@ -104,10 +104,6 @@ namespace AIDemoUI
         {
             var result = _context.Resolve<IStatusVM>();
 
-            result.ProgressBarValue = 0;
-            result.ProgressBarMax = 100;
-            result.ProgressBarText = "Wpf AI Demo";
-
             return result;
         }
         private ISessionContext GetDefaultSessionContext()

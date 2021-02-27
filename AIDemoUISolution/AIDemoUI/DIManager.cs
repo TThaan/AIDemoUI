@@ -4,9 +4,13 @@ using AIDemoUI.SampleData;
 using AIDemoUI.ViewModels;
 using AIDemoUI.Views;
 using Autofac;
+using Autofac.Features.AttributeFilters;
 using DeepLearningDataProvider;
+using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
+using System.ComponentModel;
 using System.Linq;
+using IContainer = Autofac.IContainer;
 
 namespace AIDemoUI
 {
@@ -31,13 +35,6 @@ namespace AIDemoUI
             var builder = new ContainerBuilder();
             // builder.Populate(serviceCollection);    // After registering all services!  // Later??
 
-            #region Parameters
-
-            // List<Parameter> allParameters = new List<Parameter>();
-            // allParameters.Add(new NamedParameter("setName_FourPixelCamera", SetName.FourPixelCamera));
-
-            #endregion
-
             #region Libraries' Containers/ServiceProviders
 
             builder.RegisterType<NetParameters>()
@@ -51,11 +48,26 @@ namespace AIDemoUI
 
             // Or SampleSetFactory?
             // builder.RegisterType<SampleSet>();  // .AsSelf()?
-            builder.Register(x => new SamplesSteward(x.Resolve<IMainWindowVM>().SampleSet_StatusChanged))
+            builder.Register(x => new SamplesSteward(x.Resolve<IStatusVM>().SampleSet_PropertyChanged))
                 .As<ISamplesSteward>()
                 .SingleInstance();
             builder.RegisterType<SampleSetParameters>()
                 .As<ISampleSetParameters>();
+
+            //builder.RegisterType<Initializer>().SingleInstance();
+                //.As<IInitializer>();
+            builder.Register(x => Initializer.GetRawNet())  // in NetBuilder!
+                .As<INet>()
+                .SingleInstance()
+                .OnActivated(x =>
+                {
+                    x.Instance.Layers = new ILayer[2];
+                    x.Instance.Layers[0] = new Layer();
+                    x.Instance.Layers[1] = new Layer() { Id = 1 };
+                });
+            builder.Register(x => Initializer.GetRawTrainer())    // Now you can register your trainer-INPCs in DIC!
+                .As<ITrainer>()
+                .SingleInstance();
 
             #endregion
 
@@ -123,10 +135,11 @@ namespace AIDemoUI
             builder.RegisterType<StartStopVM>()
                 .SingleInstance()
                 .As<IStartStopVM>()
+                .WithAttributeFiltering()
                 .OnActivated(x =>
                 {
                     x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
-                    x.Instance.InitializeNetCommand = new AsyncRelayCommand(x.Instance.InitializeNetAsync, y => true);
+                    x.Instance.InitializeNetCommand = new AsyncRelayCommand(x.Instance.InitializeNetAsync, x.Instance.InitializeNetAsync_CanExecute);
                     x.Instance.ShowSampleImportWindowCommand = new AsyncRelayCommand(x.Instance.ShowSampleImportWindow, y => true);
                     x.Instance.TrainCommand = new AsyncRelayCommand(x.Instance.TrainAsync, x.Instance.TrainAsync_CanExecute);
                 });
@@ -188,17 +201,20 @@ namespace AIDemoUI
             #endregion
 
             #region Event Handlers
-
-            // Single?
-            // builder.Register(x => new DeepLearningDataProvider.StatusChangedEventHandler(x.Resolve<IMainWindowVM>().SampleSet_StatusChanged));//.Named<StatusChangedEventHandler>("sampleSet_StatusChanged")
-            // builder.Register(x => new NotifyCollectionChangedEventHandler(x.Resolve<IMainWindowVM>().LayerParametersVMCollection_CollectionChanged));//.Named<NotifyCollectionChangedEventHandler>("layerParametersVMCollection_StatusChanged")
+                        
+            //builder.Register(x => new PropertyChangedEventHandler(x.Resolve<IStartStopVM>().Trainer_PropertyChanged))
+            //    .Keyed<PropertyChangedEventHandler>("InStartStopVM");
+            builder.Register(x => new PropertyChangedEventHandler(x.Resolve<IStatusVM>().Trainer_PropertyChanged))
+                .Keyed<PropertyChangedEventHandler>("InStatusVM");
+            builder.Register(x => new PropertyChangedEventHandler(x.Resolve<ILayerParametersVM>().Trainer_PropertyChanged))
+                .Keyed<PropertyChangedEventHandler>("InLayerParametersVM");
 
             #endregion
 
             #region DefaultValuesInitializer
-            
+
             // builder.RegisterType<DefaultValuesInitializer>();
-            
+
             #endregion
 
             return builder.Build();

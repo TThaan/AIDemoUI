@@ -4,23 +4,23 @@ using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
+using Autofac.Features.AttributeFilters;
 
 namespace AIDemoUI.ViewModels
 {
     public interface IStartStopVM : IBaseVM
     {
-        INet Net { get; set; }
-        ITrainer Trainer { get; set; }
-        SampleSet SampleSet { get; }
         bool IsLogged { get; set; }
         bool IsPaused { get; set; }
         bool IsStarted { get; set; }
+        bool IsFinished { get; }
         string LogName { get; set; }
-        string StepButtonText { get; }
-        string TrainButtonText { get; }
+        string StepButtonText { get; set; }
+        string TrainButtonText { get; set; }
 
         IAsyncCommand InitializeNetCommand { get; set; }
         IAsyncCommand ShowSampleImportWindowCommand { get; set; }
@@ -29,28 +29,33 @@ namespace AIDemoUI.ViewModels
         Task ShowSampleImportWindow(object parameter);
         Task TrainAsync(object parameter);
         bool TrainAsync_CanExecute(object parameter);
+        void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e);
     }
 
     public class StartStopVM : BaseSubVM, IStartStopVM
     {
-        #region fields, private properties & ctor
+        #region fields & ctor
 
         private readonly ISessionContext _sessionContext;
-        INetParameters _netParameters => _sessionContext.NetParameters;
-        ITrainerParameters _trainerParameters => _sessionContext.TrainerParameters;
-        INet net;//sessionContext?
-        ITrainer trainer;//sessionContext?
-        bool isStarted, isLogged;
-        string logName;
+        private bool isLogged;
+        private string logName, stepButtonText, trainButtonText;
         private readonly SampleImportWindow _sampleImportWindow;
+        private readonly PropertyChangedEventHandler _trainer_PropertyChanged_inLayerParametersVM, _trainer_PropertyChanged_inStatusVM;
 
-        public StartStopVM(ISessionContext sessionContext, ISimpleMediator mediator, SampleImportWindow sampleImportWindow)
+        public StartStopVM(ISessionContext sessionContext, ISimpleMediator mediator, SampleImportWindow sampleImportWindow, 
+            [KeyFilter("InStatusVM")] PropertyChangedEventHandler trainer_propertyChanged_inStatusVM,
+            [KeyFilter("InLayerParametersVM")] PropertyChangedEventHandler trainer_propertyChanged_inLayerParametersVM)
             : base(mediator)
         {
             _sessionContext = sessionContext;
-
             _sampleImportWindow = sampleImportWindow;
+            _trainer_PropertyChanged_inLayerParametersVM = trainer_propertyChanged_inLayerParametersVM;  // vgl mediator
+            _trainer_PropertyChanged_inStatusVM = trainer_propertyChanged_inStatusVM;
+
             _mediator.Register("Token: MainWindowVM", StartStopVMCallback);
+
+            TrainButtonText = "Train";
+            StepButtonText = "Step";
         }
         private void StartStopVMCallback(object obj)
         {
@@ -59,57 +64,46 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region public
+        #region properties
 
-        public INet Net
+        private INetParameters NetParameters => _sessionContext.NetParameters;
+        private ITrainerParameters TrainerParameters => _sessionContext.TrainerParameters;
+        private INet Net
         {
-            get
-            {
-                return net;
-            }
-            set
-            {
-                if (net != value)
-                {
-                    net = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(TrainButtonText));
-                    OnSubViewModelChanged();
-                }
-            }
+            get => _sessionContext.Net;
+            set => _sessionContext.Net = value;
         }
-        public ITrainer Trainer
+        private ITrainer Trainer
         {
-            get
-            {
-                return trainer;
-            }
-            set
-            {
-                if (trainer != value)
-                {
-                    trainer = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(TrainButtonText));
-                    OnSubViewModelChanged();
-                }
-            }
+            get => _sessionContext.Trainer;
+            set => _sessionContext.Trainer = value;
         }
-        public SampleSet SampleSet => _sessionContext.SampleSet;
+        private SampleSet SampleSet => _sessionContext.SampleSet;
+        private bool IsSampleSetInitialized => _sessionContext.IsSampleSetInitialized;
+        private bool IsNetInitialized
+        {
+            get => _sessionContext.IsNetInitialized;
+            set => _sessionContext.IsNetInitialized = value;
+        }
+        private bool IsTrainerInitialized
+        {
+            get => _sessionContext.IsTrainerInitialized;
+            set => _sessionContext.IsTrainerInitialized = value;
+        }
+
         public bool IsStarted
         {
             get
             {
-                return isStarted;
+                return Trainer == null ? false : Trainer.IsStarted;
             }
             set
             {
-                if (isStarted != value)
+                if (Trainer.IsStarted != value)
                 {
-                    isStarted = value;
+                    Trainer.IsStarted = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(TrainButtonText)); // Call in Base.OnPropChgd?
-                    OnSubViewModelChanged();
                 }
             }
         }
@@ -126,12 +120,40 @@ namespace AIDemoUI.ViewModels
                     Trainer.IsPaused = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(TrainButtonText));
-                    OnSubViewModelChanged();
                 }
             }
         }
-        public string TrainButtonText => GetTrainButtonText();
-        public string StepButtonText => "Step";
+        public bool IsFinished => Trainer.IsFinished;
+        public string TrainButtonText
+        {
+            get
+            {
+                return trainButtonText;
+            }
+            set
+            {
+                if (trainButtonText != value)
+                {
+                    trainButtonText = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public string StepButtonText
+        {
+            get
+            {
+                return stepButtonText;
+            }
+            set
+            {
+                if (stepButtonText != value)
+                {
+                    stepButtonText = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
         public bool IsLogged
         {
             get
@@ -163,45 +185,6 @@ namespace AIDemoUI.ViewModels
             }
         }
 
-        #region helpers
-
-        private string GetTrainButtonText()
-        {
-            if (Net == null && SampleSet == null)
-            {
-                return "You need to initialize the net and\nimport a sample set to start training.";
-            }
-            else if (Net == null && SampleSet != null)
-            {
-                return "You need to initialize the net\nto start training.";
-            }
-            else if (Net != null && SampleSet == null)
-            {
-                return "You need to import a sample set\nto start training.";
-            }
-            else
-            {
-                if (IsStarted && IsPaused)
-                {
-                    return "Continue";
-                }
-                else if (!IsStarted && IsPaused)
-                {
-                    return "Train";
-                }
-                else if (IsStarted & !IsPaused)
-                {
-                    return "Pause";
-                }
-                else
-                {
-                    return "Error: The Trainer cannot be unstarted\nand unpaused at the same time.";
-                }
-            }
-        }
-
-        #endregion
-
         #endregion
 
         #region Commands
@@ -212,10 +195,6 @@ namespace AIDemoUI.ViewModels
 
         #region Executes and CanExecutes
 
-        public async Task InitializeNetAsync(object parameter)
-        {
-            Net = await Task.Run(() => Initializer.GetNet(_netParameters));
-        }
         public async Task ShowSampleImportWindow(object parameter)// Only use async commands??
         {
             await Task.Run(() =>
@@ -225,24 +204,39 @@ namespace AIDemoUI.ViewModels
                     _sampleImportWindow.Show(); // use a delegate?
                 });
             });
-            OnPropertyChanged(nameof(SampleSet));
+        }
+        public async Task InitializeNetAsync(object parameter)
+        {
+            if (!IsNetInitialized)
+            {
+                Net = await Task.Run(() => Initializer.InitializeNet(Net, NetParameters));  // as ext meth (in NetBuilderFactory)?
+                IsNetInitialized = true;
+            }
+
+            if (!IsTrainerInitialized)
+            {
+                Trainer = await Task.Run(() => Initializer.InitializeTrainer(Trainer, Net.GetCopy(), TrainerParameters, SampleSet));                
+                Trainer.PropertyChanged += _trainer_PropertyChanged_inLayerParametersVM;
+                Trainer.PropertyChanged += _trainer_PropertyChanged_inStatusVM;
+                Trainer.PropertyChanged += Trainer_PropertyChanged;
+                IsTrainerInitialized = true;
+            }
+        }
+        [DebuggerStepThrough]
+        public bool InitializeNetAsync_CanExecute(object parameter)
+        {
+            return IsSampleSetInitialized;
         }
         public async Task TrainAsync(object parameter)
         {
             bool isStepModeOn = (bool)parameter;
-
-            if (Trainer == null)
-            {
-                Trainer = await Task.Run(() => Initializer.GetTrainer(Net.GetCopy(), _trainerParameters, SampleSet));
-                // Trainer.PropertyChanged += _sessionContext.MainWindowVM.Trainer_PropertyChanged;
-            }
 
             if (IsStarted)
             {
                 if (IsPaused)
                 {
                     if (!isStepModeOn) IsPaused = false;
-                    await Trainer.Train(IsLogged ? LogName : string.Empty);
+                    await Trainer.Train(IsLogged ? LogName : string.Empty, _sessionContext.TrainerParameters.Epochs);
                 }
                 else
                 {
@@ -253,7 +247,7 @@ namespace AIDemoUI.ViewModels
             {
                 IsStarted = true;
                 if (!isStepModeOn) IsPaused = false;
-                await Trainer.Train(IsLogged ? LogName : string.Empty);
+                await Trainer.Train(IsLogged ? LogName : string.Empty, _sessionContext.TrainerParameters.Epochs);
                 Net = Trainer.TrainedNet.GetCopy();
 
                 if (Trainer.IsFinished)
@@ -267,11 +261,19 @@ namespace AIDemoUI.ViewModels
         [DebuggerStepThrough]
         public bool TrainAsync_CanExecute(object parameter)
         {
-            OnPropertyChanged(nameof(TrainButtonText));
-            return SampleSet != null && Net != null;
+            return IsSampleSetInitialized && IsNetInitialized && IsTrainerInitialized;
         }
 
         #endregion
+
+        #endregion
+
+        #region events
+
+        public void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            OnPropertyChanged(e.PropertyName);
+        }
 
         #endregion
     }

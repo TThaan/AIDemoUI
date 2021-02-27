@@ -3,6 +3,7 @@ using AIDemoUI.ViewModels;
 using AIDemoUI.Views;
 using Autofac;
 using DeepLearningDataProvider;
+using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 
 namespace AIDemoUI.SampleData
@@ -27,7 +28,8 @@ namespace AIDemoUI.SampleData
             ISessionContext sessionContext, ILayerParameters layerParameters,
             IMainWindowVM mainWindowVM, INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM,
             ILayerParametersVMFactory layerParametersVMFactory, ILayerParametersFactory layerParametersFactory, ISamplesSteward samplesSteward,
-            SampleImportWindow sampleImportWindow, ISimpleMediator mediator)
+            SampleImportWindow sampleImportWindow, ISimpleMediator mediator,
+            INet net)
         {
             SampleSessionContext = sessionContext;
             SampleMainWindowVM = mainWindowVM;
@@ -40,6 +42,7 @@ namespace AIDemoUI.SampleData
             SampleSampleImportWindow = sampleImportWindow;
             SampleMediator = mediator;
             SampleSamplesSteward = samplesSteward;
+            SampleNet = net;    // redundant? Already injected in SampleSession..
         }
 
         #endregion
@@ -57,6 +60,7 @@ namespace AIDemoUI.SampleData
         public static ILayerParametersVMFactory SampleLayerParametersVMFactory { get; set; }
         public static ILayerParametersFactory SampleLayerParametersFactory { get; set; }
         public static ISamplesSteward SampleSamplesSteward { get; set; }
+        public static INet SampleNet { get; set; }
 
         #endregion
     }

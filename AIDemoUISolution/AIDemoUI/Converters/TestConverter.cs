@@ -1,8 +1,6 @@
-﻿using NeuralNetBuilder;
-using NeuralNetBuilder.FactoriesAndParameters;
+﻿using NeuralNetBuilder.FactoriesAndParameters;
 using System;
 using System.Globalization;
-using System.Windows.Controls;
 using System.Windows.Data;
 
 namespace AIDemoUI.Converters
@@ -13,7 +11,7 @@ namespace AIDemoUI.Converters
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new System.ArgumentException($"value = null: {value == null}\n");
+            // throw new System.ArgumentException($"value = null: {value == null}\n");
             if (value != null) 
             { 
                 var v = value.GetType().Name;

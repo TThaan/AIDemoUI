@@ -33,18 +33,18 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Initialize Net Button -->
+        <!-- Get Samples Button -->
 
         <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2">
             <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="Initialize Net" Command="{Binding InitializeNetCommand}"/>
+                    Content="Get Samples" Command="{Binding ShowSampleImportWindowCommand}"/>
         </Grid>
 
-        <!-- Get Samples Button -->
+        <!-- Initialize Net Button -->
 
         <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
             <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="Get Samples" Command="{Binding ShowSampleImportWindowCommand}"/>
+                    Content="Initialize Net" Command="{Binding InitializeNetCommand}"/>
         </Grid>
 
         <!-- Train/Step Buttons -->

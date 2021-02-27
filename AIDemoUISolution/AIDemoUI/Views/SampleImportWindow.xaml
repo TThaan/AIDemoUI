@@ -11,6 +11,7 @@
         mc:Ignorable="d"
         Title="                                                                     S a m p l e   I m p o r t" 
         Height="450" Width="600"
+        Left="800" Top="400"
         Name="thisWindow">
 
     <d:Window.DataContext>
