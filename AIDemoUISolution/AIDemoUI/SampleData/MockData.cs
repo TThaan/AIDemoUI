@@ -1,42 +1,34 @@
-﻿using AIDemoUI.FactoriesAndStewards;
-using AIDemoUI.ViewModels;
-using AIDemoUI.Views;
-using Autofac;
+﻿using Autofac;
 using DeepLearningDataProvider;
 using DeepLearningDataProvider.FourPixCam;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
-using System;
 
 namespace AIDemoUI.SampleData
 {
     /// <summary>
-    /// Actually this only provides static properties to be used in VMSampleData constructors.
-    /// They don't bear any default values.
-    /// 
-    /// wa: one class ViewModelsSampleData with parameterless ctor incl props ... nope..
-    /// wa: prop = context.Resolve..?
+    /// Example objects defined with example values
+    /// (exclusively used in sample data view models).
     /// </summary>
     public class MockData// : ISampleDataInitializer
     {
         #region fields & ctors
 
-        // private readonly static IComponentContext _context;
-        private readonly static IContainer _context;    // container
+        private readonly static IContainer _container;
 
         private static ITrainerParameters mockTrainerParameters;
         private static ILayerParameters mockLayerParameters01, mockLayerParameters02, mockLayerParameters03;
         private static INetParameters mockNetParameters;
 
         private static ISessionContext mockSessionContext;
-        private static ISimpleMediator mockMediator;
+        // private static ISimpleMediator mockMediator;
         private static INet mockNet;
         private static ITrainer mockTrainer;
         private static SampleSet mockSampleSet;
 
         static MockData()
         {
-            _context = new DIManager().Container;
+            _container = new DIManager().Container;
         }
 
         #endregion
@@ -44,17 +36,7 @@ namespace AIDemoUI.SampleData
         #region public
 
         public static ISessionContext MockSessionContext => mockSessionContext ?? (mockSessionContext = GetMockSessionContext());
-        public static ISimpleMediator MockMediator => mockMediator ?? (mockMediator = GetMockMediator());
-        //public static IMainWindowVM SampleMainWindowVM { get; set; }
-        //public static ILayerParameters SampleLayerParameters { get; set; }
-        //public static INetParametersVM SampleNetParametersVM { get; set; }
-        //public static IStartStopVM SampleStartStopVM { get; set; }
-        //public static IStatusVM SampleStatusVM { get; set; }
-        //public static SampleImportWindow SampleSampleImportWindow { get; set; }  // use a adelegate?
-        //public static ILayerParametersVMFactory SampleLayerParametersVMFactory { get; set; }
-        //public static ILayerParametersFactory SampleLayerParametersFactory { get; set; }
-        //public static ISamplesSteward SampleSamplesSteward { get; set; }
-        //public static INet SampleNet { get; set; }
+        // public static ISimpleMediator MockMediator => mockMediator ?? (mockMediator = GetMockMediator());
         public static INetParameters MockNetParameters => mockNetParameters ?? (mockNetParameters = GetMockNetParameters());
         public static ILayerParameters MockLayerParameters01 => mockLayerParameters01 ?? (mockLayerParameters01 = GetMockLayerParameters01());
         public static ILayerParameters MockLayerParameters02 => mockLayerParameters02 ?? (mockLayerParameters02 = GetMockLayerParameters02());
@@ -71,7 +53,7 @@ namespace AIDemoUI.SampleData
 
         private static ISessionContext GetMockSessionContext()
         {
-            ISessionContext result = _context.Resolve<ISessionContext>();
+            ISessionContext result = _container.Resolve<ISessionContext>();
 
             result.NetParameters = MockNetParameters;
             result.TrainerParameters = MockTrainerParameters;
@@ -88,13 +70,9 @@ namespace AIDemoUI.SampleData
         }
         private static ISimpleMediator GetMockMediator()
         {
-            ISimpleMediator result = _context.Resolve<ISimpleMediator>();
+            ISimpleMediator result = _container.Resolve<ISimpleMediator>();
 
             return result;
-        }
-        private static INet GetMockNet()
-        {
-            return Initializer.InitializeNet(Initializer.GetRawNet(), MockNetParameters);
         }
         private static ITrainer GetMockTrainer()
         {
@@ -113,12 +91,70 @@ namespace AIDemoUI.SampleData
         }
         private static ITrainerParameters GetMockTrainerParameters()
         {
-            var result = _context.Resolve<ITrainerParameters>();
+            var result = _container.Resolve<ITrainerParameters>();
 
             result.LearningRate = .1f;
             result.LearningRateChange = .9f;
             result.Epochs = 10;
             result.CostType = CostType.SquaredMeanError;
+
+            return result;
+        }
+        private static INet GetMockNet()
+        {
+            return Initializer.InitializeNet(Initializer.GetRawNet(), MockNetParameters);
+        }
+        private static INetParameters GetMockNetParameters()
+        {
+            INetParameters result = _container.Resolve<INetParameters>();
+
+            // FileName = "DefaultFileName",
+            result.LayerParametersCollection.Add(MockLayerParameters01);
+            result.LayerParametersCollection.Add(MockLayerParameters02);
+            result.LayerParametersCollection.Add(MockLayerParameters03);
+            result.WeightInitType = WeightInitType.Xavier;
+
+            return result;
+        }
+        private static ILayerParameters GetMockLayerParameters01()
+        {
+            var result = _container.Resolve<ILayerParameters>();
+
+            result.Id = 0;
+            result.NeuronsPerLayer = 6;
+            result.ActivationType = ActivationType.NullActivator;
+            result.BiasMin = 0;
+            result.BiasMax = 0;
+            result.WeightMin = -1;
+            result.WeightMax = 1;
+
+            return result;
+        }
+        private static ILayerParameters GetMockLayerParameters02()
+        {
+            var result = _container.Resolve<ILayerParameters>();
+
+            result.Id = 1;
+            result.NeuronsPerLayer = 12;
+            result.ActivationType = ActivationType.Tanh;
+            result.BiasMin = 0;
+            result.BiasMax = 0;
+            result.WeightMin = -1;
+            result.WeightMax = 1;
+
+            return result;
+        }
+        private static ILayerParameters GetMockLayerParameters03()
+        {
+            var result = _container.Resolve<ILayerParameters>();
+
+            result.Id = 2;
+            result.NeuronsPerLayer = 6;
+            result.ActivationType = ActivationType.LeakyReLU;
+            result.BiasMin = 0;
+            result.BiasMax = 0;
+            result.WeightMin = -1;
+            result.WeightMax = 1;
 
             return result;
         }
@@ -128,60 +164,6 @@ namespace AIDemoUI.SampleData
             {
                 Status = "SampleSet created."
             };
-        }
-        private static INetParameters GetMockNetParameters()
-        {
-            INetParameters result = _context.Resolve<INetParameters>();
-
-            // FileName = "DefaultFileName",
-            result.LayerParametersCollection.Add(MockLayerParameters01);
-            result.LayerParametersCollection.Add(MockLayerParameters02);
-            result.LayerParametersCollection.Add(MockLayerParameters03);
-            // WeightInitType = WeightInitType.Xavier
-
-            return result;
-        }
-        private static ILayerParameters GetMockLayerParameters01()
-        {
-            var result = _context.Resolve<ILayerParameters>();
-
-            result.Id = 0;
-            result.NeuronsPerLayer = 6;
-            result.ActivationType = ActivationType.NullActivator;
-            result.BiasMin = 0;
-            result.BiasMax = 0;
-            result.WeightMin = -2;
-            result.WeightMax = 2;
-
-            return result;
-        }
-        private static ILayerParameters GetMockLayerParameters02()
-        {
-            var result = _context.Resolve<ILayerParameters>();
-
-            result.Id = 1;
-            result.NeuronsPerLayer = 12;
-            result.ActivationType = ActivationType.Tanh;
-            result.BiasMin = 0;
-            result.BiasMax = 0;
-            result.WeightMin = -2;
-            result.WeightMax = 2;
-
-            return result;
-        }
-        private static ILayerParameters GetMockLayerParameters03()
-        {
-            var result = _context.Resolve<ILayerParameters>();
-
-            result.Id = 2;
-            result.NeuronsPerLayer = 6;
-            result.ActivationType = ActivationType.LeakyReLU;
-            result.BiasMin = 0;
-            result.BiasMax = 0;
-            result.WeightMin = -2;
-            result.WeightMax = 2;
-
-            return result;
         }
 
 

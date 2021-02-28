@@ -189,7 +189,7 @@ namespace AIDemoUI
 
             #region Sample Data
 
-            builder.RegisterType<SampleDataInitializer>();
+            builder.RegisterType<RawData>();
 
             #endregion
 

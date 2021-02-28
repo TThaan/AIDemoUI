@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:views="clr-namespace:AIDemoUI.Views"
-             xmlns:sd="clr-namespace:AIDemoUI.SampleData"
+             xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModel"
              xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
              xmlns:conv="clr-namespace:AIDemoUI.Converters"
              mc:Ignorable="d" 

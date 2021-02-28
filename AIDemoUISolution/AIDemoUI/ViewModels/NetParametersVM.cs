@@ -75,10 +75,12 @@ namespace AIDemoUI.ViewModels
         }
         private void SetDefaultValues()
         {
-            _netParameters.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters());
-            _netParameters.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters());
-            AreParametersGlobal = true;
-            AreParametersGlobal_IsEnabled = true;
+            // better LoadDefaultParameters..
+
+            // _netParameters.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters());
+            // _netParameters.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters());
+            // AreParametersGlobal = true;
+            // AreParametersGlobal_IsEnabled = true;
         }
 
         #endregion

@@ -9,22 +9,18 @@ using NeuralNetBuilder.FactoriesAndParameters;
 namespace AIDemoUI.SampleData
 {
     /// <summary>
-    /// Actually this only provides static properties to be used in VMSampleData constructors.
-    /// They don't bear any default values.
-    /// 
-    /// wa: one class ViewModelsSampleData with parameterless ctor incl props ... nope..
-    /// wa: prop = context.Resolve..?
+    /// Raw dependency container objects to inject into sample data view models.
     /// </summary>
-    public class SampleDataInitializer// : ISampleDataInitializer
+    public class RawData
     {
         #region fields & ctors
 
-        static SampleDataInitializer()
+        static RawData()
         {
-            new DIManager().Container.Resolve<SampleDataInitializer>();
+            new DIManager().Container.Resolve<RawData>();
         }
 
-        public SampleDataInitializer(
+        public RawData(
             ISessionContext sessionContext, ILayerParameters layerParameters,
             IMainWindowVM mainWindowVM, INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM,
             ILayerParametersVMFactory layerParametersVMFactory, ILayerParametersFactory layerParametersFactory, ISamplesSteward samplesSteward,
@@ -42,7 +38,7 @@ namespace AIDemoUI.SampleData
             SampleSampleImportWindow = sampleImportWindow;
             SampleMediator = mediator;
             SampleSamplesSteward = samplesSteward;
-            SampleNet = net;    // redundant? Already injected in SampleSession..
+            SampleNet = net;
         }
 
         #endregion
