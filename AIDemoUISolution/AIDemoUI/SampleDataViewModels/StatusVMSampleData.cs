@@ -1,13 +1,13 @@
 ﻿using AIDemoUI.ViewModels;
-using static AIDemoUI.SampleData.MockData;
+using AIDemoUI.SampleData.MockData;
 using static AIDemoUI.SampleData.RawData;
 
-namespace AIDemoUI.SampleDataViewModel
+namespace AIDemoUI.SampleDataViewModels
 {
     public class StatusVMSampleData : StatusVM
     {
         public StatusVMSampleData()
-            : base(MockSessionContext, SampleMediator)
+            : base(new MockSessionContext(), RawMediator)
         {
         }
     }

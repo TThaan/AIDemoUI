@@ -23,40 +23,40 @@ namespace AIDemoUI.SampleData
         public RawData(
             ISessionContext sessionContext, ILayerParameters layerParameters,
             IMainWindowVM mainWindowVM, INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM,
-            ILayerParametersVMFactory layerParametersVMFactory, ILayerParametersFactory layerParametersFactory, ISamplesSteward samplesSteward,
+            ILayerParametersVMFactory layerParametersVMFactory, ILayerParametersFactory layerParametersFactory, ISampleSetSteward sampleSetSteward,
             SampleImportWindow sampleImportWindow, ISimpleMediator mediator,
             INet net)
         {
-            SampleSessionContext = sessionContext;
-            SampleMainWindowVM = mainWindowVM;
-            SampleLayerParameters = layerParameters;
-            SampleLayerParametersVMFactory = layerParametersVMFactory;
-            SampleLayerParametersFactory = layerParametersFactory;
-            SampleNetParametersVM = netParametersVM;
-            SampleStartStopVM = startStopVM;
-            SampleStatusVM = statusVM;
-            SampleSampleImportWindow = sampleImportWindow;
-            SampleMediator = mediator;
-            SampleSamplesSteward = samplesSteward;
-            SampleNet = net;
+            RawSessionContext = sessionContext;
+            RawMainWindowVM = mainWindowVM;
+            RawLayerParameters = layerParameters;
+            RawLayerParametersVMFactory = layerParametersVMFactory;
+            RawLayerParametersFactory = layerParametersFactory;
+            RawNetParametersVM = netParametersVM;
+            RawStartStopVM = startStopVM;
+            RawStatusVM = statusVM;
+            RawSampleImportWindow = sampleImportWindow;
+            RawMediator = mediator;
+            RawSampleSetSteward = sampleSetSteward;
+            RawNet = net;
         }
 
         #endregion
 
         #region public
 
-        public static ISessionContext SampleSessionContext { get; set; }
-        public static IMainWindowVM SampleMainWindowVM { get; set; }
-        public static ILayerParameters SampleLayerParameters { get; set; }
-        public static INetParametersVM SampleNetParametersVM { get; set; }
-        public static IStartStopVM SampleStartStopVM { get; set; }
-        public static IStatusVM SampleStatusVM { get; set; }
-        public static SampleImportWindow SampleSampleImportWindow { get; set; }  // use a adelegate?
-        public static ISimpleMediator SampleMediator { get; set; }
-        public static ILayerParametersVMFactory SampleLayerParametersVMFactory { get; set; }
-        public static ILayerParametersFactory SampleLayerParametersFactory { get; set; }
-        public static ISamplesSteward SampleSamplesSteward { get; set; }
-        public static INet SampleNet { get; set; }
+        public static ISessionContext RawSessionContext { get; set; }
+        public static IMainWindowVM RawMainWindowVM { get; set; }
+        public static ILayerParameters RawLayerParameters { get; set; }
+        public static INetParametersVM RawNetParametersVM { get; set; }
+        public static IStartStopVM RawStartStopVM { get; set; }
+        public static IStatusVM RawStatusVM { get; set; }
+        public static SampleImportWindow RawSampleImportWindow { get; set; }  // use a adelegate?
+        public static ISimpleMediator RawMediator { get; set; }
+        public static ILayerParametersVMFactory RawLayerParametersVMFactory { get; set; }
+        public static ILayerParametersFactory RawLayerParametersFactory { get; set; }
+        public static ISampleSetSteward RawSampleSetSteward { get; set; }
+        public static INet RawNet { get; set; }
 
         #endregion
     }

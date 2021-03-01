@@ -9,12 +9,14 @@ namespace AIDemoUI.FactoriesAndStewards
         ISampleSetParameters CreateSampleSetParameters(SetName setName);
     }
 
+    /// <summary>
+    /// Steward = Factory + Store
+    /// </summary>
     public class SampleSetParametersSteward : ISampleSetParametersSteward
     {
         #region fields & ctor
         
         private readonly IComponentContext _context;
-
 
         public SampleSetParametersSteward(IComponentContext context)
         {

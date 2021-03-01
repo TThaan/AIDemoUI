@@ -1,16 +1,18 @@
 ﻿using AIDemoUI.ViewModels;
-using static AIDemoUI.SampleData.MockData;
+using AIDemoUI.SampleData.MockData;
 using static AIDemoUI.SampleData.RawData;
 
-namespace AIDemoUI.SampleDataViewModelViewModel
+namespace AIDemoUI.SampleDataViewModels
 {
     public class SampleImportWindowVMSampleData : SampleImportWindowVM
     {
         #region ctor
 
         public SampleImportWindowVMSampleData()
-            : base(MockSessionContext, SampleMediator, SampleSamplesSteward) { }
+            : base(new MockSessionContext(), RawMediator, RawSampleSetSteward)
+        {
+        }
 
-        #endregion
+            #endregion
+        }
     }
-}

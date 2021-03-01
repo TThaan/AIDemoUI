@@ -1,16 +1,17 @@
 ﻿using AIDemoUI.ViewModels;
+using AIDemoUI.SampleData.MockData;
 using static AIDemoUI.SampleData.RawData;
-using static AIDemoUI.SampleData.MockData;
 
-namespace AIDemoUI.SampleDataViewModel
+namespace AIDemoUI.SampleDataViewModels
 {
     public class NetParametersVMSampleData : NetParametersVM
     {
         #region ctor
 
         public NetParametersVMSampleData()
-            : base(MockSessionContext, SampleMediator, SampleLayerParametersVMFactory, SampleLayerParametersFactory)
+            : base(new MockSessionContext(), RawMediator, RawLayerParametersVMFactory, RawLayerParametersFactory)
         {
+            // LoadDefault?
             AreParametersGlobal = false;
             WeightMin_Global = -1;
             WeightMax_Global = 1;

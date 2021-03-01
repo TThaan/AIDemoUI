@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:views="clr-namespace:AIDemoUI.Views"
-             xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModel"
+             xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModels"
              xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
              xmlns:conv="clr-namespace:AIDemoUI.Converters"
              mc:Ignorable="d" 
@@ -72,7 +72,7 @@
                     <!-- behaviors:CommandBehaviors.EnablingCommand="{}" -->
                     <CheckBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,5" FontSize="16"                              
                               IsChecked="{Binding AreParametersGlobal, Mode=OneWay}"
-                              IsEnabled="{Binding AreParametersGlobal_IsEnabled}">
+                              IsEnabled="{Binding AreParametersGlobal_IsCheckboxEnabled}">
                         <CheckBox.LayoutTransform>
                             <ScaleTransform ScaleX="2" ScaleY="2"/>
                         </CheckBox.LayoutTransform>

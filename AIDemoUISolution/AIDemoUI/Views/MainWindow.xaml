@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AIDemoUI"
         xmlns:views="clr-namespace:AIDemoUI.Views"
-        xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModel"
+        xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModels"
         xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
         mc:Ignorable="d"
         

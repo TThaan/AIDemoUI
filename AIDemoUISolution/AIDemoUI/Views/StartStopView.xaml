@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:views="clr-namespace:AIDemoUI.Views"
-             xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModel"
+             xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModels"
              xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
              xmlns:conv="clr-namespace:AIDemoUI.Converters"
              mc:Ignorable="d" 

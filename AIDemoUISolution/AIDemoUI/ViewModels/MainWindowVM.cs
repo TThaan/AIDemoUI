@@ -2,11 +2,8 @@
 using Microsoft.Win32;
 using NeuralNetBuilder;
 using System;
-using System.Collections.Specialized;
-using System.ComponentModel;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -41,8 +38,8 @@ namespace AIDemoUI.ViewModels
         private IStatusVM statusVM;
         private IStartStopVM startStopVM;
 
-        public MainWindowVM(ISessionContext sessionContext, INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM,
-            ISimpleMediator mediator)
+        public MainWindowVM(ISessionContext sessionContext, INetParametersVM netParametersVM, IStartStopVM startStopVM, 
+            IStatusVM statusVM, ISimpleMediator mediator)
             : base(mediator)
         {
             _sessionContext = sessionContext;
@@ -52,11 +49,15 @@ namespace AIDemoUI.ViewModels
 
             _mediator.Register("Token: MainWindowVM", MainWindowVMCallback);
         }
-        void MainWindowVMCallback(object obj)
+
+        #region helpers
+
+        private void MainWindowVMCallback(object obj)
         {
 
         }
 
+        #endregion
 
         #endregion
 
@@ -132,17 +133,17 @@ namespace AIDemoUI.ViewModels
         }
         public async Task LoadParametersAsync(object parameter)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Load Parameters";
-            openFileDialog.Filter = "Parameters|*.par";
-
-            if (openFileDialog.ShowDialog() == true)
+            await Task.Run(() =>
             {
-                await Task.Run(() =>
+                OpenFileDialog openFileDialog = new OpenFileDialog();
+                openFileDialog.Title = "Load Parameters";
+                openFileDialog.Filter = "Parameters|*.par";
+
+                if (openFileDialog.ShowDialog() == true)
                 {
                     try
                     {
-                        SerializedParameters sp = GetSerializedParameters(openFileDialog);
+                        SerializedParameters sp = GetSerializedParameters(openFileDialog.OpenFile());
                         SetLoadedValues(sp);
                     }
                     catch (Exception e)
@@ -150,8 +151,8 @@ namespace AIDemoUI.ViewModels
                         MessageBox.Show($"That didn't work.\n({e.Message})");
                         return;
                     }
-                });
-            }
+                }
+            });
         }
         public async Task SaveParametersAsync(object parameter)
         {
@@ -238,38 +239,34 @@ namespace AIDemoUI.ViewModels
 
         #region helpers
 
-        private static SerializedParameters GetSerializedParameters(OpenFileDialog openFileDialog)
+        private SerializedParameters GetSerializedParameters(Stream stream)
         {
-            Stream stream = openFileDialog.OpenFile();
             BinaryFormatter b = new BinaryFormatter();
             SerializedParameters sp = (SerializedParameters)b.Deserialize(stream);
             return sp;
         }
-        void SetLoadedValues(SerializedParameters sp)
+        private void SetLoadedValues(SerializedParameters sp)
         {
-            _sessionContext.NetParameters = sp.NetParameters;
+            try
+            {
+                _sessionContext.NetParameters = sp.NetParameters;
+                _sessionContext.TrainerParameters = sp.TrainerParameters;
 
-            // Refactor!:
-            //NetParametersVM.LayerParametersVMCollection.Clear();
-            //foreach (var layerParameters in sp.NetParameters.LayerParametersCollection)  // ta naming: layerParameters != LayersParameters
-            //{
-            //    // NetParametersVM.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters(NetParametersVM.LayerParametersCollection?.Last()));
-            //    // NetParametersVM.LayerParametersCollection.Last().Id = layerParameters.Id;
-            //}
+                NetParametersVM.AreParametersGlobal = sp.UseGlobalParameters;
+                NetParametersVM.WeightMin_Global = sp.WeightMin_Global;
+                NetParametersVM.WeightMax_Global = sp.WeightMax_Global;
+                NetParametersVM.BiasMin_Global = sp.BiasMin_Global;
+                NetParametersVM.BiasMax_Global = sp.BiasMax_Global;
 
-            _sessionContext.TrainerParameters = sp.TrainerParameters;
-
-            NetParametersVM.AreParametersGlobal = sp.UseGlobalParameters;
-            NetParametersVM.WeightMin_Global = sp.WeightMin_Global;
-            NetParametersVM.WeightMax_Global = sp.WeightMax_Global;
-            NetParametersVM.BiasMin_Global = sp.BiasMin_Global;
-            NetParametersVM.BiasMax_Global = sp.BiasMax_Global;
-
-            // Notify the UI (via properties in NetParametersVM  and LayerParametersVMs)
-            // about changed values in NetParameters and LayerParameters.
-            netParametersVM.OnAllPropertiesChanged();//LayerParametersCollection-chg notified??
+                netParametersVM.OnAllPropertiesChanged();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show($"Net- and Trainer-Parameters could not be loaded.\n({e.Message})");
+                return;
+            }
         }
-        static void Serialize<T>(T target, string fileName)
+        private void Serialize<T>(T target, string fileName)
         {
             using (Stream stream = File.Open(fileName, FileMode.Create))//
             {
@@ -277,7 +274,7 @@ namespace AIDemoUI.ViewModels
                 bf.Serialize(stream, target);
             }
         }
-        static T DeSerialize<T>(string name)
+        private T DeSerialize<T>(string name)
         {
             using (Stream stream = File.Open(name, FileMode.Open))
             {

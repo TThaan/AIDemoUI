@@ -9,9 +9,9 @@ namespace AIDemoUI.Converters
     {
         #region IValueConverter
 
-        public object Convert(object values, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            SampleSetParameters setParameters = values as SampleSetParameters;
+            ISampleSetParameters setParameters = value as ISampleSetParameters;
 
             try
             {
@@ -19,7 +19,8 @@ namespace AIDemoUI.Converters
             }
             catch (Exception)
             {
-                throw;
+                // throw;
+                return "Couldn't resolve SetParameter's name.";
             }
         }
         public object ConvertBack(object value, Type targetTypes, object parameter, CultureInfo culture)

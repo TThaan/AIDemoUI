@@ -13,9 +13,9 @@ namespace AIDemoUI.ViewModels
 {
     public interface ISampleImportWindowVM : IBaseVM
     {
-        Dictionary<SetName, SampleSetParameters> Templates { get; }
+        Dictionary<SetName, ISampleSetParameters> Templates { get; }
         ObservableCollection<SetName> TemplateNames { get; }
-        SampleSetParameters SelectedTemplate { get; set; }
+        ISampleSetParameters SelectedTemplate { get; set; }
         int TestingSamples { get; set; }
         int TrainingSamples { get; set; }
         string Url_TestingImages { get; set; }
@@ -36,15 +36,16 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        SampleSetParameters selectedSampleSetParameters;
+        ISampleSetParameters selectedSampleSetParameters;
         private readonly ISessionContext _sessionContext;
-        private readonly ISamplesSteward _samplesSteward;
+        private readonly ISampleSetSteward _sampleSetSteward;
+        bool isBusy;
 
-        public SampleImportWindowVM(ISessionContext sessionContext, ISimpleMediator mediator, ISamplesSteward samplesSteward)
+        public SampleImportWindowVM(ISessionContext sessionContext, ISimpleMediator mediator, ISampleSetSteward sampleSetSteward)
             : base(mediator)
         {
             _sessionContext = sessionContext;
-            _samplesSteward = samplesSteward;
+            _sampleSetSteward = sampleSetSteward;
 
             _mediator.Register("Token: MainWindowVM", SampleImportWindowVMCallback);
         }
@@ -57,30 +58,24 @@ namespace AIDemoUI.ViewModels
 
         #region properties
 
-        private SampleSet SampleSet
+        private ISampleSet SampleSet
         {
             get => _sessionContext.SampleSet;
             set => _sessionContext.SampleSet = value;
         }
-        private bool IsSampleSetInitialized
-        {
-            get => _sessionContext.IsSampleSetInitialized;
-            set => _sessionContext.IsSampleSetInitialized = value;
-        }
         private ITrainer Trainer => _sessionContext.Trainer;
-        private bool IsTrainerInitialized => _sessionContext.IsTrainerInitialized;
+        private bool IsTrainerInitialized => _sessionContext.Trainer.IsInitialized;
 
-        public Dictionary<SetName, SampleSetParameters> Templates => _samplesSteward.Templates;
+        public Dictionary<SetName, ISampleSetParameters> Templates => _sampleSetSteward.DefaultSampleSetParameters;
         public ObservableCollection<SetName> TemplateNames => Templates.Keys.ToObservableCollection();
-        public SampleSetParameters SelectedTemplate
+        public ISampleSetParameters SelectedTemplate
         {
-            get { return selectedSampleSetParameters; }
+            get { return selectedSampleSetParameters ?? Templates[SetName.FourPixelCamera]; }
             set
             {
                 if (selectedSampleSetParameters?.Name != value?.Name)
                 {
                     selectedSampleSetParameters = value;
-                    OnSampleSetChanged();
                     OnPropertyChanged();
                 }
             }
@@ -141,7 +136,7 @@ namespace AIDemoUI.ViewModels
                 if (SelectedTemplate.TrainingSamples != value)
                 {
                     SelectedTemplate.TrainingSamples = value;
-                    // OnSampleSetChanged();
+                    UseAllAvailableTrainingSamples = false;
                     OnPropertyChanged();
                 }
             }
@@ -154,7 +149,7 @@ namespace AIDemoUI.ViewModels
                 if (SelectedTemplate.TestingSamples != value)
                 {
                     SelectedTemplate.TestingSamples = value;
-                    // OnSampleSetChanged();
+                    UseAllAvailableTestingSamples = false;
                     OnPropertyChanged();
                 }
             }
@@ -166,8 +161,12 @@ namespace AIDemoUI.ViewModels
             {
                 if (SelectedTemplate.UseAllAvailableTrainingSamples != value)
                 {
+                    if (value == true)
+                    {
+                        TrainingSamples = SelectedTemplate.DefaultTrainingSamples;
+                        OnPropertyChanged(nameof(TrainingSamples));
+                    }
                     SelectedTemplate.UseAllAvailableTrainingSamples = value;
-                    // OnSampleSetChanged();
                     OnPropertyChanged();
                 }
             }
@@ -179,8 +178,24 @@ namespace AIDemoUI.ViewModels
             {
                 if (SelectedTemplate.UseAllAvailableTestingSamples != value)
                 {
+                    if (value == true)
+                    {
+                        TestingSamples = SelectedTemplate.DefaultTestingSamples;
+                        OnPropertyChanged(nameof(TestingSamples));
+                    }
                     SelectedTemplate.UseAllAvailableTestingSamples = value;
-                    // OnSampleSetChanged();
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public bool IsBusy
+        {
+            get { return isBusy; }
+            set
+            {
+                if (isBusy != value)
+                {
+                    isBusy = value;
                     OnPropertyChanged();
                 }
             }
@@ -231,15 +246,15 @@ namespace AIDemoUI.ViewModels
         }
         public async Task OkAsync(object parameter)
         {
-            IsSampleSetInitialized = false;
+            IsBusy = true;
+            SampleSet = await _sampleSetSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here? Like: _mediator.GetSampleSet_StatusChanged()..
             (parameter as SampleImportWindow)?.Hide();
-            SampleSet = await _samplesSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here? Like: _mediator.GetSampleSet_StatusChanged()..
-            IsSampleSetInitialized = true;
 
             if (IsTrainerInitialized)
             {
                 Trainer.SampleSet = SampleSet;
             }
+            IsBusy = false;
         }
         public bool OkAsync_CanExecute(object parameter)
         {

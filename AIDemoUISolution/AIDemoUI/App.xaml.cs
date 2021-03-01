@@ -30,6 +30,7 @@ namespace AIDemoUI
             {
                 // var mainWindowVM = scope.Resolve<DefaultValuesInitializer>().DefaultMainWindowVM;
                 var mainWindowVM = scope.Resolve<IMainWindowVM>();
+                new DefaultValues().Set(mainWindowVM, scope.Resolve<ISessionContext>());
                 MainWindow = new MainWindow() { DataContext = mainWindowVM };
                 MainWindow.Show();
             }

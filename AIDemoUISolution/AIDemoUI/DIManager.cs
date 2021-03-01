@@ -48,8 +48,13 @@ namespace AIDemoUI
 
             // Or SampleSetFactory?
             // builder.RegisterType<SampleSet>();  // .AsSelf()?
-            builder.Register(x => new SamplesSteward(x.Resolve<IStatusVM>().SampleSet_PropertyChanged))
-                .As<ISamplesSteward>()
+            builder.RegisterType<SampleSetSteward>()
+                .OnActivated(x =>
+                {
+                    x.Instance.EventHandlers = new PropertyChangedEventHandler[]
+                    { x.Context.Resolve<IStatusVM>().SampleSet_PropertyChanged };
+                })
+                .As<ISampleSetSteward>()
                 .SingleInstance();
             builder.RegisterType<SampleSetParameters>()
                 .As<ISampleSetParameters>();
@@ -58,14 +63,14 @@ namespace AIDemoUI
                 //.As<IInitializer>();
             builder.Register(x => Initializer.GetRawNet())  // in NetBuilder!
                 .As<INet>()
-                .SingleInstance()
-                .OnActivated(x =>
+                .SingleInstance();
+            builder.Register(x => Initializer.GetRawTrainer()).
+                OnActivated(x =>
                 {
-                    x.Instance.Layers = new ILayer[2];
-                    x.Instance.Layers[0] = new Layer();
-                    x.Instance.Layers[1] = new Layer() { Id = 1 };
-                });
-            builder.Register(x => Initializer.GetRawTrainer())    // Now you can register your trainer-INPCs in DIC!
+                    x.Instance.PropertyChanged += x.Context.Resolve<ILayerParametersVM>().Trainer_PropertyChanged;
+                    x.Instance.PropertyChanged += x.Context.Resolve<IStartStopVM>().Trainer_PropertyChanged;
+                    x.Instance.PropertyChanged += x.Context.Resolve<IStatusVM>().Trainer_PropertyChanged;
+                })
                 .As<ITrainer>()
                 .SingleInstance();
 
@@ -73,7 +78,9 @@ namespace AIDemoUI
 
             #region SessionContext
 
-            builder.RegisterType<SessionContext>().As<ISessionContext>().SingleInstance();
+            builder.RegisterType<SessionContext>()
+                .As<ISessionContext>()
+                .SingleInstance();
 
             #endregion
 
@@ -135,7 +142,7 @@ namespace AIDemoUI
             builder.RegisterType<StartStopVM>()
                 .SingleInstance()
                 .As<IStartStopVM>()
-                .WithAttributeFiltering()
+                .WithAttributeFiltering()   // redundant?
                 .OnActivated(x =>
                 {
                     x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
@@ -180,8 +187,8 @@ namespace AIDemoUI
                 .As<ILayerParametersVMFactory>();
             builder.RegisterType<LayerParametersFactory>()
                 .As<ILayerParametersFactory>();
-            builder.RegisterType<SamplesSteward>()
-                .As<ISamplesSteward>();
+            //builder.RegisterType<SamplesSteward>()
+            //    .As<ISamplesSteward>();
             builder.RegisterType<SampleSetParametersSteward>()
                 .As<ISampleSetParametersSteward>();
 
@@ -190,12 +197,6 @@ namespace AIDemoUI
             #region Sample Data
 
             builder.RegisterType<RawData>();
-
-            #endregion
-
-            #region MockData
-
-            builder.RegisterType<MockData>().SingleInstance();
 
             #endregion
 

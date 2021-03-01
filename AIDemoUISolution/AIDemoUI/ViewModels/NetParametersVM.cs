@@ -48,7 +48,7 @@ namespace AIDemoUI.ViewModels
         protected ITrainerParameters _trainerParameters => _sessionContext.TrainerParameters;
         private IEnumerable<CostType> costTypes;
         private IEnumerable<WeightInitType> weightInitTypes;
-        private bool areParametersGlobal, areParametersGlobal_IsEnabled;
+        private bool areParametersGlobal, areParametersGlobal_IsCheckboxEnabled;
         private float weightMin_Global, weightMax_Global, biasMin_Global, biasMax_Global;
         private ILayerParametersFactory _layerParametersFactory;
 
@@ -75,12 +75,7 @@ namespace AIDemoUI.ViewModels
         }
         private void SetDefaultValues()
         {
-            // better LoadDefaultParameters..
-
-            // _netParameters.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters());
-            // _netParameters.LayerParametersCollection.Add(_layerParametersFactory.CreateLayerParameters());
-            // AreParametersGlobal = true;
-            // AreParametersGlobal_IsEnabled = true;
+            AreParametersGlobal_IsCheckboxEnabled = true;
         }
 
         #endregion
@@ -115,14 +110,14 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public bool AreParametersGlobal_IsEnabled// => UseGlobalParametersCommand.CanExecute(null);
+        public bool AreParametersGlobal_IsCheckboxEnabled// => UseGlobalParametersCommand.CanExecute(null);
         {
-            get { return areParametersGlobal_IsEnabled; }
+            get { return areParametersGlobal_IsCheckboxEnabled; }
             set
             {
-                if (areParametersGlobal_IsEnabled != value)
+                if (areParametersGlobal_IsCheckboxEnabled != value)
                 {
-                    areParametersGlobal_IsEnabled = value;
+                    areParametersGlobal_IsCheckboxEnabled = value;
                     OnPropertyChanged();
                 }
             }
@@ -292,7 +287,7 @@ namespace AIDemoUI.ViewModels
         {
             await Task.Run(() =>
             {
-                AreParametersGlobal_IsEnabled = false;
+                AreParametersGlobal_IsCheckboxEnabled = false;
 
                 if (AreParametersGlobal)
                 {
@@ -324,7 +319,7 @@ namespace AIDemoUI.ViewModels
                         layerParameters.WeightMin = weightMin_Global;
                         layerParameters.WeightMax = weightMax_Global;
                     }
-                    areParametersGlobal_IsEnabled = true;
+                    areParametersGlobal_IsCheckboxEnabled = true;
                     OnAllPropertiesChanged();
                 }
             });

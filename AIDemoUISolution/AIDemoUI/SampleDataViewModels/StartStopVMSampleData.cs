@@ -1,13 +1,13 @@
 ﻿using AIDemoUI.ViewModels;
-using static AIDemoUI.SampleData.MockData;
+using AIDemoUI.SampleData.MockData;
 using static AIDemoUI.SampleData.RawData;
 
-namespace AIDemoUI.SampleDataViewModel
+namespace AIDemoUI.SampleDataViewModels
 {
     public class StartStopVMSampleData : StartStopVM
     {
         public StartStopVMSampleData()
-            : base(MockSessionContext, SampleMediator, SampleSampleImportWindow, null, null)
+            : base(new MockSessionContext(), RawMediator, RawSampleImportWindow, null, null)
         {
         }
     }

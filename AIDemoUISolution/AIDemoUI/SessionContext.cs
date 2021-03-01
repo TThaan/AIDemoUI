@@ -1,6 +1,8 @@
 ﻿using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
+using System;
+using System.Linq;
 
 namespace AIDemoUI
 {
@@ -8,12 +10,10 @@ namespace AIDemoUI
     {
         INetParameters NetParameters { get; set; }
         ITrainerParameters TrainerParameters { get; set; }
-        SampleSet SampleSet { get; set; }
+        ISampleSet SampleSet { get; set; }
+        ISampleSetSteward SampleSetSteward { get; }
         INet Net { get; set; }
         ITrainer Trainer { get; set; }
-        bool IsNetInitialized { get; set; }         // in INet?
-        bool IsSampleSetInitialized { get; set; }   // in SampleSet?
-        bool IsTrainerInitialized { get; set; }     // in ITrainer?
     }
 
     /// <summary>
@@ -23,12 +23,13 @@ namespace AIDemoUI
     {
         #region ctor
 
-        public SessionContext(INetParameters netParameters, ITrainerParameters trainerParameters, INet net, ITrainer trainer)   // Also inject RawSampleSet?? No, it's runtime only..
+        public SessionContext(INetParameters netParameters, ITrainerParameters trainerParameters, INet net, ITrainer trainer, ISampleSetSteward sampleSetSteward)   // Also inject RawSampleSet?? No, it's runtime only..
         {
             NetParameters = netParameters;
             TrainerParameters = trainerParameters;
             Net = net;
             Trainer = trainer;
+            SampleSetSteward = sampleSetSteward;
         }
 
         #endregion
@@ -37,9 +38,7 @@ namespace AIDemoUI
         public ITrainerParameters TrainerParameters { get; set; }
         public INet Net { get; set; }
         public ITrainer Trainer { get; set; }
-        public SampleSet SampleSet { get; set; }
-        public bool IsNetInitialized { get; set; }
-        public bool IsSampleSetInitialized { get; set; }
-        public bool IsTrainerInitialized { get; set; }
+        public ISampleSetSteward SampleSetSteward { get; }
+        public ISampleSet SampleSet { get; set; }
     }
 }

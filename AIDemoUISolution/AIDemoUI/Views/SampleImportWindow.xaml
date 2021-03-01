@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AIDemoUI.Views"
-        xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModel"
+        xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModels"
         xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
         xmlns:conv="clr-namespace:AIDemoUI.Converters"
         xmlns:factories="clr-namespace:AIDemoUI.FactoriesAndStewards"
@@ -27,30 +27,14 @@
         <conv:SampleSetParametersToTemplateNameConverter x:Key="SampleSetParametersToTemplateNameConverter"/>
     </Window.Resources>
 
-    <StackPanel Name="thisRootElement">
+    <StackPanel Name="thisRootElement" IsEnabled="{Binding IsBusy, Converter={StaticResource BoolReversingConverter}}">
         
         <!-- Import Sample Set -->
         
         <ComboBox Name="SampleTemplates" Grid.Row="0" MinHeight="50"
                   ItemsSource="{Binding TemplateNames}"
                   SelectedItem="{Binding SelectedTemplate, Mode=OneWay, Converter={StaticResource SampleSetParametersToTemplateNameConverter}}">
-            <!--<ComboBox.SelectedItem>
-                <MultiBinding Converter="{StaticResource SampleSetParametersToTemplateNameConverter}">
-                    <Binding ElementName="SampleTemplates" Path="DataContext.SelectedTemplate" Mode="OneWay"/>
-                    <Binding ElementName="SampleTemplates" Path="DataContext.Templates" Mode="OneWay"/>
-                </MultiBinding>
-            </ComboBox.SelectedItem>-->
         </ComboBox>
-        
-        <!--<ComboBox Name="SampleTemplates" Grid.Row="0" MinHeight="50"
-                  ItemsSource="{Binding TemplateNames}">
-            <ComboBox.SelectedItem>
-                <MultiBinding Converter="{StaticResource SampleSetParametersToTemplateNameConverter}">
-                    <Binding ElementName="SampleTemplates" Path="DataContext.SelectedTemplate" Mode="OneWay"/>
-                    <Binding ElementName="SampleTemplates" Path="DataContext.Templates" Mode="OneWay"/>
-                </MultiBinding>
-            </ComboBox.SelectedItem>
-        </ComboBox>-->
 
         <!-- Amount of Samples -->
 
@@ -67,10 +51,12 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
+                <!-- Training Samples -->
+                
                 <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" 
                            Text="Training Samples"/>
                 <TextBox Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="50" Margin="0,5,0,10"
-                         Text="{Binding Path=TrainingSamples}" IsEnabled="{Binding UseAllAvailableTrainingSamples, Converter={StaticResource BoolReversingConverter}}">
+                         Text="{Binding Path=TrainingSamples}">
                     <TextBox.InputBindings>
                         <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                     </TextBox.InputBindings>
@@ -85,10 +71,12 @@
                     </CheckBox.LayoutTransform>
                 </CheckBox>
 
+                <!-- Testing Samples -->
+
                 <TextBlock Grid.Row="0" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5" 
                            Text="Testing Samples"/>
                 <TextBox Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" MinWidth="50" Margin="0,5,0,10"
-                         Text="{Binding Path=TestingSamples}" IsEnabled="{Binding UseAllAvailableTestingSamples, Converter={StaticResource BoolReversingConverter}}">
+                         Text="{Binding Path=TestingSamples}">
                     <TextBox.InputBindings>
                         <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                     </TextBox.InputBindings>

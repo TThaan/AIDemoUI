@@ -78,18 +78,10 @@ namespace AIDemoUI.ViewModels
             get => _sessionContext.Trainer;
             set => _sessionContext.Trainer = value;
         }
-        private SampleSet SampleSet => _sessionContext.SampleSet;
-        private bool IsSampleSetInitialized => _sessionContext.IsSampleSetInitialized;
-        private bool IsNetInitialized
-        {
-            get => _sessionContext.IsNetInitialized;
-            set => _sessionContext.IsNetInitialized = value;
-        }
-        private bool IsTrainerInitialized
-        {
-            get => _sessionContext.IsTrainerInitialized;
-            set => _sessionContext.IsTrainerInitialized = value;
-        }
+        private ISampleSet SampleSet => _sessionContext.SampleSet;
+        private bool IsSampleSetInitialized => _sessionContext.SampleSet != null;
+        private bool IsNetInitialized => _sessionContext.Net.IsInitialized;
+        private bool IsTrainerInitialized => _sessionContext.Trainer.IsInitialized;
 
         public bool IsStarted
         {
@@ -201,7 +193,7 @@ namespace AIDemoUI.ViewModels
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    _sampleImportWindow.Show(); // use a delegate?
+                    _sampleImportWindow.ShowDialog(); // use a delegate?
                 });
             });
         }
@@ -210,16 +202,11 @@ namespace AIDemoUI.ViewModels
             if (!IsNetInitialized)
             {
                 Net = await Task.Run(() => Initializer.InitializeNet(Net, NetParameters));  // as ext meth (in NetBuilderFactory)?
-                IsNetInitialized = true;
             }
 
             if (!IsTrainerInitialized)
             {
-                Trainer = await Task.Run(() => Initializer.InitializeTrainer(Trainer, Net.GetCopy(), TrainerParameters, SampleSet));    // Net.GetCopy()?
-                Trainer.PropertyChanged += _trainer_PropertyChanged_inLayerParametersVM;
-                Trainer.PropertyChanged += _trainer_PropertyChanged_inStatusVM;
-                Trainer.PropertyChanged += Trainer_PropertyChanged;
-                IsTrainerInitialized = true;
+                Trainer = await Task.Run(() => Initializer.InitializeTrainer(Trainer, Net.GetCopy(), TrainerParameters, SampleSet)); 
             }
         }
         [DebuggerStepThrough]
