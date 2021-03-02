@@ -14,13 +14,16 @@ namespace AIDemoUI.ViewModels
 {
     public interface IStartStopVM : IBaseVM
     {
-        bool IsLogged { get; set; }
+        bool IsSampleSetInitialized { get; }
+        bool IsNetInitialized { get; }
+        bool IsTrainerInitialized { get; }
         bool IsPaused { get; set; }
         bool IsStarted { get; set; }
         bool IsFinished { get; }
+        bool IsLogged { get; set; }
         string LogName { get; set; }
-        string StepButtonText { get; set; }
-        string TrainButtonText { get; set; }
+        string StepButtonText { get; }
+        string TrainButtonText { get; }
 
         IAsyncCommand InitializeNetCommand { get; set; }
         IAsyncCommand ShowSampleImportWindowCommand { get; set; }
@@ -53,9 +56,6 @@ namespace AIDemoUI.ViewModels
             _trainer_PropertyChanged_inStatusVM = trainer_propertyChanged_inStatusVM;
 
             _mediator.Register("Token: MainWindowVM", StartStopVMCallback);
-
-            TrainButtonText = "Train";
-            StepButtonText = "Step";
         }
         private void StartStopVMCallback(object obj)
         {
@@ -64,10 +64,8 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region properties
+        #region properties (No Commands)
 
-        private INetParameters NetParameters => _sessionContext.NetParameters;
-        private ITrainerParameters TrainerParameters => _sessionContext.TrainerParameters;
         private INet Net
         {
             get => _sessionContext.Net;
@@ -78,11 +76,13 @@ namespace AIDemoUI.ViewModels
             get => _sessionContext.Trainer;
             set => _sessionContext.Trainer = value;
         }
+        private INetParameters NetParameters => _sessionContext.NetParameters;
+        private ITrainerParameters TrainerParameters => _sessionContext.TrainerParameters;
         private ISampleSet SampleSet => _sessionContext.SampleSet;
-        private bool IsSampleSetInitialized => _sessionContext.SampleSet != null;
-        private bool IsNetInitialized => _sessionContext.Net.IsInitialized;
-        private bool IsTrainerInitialized => _sessionContext.Trainer.IsInitialized;
 
+        public bool IsSampleSetInitialized => _sessionContext.SampleSet != null;
+        public bool IsNetInitialized => _sessionContext.Net.IsInitialized;
+        public bool IsTrainerInitialized => _sessionContext.Trainer.IsInitialized;
         public bool IsStarted
         {
             get
@@ -116,36 +116,6 @@ namespace AIDemoUI.ViewModels
             }
         }
         public bool IsFinished => Trainer.IsFinished;
-        public string TrainButtonText
-        {
-            get
-            {
-                return trainButtonText;
-            }
-            set
-            {
-                if (trainButtonText != value)
-                {
-                    trainButtonText = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-        public string StepButtonText
-        {
-            get
-            {
-                return stepButtonText;
-            }
-            set
-            {
-                if (stepButtonText != value)
-                {
-                    stepButtonText = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
         public bool IsLogged
         {
             get
@@ -176,6 +146,30 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
+        public string TrainButtonText => GetTrainButtonText();
+        public string StepButtonText => GetStepButtonText();
+
+        #region helpers
+
+        private string GetTrainButtonText()
+        {
+            if(IsStarted && !IsPaused)
+            {
+                return "Pause";
+            }
+            else if(IsStarted && IsPaused)
+            {
+                return "Continue";
+            }
+            else { return "Train"; }
+        }
+        private string GetStepButtonText()
+        {
+
+            return "Step";
+        }
+
+        #endregion
 
         #endregion
 

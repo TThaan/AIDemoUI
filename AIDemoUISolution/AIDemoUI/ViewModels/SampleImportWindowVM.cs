@@ -6,7 +6,6 @@ using NeuralNetBuilder;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
@@ -24,6 +23,8 @@ namespace AIDemoUI.ViewModels
         string Url_TrainingLabels { get; set; }
         bool UseAllAvailableTestingSamples { get; set; }
         bool UseAllAvailableTrainingSamples { get; set; }
+        bool IsBusy { get; }
+        bool IsTrainerInitialized { get; }
         IAsyncCommand OkCommand { get; set; }
         IAsyncCommand SetSamplesLocationCommand { get; set; }
         Task OkAsync(object parameter);
@@ -56,7 +57,7 @@ namespace AIDemoUI.ViewModels
 
         #endregion
 
-        #region properties
+        #region properties (No Commands)
 
         private ISampleSet SampleSet
         {
@@ -64,7 +65,6 @@ namespace AIDemoUI.ViewModels
             set => _sessionContext.SampleSet = value;
         }
         private ITrainer Trainer => _sessionContext.Trainer;
-        private bool IsTrainerInitialized => _sessionContext.Trainer.IsInitialized;
 
         public Dictionary<SetName, ISampleSetParameters> Templates => _sampleSetSteward.DefaultSampleSetParameters;
         public ObservableCollection<SetName> TemplateNames => Templates.Keys.ToObservableCollection();
@@ -188,6 +188,7 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
+        public bool IsTrainerInitialized => _sessionContext.Trainer.IsInitialized;
         public bool IsBusy
         {
             get { return isBusy; }
@@ -200,6 +201,8 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
+
+        #endregion
 
         #region Commands
 
@@ -269,21 +272,6 @@ namespace AIDemoUI.ViewModels
         }
 
         #endregion
-
-        #endregion
-
-        #endregion
-
-        #region SampleSetChanged
-
-        void OnSampleSetChanged([CallerMemberName] string propertyName = null)
-        {
-            // redundant..
-            OnPropertyChanged("Url_TrainingLabels");
-            OnPropertyChanged("Url_TrainingImages");
-            OnPropertyChanged("Url_TestingLabels");
-            OnPropertyChanged("Url_TestingImages");
-        }
 
         #endregion
     }

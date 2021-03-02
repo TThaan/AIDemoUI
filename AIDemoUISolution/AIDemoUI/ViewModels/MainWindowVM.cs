@@ -213,7 +213,7 @@ namespace AIDemoUI.ViewModels
         {
             if (_sessionContext.Net == null)
             {
-                MessageBox.Show("No net created yet!");
+                MessageBox.Show("No net initialized yet!");
             }
             else
             {

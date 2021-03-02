@@ -55,7 +55,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Button Name="StartButton" Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+            <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
                     Content="{Binding TrainButtonText}" Command="{Binding TrainCommand}" CommandParameter="{StaticResource False}"/>
             <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
                     Content="{Binding StepButtonText}" Command="{Binding TrainCommand}" CommandParameter="{StaticResource True}"/>

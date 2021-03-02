@@ -1,8 +1,6 @@
 ﻿using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
-using System;
-using System.Linq;
 
 namespace AIDemoUI
 {
@@ -34,11 +32,15 @@ namespace AIDemoUI
 
         #endregion
 
+        #region properties
+
         public INetParameters NetParameters { get; set; }
         public ITrainerParameters TrainerParameters { get; set; }
         public INet Net { get; set; }
         public ITrainer Trainer { get; set; }
         public ISampleSetSteward SampleSetSteward { get; }
         public ISampleSet SampleSet { get; set; }
+
+        #endregion
     }
 }
