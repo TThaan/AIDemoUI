@@ -39,11 +39,10 @@ namespace AIDemoUI.ViewModels
         void MoveRight(object parameter);
     }
 
-    public class NetParametersVM : BaseSubVM, INetParametersVM
+    public class NetParametersVM : BaseVM, INetParametersVM
     {
         #region fields & ctor
 
-        private readonly ISessionContext _sessionContext;
         protected INetParameters _netParameters => _sessionContext.NetParameters;
         protected ITrainerParameters _trainerParameters => _sessionContext.TrainerParameters;
         private IEnumerable<CostType> costTypes;
@@ -52,11 +51,10 @@ namespace AIDemoUI.ViewModels
         private float weightMin_Global, weightMax_Global, biasMin_Global, biasMax_Global;
         private ILayerParametersFactory _layerParametersFactory;
 
-        public NetParametersVM(ISessionContext sessionContext, ISimpleMediator mediator, ILayerParametersVMFactory layerParametersVMFactory, ILayerParametersFactory layerParametersFactory)
-            : base(mediator)
+        public NetParametersVM(ISessionContext sessionContext, ISimpleMediator mediator, 
+            ILayerParametersVMFactory layerParametersVMFactory, ILayerParametersFactory layerParametersFactory)
+            : base(sessionContext, mediator)
         {
-            _sessionContext = sessionContext;
-
             _netParameters.LayerParametersCollection.CollectionChanged += LayerParametersCollection_CollectionChanged;   // DIC?
 
             LayerParametersVMFactory = layerParametersVMFactory;

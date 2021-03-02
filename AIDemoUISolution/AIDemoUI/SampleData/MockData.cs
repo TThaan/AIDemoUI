@@ -142,7 +142,7 @@ namespace AIDemoUI.SampleData.MockData
         public float LearningRateChange { get => .9f; set => throw new NotImplementedException(); }
         public float LastEpochsAccuracy { get => .625f; set => throw new NotImplementedException(); }
         public float CurrentTotalCost { get => .00037647f; set => throw new NotImplementedException(); }
-        public TrainerStatus TrainerStatus { get => TrainerStatus.Running; set => throw new NotImplementedException(); }
+        public TrainerStatus TrainerStatus { get; set; } = TrainerStatus.Running;
         public string Message { get => "Training..."; set => throw new NotImplementedException(); }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -181,11 +181,39 @@ namespace AIDemoUI.SampleData.MockData
     public class MockSampleSetSteward : ISampleSetSteward
     {
         public ISampleSet SampleSet => throw new NotImplementedException();
-        public Dictionary<SetName, ISampleSetParameters> DefaultSampleSetParameters => throw new NotImplementedException();
+        public Dictionary<SetName, ISampleSetParameters> DefaultSampleSetParameters => GetMockDefaultSampleSetParameters();
         public IEnumerable<SampleType> Types => throw new NotImplementedException();
         public Task<ISampleSet> CreateSampleSetAsync(ISampleSetParameters sampleSetParameters) => throw new NotImplementedException();
         public Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName) => throw new NotImplementedException();
-        public string Message => "SampleSet created.";
+        public string Message => "Failed to get samples locally under the given adresses.\nTrying default paths and file names.";
         public PropertyChangedEventHandler[] EventHandlers { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
+        #region helpers
+
+        private Dictionary<SetName, ISampleSetParameters> GetMockDefaultSampleSetParameters()
+        {
+            return new Dictionary<SetName, ISampleSetParameters>
+            {
+                [SetName.FourPixelCamera] = new SampleSetParameters()
+                {
+                    Name = SetName.FourPixelCamera,
+                    Paths = new Dictionary<SampleType, string>
+                    {
+                        [SampleType.TrainingLabel] = "To be created..",
+                        [SampleType.TrainingData] = "To be created..",
+                        [SampleType.TestingLabel] = "To be created..",
+                        [SampleType.TestingData] = "To be created.."
+                    },
+                    DefaultTrainingSamples = 1000,
+                    DefaultTestingSamples = 16,
+                    TrainingSamples = 1000,
+                    TestingSamples = 16,
+                    InputDistortion = 0.2f,
+                    TargetTolerance = .3f
+                }
+            };
+        }
+
+        #endregion
     }
 }

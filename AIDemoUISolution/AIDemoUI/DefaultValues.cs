@@ -6,15 +6,14 @@ using System.Windows;
 
 namespace AIDemoUI
 {
-    public class DefaultValues
+    public static class DefaultValuesExtensionMethods
     {
-        public void Set(IMainWindowVM mainWindowVM, ISessionContext sessionContext)
+        public static IMainWindowVM SetDefaultValues(this IMainWindowVM mainWindowVM, ISessionContext sessionContext)
         {
-            LoadAndSetDefaultSerializedParameters(mainWindowVM, sessionContext);
-
+            return LoadAndSetDefaultSerializedParameters(mainWindowVM, sessionContext);
         }
 
-        private void LoadAndSetDefaultSerializedParameters(IMainWindowVM mainWindowVM, ISessionContext sessionContext)
+        private static IMainWindowVM LoadAndSetDefaultSerializedParameters(IMainWindowVM mainWindowVM, ISessionContext sessionContext)
         {
             Stream stream = File.Open(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DefaultParameters.par"), FileMode.Open);
             BinaryFormatter b = new BinaryFormatter();
@@ -36,8 +35,9 @@ namespace AIDemoUI
             catch (Exception e)
             {
                 MessageBox.Show($"Net- and Trainer-Parameters could not be loaded.\n({e.Message})");
-                return;
             }
+
+            return mainWindowVM;
         }
 
 

@@ -9,10 +9,11 @@ namespace AIDemoUI.SampleDataViewModels
         #region ctor
 
         public SampleImportWindowVMSampleData()
-            : base(new MockSessionContext(), RawMediator, RawSampleSetSteward)
+            : base(new MockSessionContext(), RawMediator, new MockSampleSetSteward())
         {
+            //throw new System.ArgumentException($"{TrainingSamples}");
         }
 
-            #endregion
-        }
+        #endregion
     }
+}

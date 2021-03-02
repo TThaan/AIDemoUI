@@ -33,60 +33,8 @@ namespace AIDemoUI
         private IContainer GetContainer()
         {
             var builder = new ContainerBuilder();
-            // builder.Populate(serviceCollection);    // After registering all services!  // Later??
 
-            #region Libraries' Containers/ServiceProviders
-
-            builder.RegisterType<NetParameters>()
-                .As<INetParameters>()
-                .SingleInstance();
-            builder.RegisterType<LayerParameters>() // redundant?
-                .As<ILayerParameters>();
-            builder.RegisterType<TrainerParameters>()
-                .SingleInstance()
-                .As<ITrainerParameters>();    // Single?
-
-            // Or SampleSetFactory?
-            // builder.RegisterType<SampleSet>();  // .AsSelf()?
-            builder.RegisterType<SampleSetSteward>()
-                .OnActivated(x =>
-                {
-                    x.Instance.EventHandlers = new PropertyChangedEventHandler[]
-                    { x.Context.Resolve<IStatusVM>().SampleSet_PropertyChanged };
-                })
-                .As<ISampleSetSteward>()
-                .SingleInstance();
-            builder.RegisterType<SampleSetParameters>()
-                .As<ISampleSetParameters>();
-
-            //builder.RegisterType<Initializer>().SingleInstance();
-                //.As<IInitializer>();
-            builder.Register(x => Initializer.GetRawNet())  // in NetBuilder!
-                .As<INet>()
-                .SingleInstance();
-            builder.Register(x => Initializer.GetRawTrainer()).
-                OnActivated(x =>
-                {
-                    x.Instance.PropertyChanged += x.Context.Resolve<ILayerParametersVM>().Trainer_PropertyChanged;
-                    x.Instance.PropertyChanged += x.Context.Resolve<IStartStopVM>().Trainer_PropertyChanged;
-                    x.Instance.PropertyChanged += x.Context.Resolve<IStatusVM>().Trainer_PropertyChanged;
-                })
-                .As<ITrainer>()
-                .SingleInstance();
-
-            #endregion
-
-            #region SessionContext
-
-            builder.RegisterType<SessionContext>()
-                .As<ISessionContext>()
-                .SingleInstance();
-
-            #endregion
-
-            builder.RegisterType<LayerParametersVMFactory>().As<ILayerParametersVMFactory>();
-
-            #region MainWindowVM
+            #region MainWindow (View Model and View)
 
             builder.RegisterType<MainWindowVM>()
                 .SingleInstance()
@@ -101,6 +49,84 @@ namespace AIDemoUI
                     x.Instance.SaveInitializedNetCommand = new AsyncRelayCommand(x.Instance.SaveInitializedNetAsync, y => true);
                     x.Instance.EnterLogNameCommand = new AsyncRelayCommand(x.Instance.EnterLogNameAsync, y => true);
                 });
+            builder.Register(x => new MainWindow()
+            {
+                DataContext = x.Resolve<IMainWindowVM>()
+                .SetDefaultValues(x.Resolve<ISessionContext>())
+            })
+                .SingleInstance();
+
+            #endregion
+
+            #region Sample Import (View Model and View)
+
+            builder.RegisterType<SampleImportWindowVM>()
+                .SingleInstance()
+                .As<ISampleImportWindowVM>()
+                .OnActivated(x =>
+                {
+                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
+                    x.Instance.SetSamplesLocationCommand = new AsyncRelayCommand(x.Instance.SetSamplesLocationAsync, x.Context.Resolve<ISampleImportWindowVM>().SetSamplesLocationAsync_CanExecute);
+                    x.Instance.OkCommand = new AsyncRelayCommand(x.Instance.OkAsync, x.Context.Resolve<ISampleImportWindowVM>().OkAsync_CanExecute);
+                    x.Instance.SelectedTemplate = x.Instance.Templates.Values.First();
+                });
+            builder.Register(x => new SampleImportWindow() 
+            { 
+                DataContext = x.Resolve<ISampleImportWindowVM>()
+            })
+                .SingleInstance();
+
+            #endregion
+
+            #region Libraries' Containers/ServiceProviders
+
+            builder.RegisterType<NetParameters>()
+                .As<INetParameters>()
+                .SingleInstance();
+            builder.RegisterType<LayerParameters>() // redundant?
+                .As<ILayerParameters>();
+            builder.RegisterType<TrainerParameters>()
+                .SingleInstance()
+                .As<ITrainerParameters>();    // Single?
+            builder.RegisterType<SampleSetSteward>()
+                .OnActivated(x =>
+                {
+                    x.Instance.EventHandlers = new PropertyChangedEventHandler[]
+                    { 
+                        x.Context.Resolve<ISampleImportWindowVM>().Any_PropertyChanged
+                    };
+                })
+                .As<ISampleSetSteward>()
+                .SingleInstance();
+            builder.RegisterType<SampleSetParameters>()
+                .As<ISampleSetParameters>();
+
+            builder.Register(x => Initializer.GetRawNet())  // in NetBuilder!
+                .As<INet>()
+                .SingleInstance();
+            builder.Register(x => Initializer.GetRawTrainer()).
+                OnActivated(x =>
+                {
+                    x.Instance.PropertyChanged += x.Context.Resolve<ILayerParametersVM>().Any_PropertyChanged;
+                    x.Instance.PropertyChanged += x.Context.Resolve<IStartStopVM>().Any_PropertyChanged;
+                    x.Instance.PropertyChanged += x.Context.Resolve<IStatusVM>().Any_PropertyChanged;
+                })
+                .As<ITrainer>()
+                .SingleInstance();
+
+            #endregion
+
+            #region SessionContext
+
+            builder.RegisterType<SessionContext>()
+                .As<ISessionContext>()
+                .SingleInstance();
+
+            #endregion
+
+            #region LayerParametersVMFactory
+
+            builder.RegisterType<LayerParametersVMFactory>().As<ILayerParametersVMFactory>();
 
             #endregion
 
@@ -166,22 +192,6 @@ namespace AIDemoUI
 
             #endregion
 
-            #region Sample Import (View and VM)
-
-            builder.RegisterType<SampleImportWindowVM>()
-                .SingleInstance()
-                .As<ISampleImportWindowVM>()
-                .OnActivated(x =>
-            {
-                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
-                    x.Instance.SetSamplesLocationCommand = new AsyncRelayCommand(x.Instance.SetSamplesLocationAsync, x.Context.Resolve<ISampleImportWindowVM>().SetSamplesLocationAsync_CanExecute);
-                    x.Instance.OkCommand = new AsyncRelayCommand(x.Instance.OkAsync, x.Context.Resolve<ISampleImportWindowVM>().OkAsync_CanExecute);
-                    x.Instance.SelectedTemplate = x.Instance.Templates.Values.First();
-                });
-            builder.Register(x => new SampleImportWindow() { DataContext = x.Resolve<ISampleImportWindowVM>() }).SingleInstance();   //hm..
-
-            #endregion
-
             #region Factories and Stewards
 
             builder.RegisterType<LayerParametersVMFactory>()
@@ -205,17 +215,6 @@ namespace AIDemoUI
 
             builder.RegisterType<SimpleMediator>()
                 .As<ISimpleMediator>();
-
-            #endregion
-
-            #region Event Handlers
-                        
-            //builder.Register(x => new PropertyChangedEventHandler(x.Resolve<IStartStopVM>().Trainer_PropertyChanged))
-            //    .Keyed<PropertyChangedEventHandler>("InStartStopVM");
-            builder.Register(x => new PropertyChangedEventHandler(x.Resolve<IStatusVM>().Trainer_PropertyChanged))
-                .Keyed<PropertyChangedEventHandler>("InStatusVM");
-            builder.Register(x => new PropertyChangedEventHandler(x.Resolve<ILayerParametersVM>().Trainer_PropertyChanged))
-                .Keyed<PropertyChangedEventHandler>("InLayerParametersVM");
 
             #endregion
 

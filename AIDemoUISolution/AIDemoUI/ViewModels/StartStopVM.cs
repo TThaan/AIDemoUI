@@ -4,11 +4,9 @@ using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
-using Autofac.Features.AttributeFilters;
 
 namespace AIDemoUI.ViewModels
 {
@@ -16,6 +14,8 @@ namespace AIDemoUI.ViewModels
     {
         bool IsLogged { get; set; }
         string LogName { get; set; }
+        string ImportSamplesButtonText { get; }
+        string InitializeNetButtonText { get; }
         string StepButtonText { get; }
         string TrainButtonText { get; }
 
@@ -29,28 +29,21 @@ namespace AIDemoUI.ViewModels
         Task StepAsync(object parameter);
         bool TrainAsync_CanExecute(object parameter);
         bool StepAsync_CanExecute(object parameter);
-        void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e);
     }
 
-    public class StartStopVM : BaseSubVM, IStartStopVM
+    public class StartStopVM : BaseVM, IStartStopVM
     {
         #region fields & ctor
 
-        private readonly ISessionContext _sessionContext;
         private bool isLogged;
         private string logName;
         private readonly SampleImportWindow _sampleImportWindow;
-        private readonly PropertyChangedEventHandler _trainer_PropertyChanged_inLayerParametersVM, _trainer_PropertyChanged_inStatusVM;
 
-        public StartStopVM(ISessionContext sessionContext, ISimpleMediator mediator, SampleImportWindow sampleImportWindow, 
-            [KeyFilter("InStatusVM")] PropertyChangedEventHandler trainer_propertyChanged_inStatusVM,
-            [KeyFilter("InLayerParametersVM")] PropertyChangedEventHandler trainer_propertyChanged_inLayerParametersVM)
-            : base(mediator)
+        public StartStopVM(ISessionContext sessionContext, ISimpleMediator mediator, 
+            SampleImportWindow sampleImportWindow)
+            : base(sessionContext, mediator)
         {
-            _sessionContext = sessionContext;
             _sampleImportWindow = sampleImportWindow;
-            _trainer_PropertyChanged_inLayerParametersVM = trainer_propertyChanged_inLayerParametersVM;  // vgl mediator
-            _trainer_PropertyChanged_inStatusVM = trainer_propertyChanged_inStatusVM;
 
             _mediator.Register("Token: MainWindowVM", StartStopVMCallback);
         }
@@ -107,18 +100,32 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
+        public string ImportSamplesButtonText => GetImportSamplesButtonText();
+        public string InitializeNetButtonText => GetInitializeNetButtonText();
         public string TrainButtonText => GetTrainButtonText();
         public string StepButtonText => GetStepButtonText();
 
         #region helpers
 
+        private string GetImportSamplesButtonText()
+        {
+            if(SampleSet == null)
+                return "Import Samples (UnDone)";
+            else return "Import Samples (Done)"; 
+        }
+        private string GetInitializeNetButtonText()
+        {
+            if (Net.NetStatus == NetStatus.Initialized)
+                return "Initialize Net (Done)";
+            else return "Initialize Net (Undone)";
+        }
         private string GetTrainButtonText()
         {
-            if(Trainer.TrainerStatus == TrainerStatus.Running)
+            if (Trainer.TrainerStatus == TrainerStatus.Running)
                 return "Pause";
-            else if(Trainer.TrainerStatus == TrainerStatus.Paused)
+            else if (Trainer.TrainerStatus == TrainerStatus.Paused)
                 return "Continue";
-            else return "Train"; 
+            else return "Train";
         }
         private string GetStepButtonText()
         {
@@ -138,13 +145,13 @@ namespace AIDemoUI.ViewModels
 
         #region Executes and CanExecutes
 
-        public async Task ShowSampleImportWindow(object parameter)// Only use async commands??
+        public async Task ShowSampleImportWindow(object parameter)
         {
             await Task.Run(() =>
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    _sampleImportWindow.ShowDialog(); // use a delegate?
+                    _sampleImportWindow.ShowDialog(); // use delegate?
                 });
             });
         }
@@ -152,13 +159,14 @@ namespace AIDemoUI.ViewModels
         {
             if (Net.NetStatus == NetStatus.Undefined)
             {
-                Net = await Task.Run(() => Initializer.InitializeNet(Net, NetParameters));  // as ext meth (in NetBuilderFactory)?
+                Net = await Task.Run(() => Initializer.InitializeNet(Net, NetParameters));
             }
 
             if (Trainer.TrainerStatus == TrainerStatus.Undefined)
             {
                 Trainer = await Task.Run(() => Initializer.InitializeTrainer(Trainer, Net.GetCopy(), TrainerParameters, SampleSet)); 
             }
+            OnPropertyChanged(nameof(InitializeNetButtonText));
         }
         [DebuggerStepThrough]
         public bool InitializeNetAsync_CanExecute(object parameter)
@@ -202,15 +210,6 @@ namespace AIDemoUI.ViewModels
         }
 
         #endregion
-
-        #endregion
-
-        #region events
-
-        public void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            OnPropertyChanged(e.PropertyName);
-        }
 
         #endregion
     }

@@ -5,11 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AIDemoUI.Views"
         xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModels"
+        xmlns:views="clr-namespace:AIDemoUI.Views"
         xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
         xmlns:conv="clr-namespace:AIDemoUI.Converters"
         xmlns:factories="clr-namespace:AIDemoUI.FactoriesAndStewards"
         mc:Ignorable="d"
-        Title="                                                                     S a m p l e   I m p o r t" 
+        WindowStyle="None"
         Height="450" Width="600"
         Left="800" Top="400"
         Name="thisWindow">
@@ -23,15 +24,26 @@
     </Window.DataContext>-->
 
     <Window.Resources>
+        <conv:TestConverter x:Key="TestConverter"/>
         <conv:BoolReversingConverter x:Key="BoolReversingConverter"/>
         <conv:SampleSetParametersToTemplateNameConverter x:Key="SampleSetParametersToTemplateNameConverter"/>
     </Window.Resources>
 
     <StackPanel Name="thisRootElement" IsEnabled="{Binding IsBusy, Converter={StaticResource BoolReversingConverter}}">
         
+        <!-- Title -->
+
+        <TextBox Height="35"
+                 Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+                 TextAlignment="Center" Padding="0,8,0,0"
+                 Text="S  a  m  p  l  e     I  m  p  o  r  t     W  i  n  d  o  w" >
+            
+        </TextBox>
+        
         <!-- Import Sample Set -->
         
-        <ComboBox Name="SampleTemplates" Grid.Row="0" MinHeight="50"
+        <ComboBox Name="SampleTemplates" Grid.Row="0" MinHeight="50" Margin="0,0,0,0"
+                  VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="16"
                   ItemsSource="{Binding TemplateNames}"
                   SelectedItem="{Binding SelectedTemplate, Mode=OneWay, Converter={StaticResource SampleSetParametersToTemplateNameConverter}}">
         </ComboBox>
@@ -118,8 +130,9 @@
                     <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                 </TextBox.InputBindings>
             </TextBox>
-            <Button Grid.Row="1" Grid.Column="1" Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TrainingLabels"
-                        Content="File"/>
+            <Button Grid.Row="1" Grid.Column="1" 
+                    Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TrainingLabels"
+                    Content="File"/>
 
             <TextBlock Grid.Row="2" Text="Url/Path for Training Images" HorizontalAlignment="Center"/>
             <TextBox Grid.Row="3" Grid.Column="0" Text="{Binding Url_TrainingImages}">
@@ -127,8 +140,9 @@
                     <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                 </TextBox.InputBindings>
             </TextBox>
-            <Button Grid.Row="3" Grid.Column="1" Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TrainingImages"
-                        Content="File"/>
+            <Button Grid.Row="3" Grid.Column="1" 
+                    Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TrainingImages"
+                    Content="File"/>
 
             <TextBlock Grid.Row="4" Text="Url/Path for Testing Labels" HorizontalAlignment="Center"/>
             <TextBox Grid.Row="5" Grid.Column="0" Text="{Binding Url_TestingLabels}">
@@ -136,8 +150,9 @@
                     <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                 </TextBox.InputBindings>
             </TextBox>
-            <Button Grid.Row="5" Grid.Column="1" Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TestingLabels"
-                        Content="File"/>
+            <Button Grid.Row="5" Grid.Column="1" 
+                    Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TestingLabels"
+                    Content="File"/>
 
             <TextBlock Grid.Row="6" Text="Url/Path for Testing Images" HorizontalAlignment="Center"/>
             <TextBox Grid.Row="7" Grid.Column="0" Text="{Binding Url_TestingImages}">
@@ -145,15 +160,21 @@
                     <KeyBinding Key="Return" Command="{Binding UnfocusCommand}" CommandParameter="{Binding ElementName=thisRootElement}"/>
                 </TextBox.InputBindings>
             </TextBox>
-            <Button Grid.Row="7" Grid.Column="1" Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TestingImages"
-                        Content="File"/>
+            <Button Grid.Row="7" Grid.Column="1" 
+                    Command="{Binding SetSamplesLocationCommand}" CommandParameter="Url_TestingImages"
+                    Content="File"/>
         </Grid>
 
         <!-- OK Button -->
-        
-        <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                        Content="O K"
-                        Command="{Binding OkCommand}" CommandParameter="{Binding ElementName=thisWindow}"/>
 
+        <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" Margin="100,25,100,15"
+                FontSize="20" 
+                Command="{Binding OkCommand}" CommandParameter="{Binding ElementName=thisWindow}"
+                Content="O K"/>
+
+        <TextBlock HorizontalAlignment="Stretch" MinHeight="100"
+                   TextAlignment="Center" FontSize="16"
+                   Text="{Binding Message}" />
+        
     </StackPanel>
 </Window>

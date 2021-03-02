@@ -33,19 +33,17 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
-        private readonly ISessionContext _sessionContext;
         private INetParametersVM netParametersVM;
         private IStatusVM statusVM;
         private IStartStopVM startStopVM;
 
         public MainWindowVM(ISessionContext sessionContext, INetParametersVM netParametersVM, IStartStopVM startStopVM, 
             IStatusVM statusVM, ISimpleMediator mediator)
-            : base(mediator)
+            : base(sessionContext, mediator)
         {
-            _sessionContext = sessionContext;
-            NetParametersVM = netParametersVM;
-            StartStopVM = startStopVM;
-            StatusVM = statusVM;
+            NetParametersVM = netParametersVM;  // try xaml injection
+            StartStopVM = startStopVM;          // try xaml injection
+            StatusVM = statusVM;                // try xaml injection
 
             _mediator.Register("Token: MainWindowVM", MainWindowVMCallback);
         }

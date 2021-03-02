@@ -10,6 +10,7 @@ namespace AIDemoUI.ViewModels
     {
         IRelayCommand UnfocusCommand { get; set; }
         event PropertyChangedEventHandler PropertyChanged;
+        void Any_PropertyChanged(object sender, PropertyChangedEventArgs e);
         void OnAllPropertiesChanged();
 
         void Unfocus(object parameter);
@@ -22,10 +23,12 @@ namespace AIDemoUI.ViewModels
     {
         #region fields & ctor
 
+        protected readonly ISessionContext _sessionContext;
         protected readonly ISimpleMediator _mediator;
 
-        public BaseVM(ISimpleMediator mediator)
+        public BaseVM(ISessionContext sessionContext, ISimpleMediator mediator)
         {
+            _sessionContext = sessionContext;
             _mediator = mediator;
         }
 
@@ -54,6 +57,10 @@ namespace AIDemoUI.ViewModels
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        public void Any_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            PropertyChanged?.Invoke(this, e);
         }
         public virtual void OnAllPropertiesChanged()
         {

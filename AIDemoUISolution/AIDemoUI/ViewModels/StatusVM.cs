@@ -1,5 +1,6 @@
-﻿using System;
-using System.ComponentModel;
+﻿using NeuralNetBuilder;
+using System;
+using System.Windows;
 
 namespace AIDemoUI.ViewModels
 {
@@ -12,23 +13,17 @@ namespace AIDemoUI.ViewModels
         int Epochs { get; }
         float LastEpochsAccuracy { get; }
         string Message { get; }
-        void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e);
-        void SampleSet_PropertyChanged(object sender, PropertyChangedEventArgs e);
+        Visibility DetailsVisibility { get; }
     }
 
-    public class StatusVM : BaseSubVM, IStatusVM
+    public class StatusVM : BaseVM, IStatusVM
     {
         #region fields & ctor
 
-        // int progressBarValue, progressBarMax;
-        // string progressBarText;
-        private readonly ISessionContext _sessionContext;
-
         public StatusVM(ISessionContext sessionContext, ISimpleMediator mediator)
-            : base(mediator)
+            : base(sessionContext, mediator)
         {
             _mediator.Register("Token: MainWindowVM", StatusVMCallback);
-            _sessionContext = sessionContext;       
         }
 
         private void StatusVMCallback(object obj)
@@ -44,22 +39,33 @@ namespace AIDemoUI.ViewModels
         public int Epochs => _sessionContext.Trainer.Epochs;
         public int CurrentEpoch => _sessionContext.Trainer.CurrentEpoch;
         public int CurrentSample => _sessionContext.Trainer.CurrentSample;
-        public float CurrentTotalCost => _sessionContext.Trainer.CurrentTotalCost;  // unused so far..
+        public float CurrentTotalCost => _sessionContext.Trainer.CurrentTotalCost;
         public float LastEpochsAccuracy => _sessionContext.Trainer.LastEpochsAccuracy;
-        public string Message => $"{_sessionContext.SampleSetSteward.Message}{_sessionContext.Trainer.Message}";
+        public Visibility DetailsVisibility => GetDetailsVisibility();
+        public string Message
+        {
+            get
+            {
+                OnPropertyChanged(nameof(DetailsVisibility));
+                return $"{_sessionContext.Trainer.Message}";
+            }
+        }
+
+        #region helpers
+
+        private Visibility GetDetailsVisibility()
+        {
+            if (_sessionContext.SampleSet == null ||
+                _sessionContext.Trainer == null || 
+                _sessionContext.Trainer.TrainerStatus == TrainerStatus.Undefined || 
+                _sessionContext.Trainer.TrainerStatus == TrainerStatus.Initialized)
+            {
+                return Visibility.Hidden;
+            }
+            return Visibility.Visible;
+        }
 
         #endregion
-
-        #region events
-
-        public void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            OnPropertyChanged(e.PropertyName);
-        }
-        public void SampleSet_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            OnPropertyChanged(e.PropertyName);
-        }
 
         #endregion
     }

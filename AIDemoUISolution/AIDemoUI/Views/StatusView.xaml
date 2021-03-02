@@ -14,6 +14,10 @@
         <sd:StatusVMSampleData/>
     </d:UserControl.DataContext>
 
+    <UserControl.Resources>
+        <conv:VisibilityToVisibilityConverter x:Key="VisibilityToVisibilityConverter"/>
+        <conv:TestConverter x:Key="TestConverter"/>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -24,7 +28,9 @@
         <TextBlock Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20" 
                    Text="{Binding Message}"/>
 
-        <Grid Height="100" Width="300" Grid.Row="1" VerticalAlignment="Top">
+        <!-- Details -->
+        
+        <Grid Height="100" Width="300" Grid.Row="1" VerticalAlignment="Top" Visibility="{Binding DetailsVisibility}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="4*"/>
                 <ColumnDefinition Width="2*"/>
@@ -32,6 +38,7 @@
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
@@ -53,6 +60,8 @@
 
             <TextBlock Grid.Column="0" Grid.Row="3" VerticalAlignment="Center" Text="Total Cost (Error)"/>
             <TextBlock Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="3" VerticalAlignment="Center" Text="{Binding CurrentTotalCost}"/>
+
+            <!--<TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding DetailsVisibility, Converter={StaticResource TestConverter}}"/>-->
         </Grid>
 
     </Grid>

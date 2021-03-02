@@ -17,49 +17,41 @@
 
     <UserControl.Resources>
         <sys:Boolean x:Key="True">True</sys:Boolean>
-        <sys:Boolean x:Key="False">False</sys:Boolean>
-        <!--<conv:IntToBoolConverter x:Key="IntToBoolConverter"/>-->        
+        <sys:Boolean x:Key="False">False</sys:Boolean>    
     </UserControl.Resources>
     
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
         </Grid.RowDefinitions>
 
         <!-- Get Samples Button -->
 
-        <Grid Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2">
-            <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="Get Samples" Command="{Binding ShowSampleImportWindowCommand}"/>
-        </Grid>
+        <Button Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20"
+                Content="{Binding ImportSamplesButtonText}" 
+                Command="{Binding ShowSampleImportWindowCommand}"/>
 
         <!-- Initialize Net Button -->
 
-        <Grid Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2">
-            <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="Initialize Net" Command="{Binding InitializeNetCommand}"/>
-        </Grid>
+        <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                Content="{Binding InitializeNetButtonText}" 
+                Command="{Binding InitializeNetCommand}"/>
 
         <!-- Train/Step Buttons -->
 
-        <Grid Grid.Column="0" Grid.Row="2" Grid.RowSpan="2" Grid.ColumnSpan="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="3*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <Button Grid.Row="2" Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                Content="{Binding TrainButtonText}"
+                Command="{Binding TrainCommand}" CommandParameter="{StaticResource False}"/>
+        <Button Grid.Row="2" Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+                Content="{Binding StepButtonText}"
+                Command="{Binding StepCommand}" CommandParameter="{StaticResource True}"/>
 
-            <Button Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="{Binding TrainButtonText}" Command="{Binding TrainCommand}" CommandParameter="{StaticResource False}"/>
-            <Button Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
-                    Content="{Binding StepButtonText}" Command="{Binding StepCommand}" CommandParameter="{StaticResource True}"/>
-        </Grid>
 
     </Grid>
 </UserControl>

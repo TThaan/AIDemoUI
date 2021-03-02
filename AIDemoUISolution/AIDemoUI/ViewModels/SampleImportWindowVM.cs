@@ -24,6 +24,7 @@ namespace AIDemoUI.ViewModels
         bool UseAllAvailableTestingSamples { get; set; }
         bool UseAllAvailableTrainingSamples { get; set; }
         bool IsBusy { get; }
+        string Message { get; }
         IAsyncCommand OkCommand { get; set; }
         IAsyncCommand SetSamplesLocationCommand { get; set; }
         Task OkAsync(object parameter);
@@ -32,21 +33,19 @@ namespace AIDemoUI.ViewModels
         bool SetSamplesLocationAsync_CanExecute(object parameter);
     }
 
-    public class SampleImportWindowVM : BaseSubVM, ISampleImportWindowVM
+    public class SampleImportWindowVM : BaseVM, ISampleImportWindowVM
     {
         #region fields & ctor
 
         ISampleSetParameters selectedSampleSetParameters;
-        private readonly ISessionContext _sessionContext;
         private readonly ISampleSetSteward _sampleSetSteward;
         bool isBusy;
 
-        public SampleImportWindowVM(ISessionContext sessionContext, ISimpleMediator mediator, ISampleSetSteward sampleSetSteward)
-            : base(mediator)
+        public SampleImportWindowVM(ISessionContext sessionContext, ISimpleMediator mediator, 
+            ISampleSetSteward sampleSetSteward)
+            : base(sessionContext, mediator)
         {
-            _sessionContext = sessionContext;
             _sampleSetSteward = sampleSetSteward;
-
             _mediator.Register("Token: MainWindowVM", SampleImportWindowVMCallback);
         }
         private void SampleImportWindowVMCallback(object obj)
@@ -199,6 +198,7 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
+        public string Message => _sampleSetSteward.Message;
 
         #endregion
 
@@ -256,6 +256,7 @@ namespace AIDemoUI.ViewModels
                 Trainer.SampleSet = SampleSet;
             }
             IsBusy = false;
+            // Set or Notify StartStopVM...ButtonText
         }
         public bool OkAsync_CanExecute(object parameter)
         {
