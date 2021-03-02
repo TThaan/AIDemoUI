@@ -14,12 +14,6 @@ namespace AIDemoUI.ViewModels
 {
     public interface IStartStopVM : IBaseVM
     {
-        bool IsSampleSetInitialized { get; }
-        bool IsNetInitialized { get; }
-        bool IsTrainerInitialized { get; }
-        bool IsPaused { get; set; }
-        bool IsStarted { get; set; }
-        bool IsFinished { get; }
         bool IsLogged { get; set; }
         string LogName { get; set; }
         string StepButtonText { get; }
@@ -28,10 +22,13 @@ namespace AIDemoUI.ViewModels
         IAsyncCommand InitializeNetCommand { get; set; }
         IAsyncCommand ShowSampleImportWindowCommand { get; set; }
         IAsyncCommand TrainCommand { get; set; }
+        IAsyncCommand StepCommand { get; set; }
         Task InitializeNetAsync(object parameter);
         Task ShowSampleImportWindow(object parameter);
         Task TrainAsync(object parameter);
+        Task StepAsync(object parameter);
         bool TrainAsync_CanExecute(object parameter);
+        bool StepAsync_CanExecute(object parameter);
         void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e);
     }
 
@@ -41,7 +38,7 @@ namespace AIDemoUI.ViewModels
 
         private readonly ISessionContext _sessionContext;
         private bool isLogged;
-        private string logName, stepButtonText, trainButtonText;
+        private string logName;
         private readonly SampleImportWindow _sampleImportWindow;
         private readonly PropertyChangedEventHandler _trainer_PropertyChanged_inLayerParametersVM, _trainer_PropertyChanged_inStatusVM;
 
@@ -76,46 +73,10 @@ namespace AIDemoUI.ViewModels
             get => _sessionContext.Trainer;
             set => _sessionContext.Trainer = value;
         }
+        private ISampleSet SampleSet => _sessionContext.SampleSet;
         private INetParameters NetParameters => _sessionContext.NetParameters;
         private ITrainerParameters TrainerParameters => _sessionContext.TrainerParameters;
-        private ISampleSet SampleSet => _sessionContext.SampleSet;
 
-        public bool IsSampleSetInitialized => _sessionContext.SampleSet != null;
-        public bool IsNetInitialized => _sessionContext.Net.IsInitialized;
-        public bool IsTrainerInitialized => _sessionContext.Trainer.IsInitialized;
-        public bool IsStarted
-        {
-            get
-            {
-                return Trainer == null ? false : Trainer.IsStarted;
-            }
-            set
-            {
-                if (Trainer.IsStarted != value)
-                {
-                    Trainer.IsStarted = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(TrainButtonText)); // Call in Base.OnPropChgd?
-                }
-            }
-        }
-        public bool IsPaused
-        {
-            get
-            {
-                return Trainer == null ? true : Trainer.IsPaused;
-            }
-            set
-            {
-                if (Trainer.IsPaused != value)
-                {
-                    Trainer.IsPaused = value;
-                    OnPropertyChanged();
-                    OnPropertyChanged(nameof(TrainButtonText));
-                }
-            }
-        }
-        public bool IsFinished => Trainer.IsFinished;
         public bool IsLogged
         {
             get
@@ -153,19 +114,14 @@ namespace AIDemoUI.ViewModels
 
         private string GetTrainButtonText()
         {
-            if(IsStarted && !IsPaused)
-            {
+            if(Trainer.TrainerStatus == TrainerStatus.Running)
                 return "Pause";
-            }
-            else if(IsStarted && IsPaused)
-            {
+            else if(Trainer.TrainerStatus == TrainerStatus.Paused)
                 return "Continue";
-            }
-            else { return "Train"; }
+            else return "Train"; 
         }
         private string GetStepButtonText()
         {
-
             return "Step";
         }
 
@@ -178,6 +134,7 @@ namespace AIDemoUI.ViewModels
         public IAsyncCommand InitializeNetCommand { get; set; }
         public IAsyncCommand ShowSampleImportWindowCommand { get; set; }
         public IAsyncCommand TrainCommand { get; set; }
+        public IAsyncCommand StepCommand { get; set; }
 
         #region Executes and CanExecutes
 
@@ -193,12 +150,12 @@ namespace AIDemoUI.ViewModels
         }
         public async Task InitializeNetAsync(object parameter)
         {
-            if (!IsNetInitialized)
+            if (Net.NetStatus == NetStatus.Undefined)
             {
                 Net = await Task.Run(() => Initializer.InitializeNet(Net, NetParameters));  // as ext meth (in NetBuilderFactory)?
             }
 
-            if (!IsTrainerInitialized)
+            if (Trainer.TrainerStatus == TrainerStatus.Undefined)
             {
                 Trainer = await Task.Run(() => Initializer.InitializeTrainer(Trainer, Net.GetCopy(), TrainerParameters, SampleSet)); 
             }
@@ -206,43 +163,42 @@ namespace AIDemoUI.ViewModels
         [DebuggerStepThrough]
         public bool InitializeNetAsync_CanExecute(object parameter)
         {
-            return IsSampleSetInitialized;
+            return SampleSet != null;
         }
         public async Task TrainAsync(object parameter)
         {
-            bool isStepModeOn = (bool)parameter;
+            if (Trainer.TrainerStatus == TrainerStatus.Running)
+                Trainer.TrainerStatus = TrainerStatus.Paused;
+            else Trainer.TrainerStatus = TrainerStatus.Running;
+                
+            await Trainer.Train(IsLogged ? LogName : string.Empty, _sessionContext.TrainerParameters.Epochs);
+            Net = Trainer.TrainedNet.GetCopy();
 
-            if (IsStarted)
-            {
-                if (IsPaused)
-                {
-                    if (!isStepModeOn) IsPaused = false;
-                    await Trainer.Train(IsLogged ? LogName : string.Empty, _sessionContext.TrainerParameters.Epochs);
-                }
-                else
-                {
-                    IsPaused = true;
-                }
-            }
-            else
-            {
-                IsStarted = true;
-                if (!isStepModeOn) IsPaused = false;
-                await Trainer.Train(IsLogged ? LogName : string.Empty, _sessionContext.TrainerParameters.Epochs);
-                Net = Trainer.TrainedNet.GetCopy();
-
-                if (Trainer.IsFinished)
-                {
-                    await Trainer.Reset();
-                    IsPaused = true;
-                    IsStarted = false;
-                }
-            }
+            if (Trainer.TrainerStatus == TrainerStatus.Finished)
+                await Trainer.Reset();
         }
         [DebuggerStepThrough]
         public bool TrainAsync_CanExecute(object parameter)
         {
-            return IsSampleSetInitialized && IsNetInitialized && IsTrainerInitialized;
+            return SampleSet != null 
+                && Net.NetStatus != NetStatus.Undefined 
+                && Trainer.TrainerStatus != TrainerStatus.Undefined;
+        }
+        public async Task StepAsync(object parameter)
+        {
+            Trainer.TrainerStatus = TrainerStatus.Paused;
+            await Trainer.Train(IsLogged ? LogName : string.Empty, _sessionContext.TrainerParameters.Epochs);
+            Net = Trainer.TrainedNet.GetCopy();
+
+            if (Trainer.TrainerStatus == TrainerStatus.Finished)
+                await Trainer.Reset();
+        }
+        [DebuggerStepThrough]
+        public bool StepAsync_CanExecute(object parameter)
+        {
+            return SampleSet != null
+                && Net.NetStatus != NetStatus.Undefined 
+                && Trainer.TrainerStatus != TrainerStatus.Undefined;
         }
 
         #endregion

@@ -149,6 +149,7 @@ namespace AIDemoUI
                     x.Instance.InitializeNetCommand = new AsyncRelayCommand(x.Instance.InitializeNetAsync, x.Instance.InitializeNetAsync_CanExecute);
                     x.Instance.ShowSampleImportWindowCommand = new AsyncRelayCommand(x.Instance.ShowSampleImportWindow, y => true);
                     x.Instance.TrainCommand = new AsyncRelayCommand(x.Instance.TrainAsync, x.Instance.TrainAsync_CanExecute);
+                    x.Instance.StepCommand = new AsyncRelayCommand(x.Instance.StepAsync, x.Instance.StepAsync_CanExecute);
                 });
 
             #endregion

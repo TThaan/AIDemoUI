@@ -24,7 +24,6 @@ namespace AIDemoUI.ViewModels
         bool UseAllAvailableTestingSamples { get; set; }
         bool UseAllAvailableTrainingSamples { get; set; }
         bool IsBusy { get; }
-        bool IsTrainerInitialized { get; }
         IAsyncCommand OkCommand { get; set; }
         IAsyncCommand SetSamplesLocationCommand { get; set; }
         Task OkAsync(object parameter);
@@ -188,7 +187,6 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public bool IsTrainerInitialized => _sessionContext.Trainer.IsInitialized;
         public bool IsBusy
         {
             get { return isBusy; }
@@ -253,7 +251,7 @@ namespace AIDemoUI.ViewModels
             SampleSet = await _sampleSetSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here? Like: _mediator.GetSampleSet_StatusChanged()..
             (parameter as SampleImportWindow)?.Hide();
 
-            if (IsTrainerInitialized)
+            if (Trainer.TrainerStatus != TrainerStatus.Undefined)
             {
                 Trainer.SampleSet = SampleSet;
             }

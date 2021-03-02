@@ -11,7 +11,7 @@ namespace AIDemoUI.ViewModels
         int SamplesTotal { get; }
         int Epochs { get; }
         float LastEpochsAccuracy { get; }
-        string Status { get; }
+        string Message { get; }
         void Trainer_PropertyChanged(object sender, PropertyChangedEventArgs e);
         void SampleSet_PropertyChanged(object sender, PropertyChangedEventArgs e);
     }
@@ -46,7 +46,7 @@ namespace AIDemoUI.ViewModels
         public int CurrentSample => _sessionContext.Trainer.CurrentSample;
         public float CurrentTotalCost => _sessionContext.Trainer.CurrentTotalCost;  // unused so far..
         public float LastEpochsAccuracy => _sessionContext.Trainer.LastEpochsAccuracy;
-        public string Status => $"{_sessionContext.SampleSetSteward.Status}\n{_sessionContext.Trainer.Status}";   // remove question mark
+        public string Message => $"{_sessionContext.SampleSetSteward.Message}{_sessionContext.Trainer.Message}";
 
         #endregion
 

@@ -48,7 +48,7 @@ namespace AIDemoUI.SampleData.MockData
         {
             throw new NotImplementedException();
         }
-        public bool IsInitialized { get => true; set => throw new NotImplementedException(); }
+        public NetStatus NetStatus { get => NetStatus.Initialized; set => throw new NotImplementedException(); }
     }
     public class MockLayer : ILayer
     {
@@ -142,10 +142,8 @@ namespace AIDemoUI.SampleData.MockData
         public float LearningRateChange { get => .9f; set => throw new NotImplementedException(); }
         public float LastEpochsAccuracy { get => .625f; set => throw new NotImplementedException(); }
         public float CurrentTotalCost { get => .00037647f; set => throw new NotImplementedException(); }
-        public bool IsStarted { get => true; set => throw new NotImplementedException(); }
-        public bool IsPaused { get => false; set => throw new NotImplementedException(); }
-        public bool IsFinished { get => false; set => throw new NotImplementedException(); }
-        public string Status { get => "Training..."; set => throw new NotImplementedException(); }
+        public TrainerStatus TrainerStatus { get => TrainerStatus.Running; set => throw new NotImplementedException(); }
+        public string Message { get => "Training..."; set => throw new NotImplementedException(); }
 
         public event PropertyChangedEventHandler PropertyChanged;
         public void Dispose()
@@ -187,7 +185,7 @@ namespace AIDemoUI.SampleData.MockData
         public IEnumerable<SampleType> Types => throw new NotImplementedException();
         public Task<ISampleSet> CreateSampleSetAsync(ISampleSetParameters sampleSetParameters) => throw new NotImplementedException();
         public Task<ISampleSet> CreateDefaultSampleSetAsync(SetName setName) => throw new NotImplementedException();
-        public string Status => "SampleSet created.";
+        public string Message => "SampleSet created.";
         public PropertyChangedEventHandler[] EventHandlers { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }
