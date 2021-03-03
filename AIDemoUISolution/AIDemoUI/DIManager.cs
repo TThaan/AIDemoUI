@@ -136,7 +136,7 @@ namespace AIDemoUI
                 .As<ILayerParametersVM>()
                 .OnActivated(x =>
                 {
-                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
+                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive.. better in BaseVM ctor ?
                 }); ;
 
             #endregion
@@ -156,11 +156,6 @@ namespace AIDemoUI
                     x.Instance.UseGlobalParametersCommand = new AsyncRelayCommand(x.Instance.UseGlobalParametersAsync, x.Instance.UseGlobalParametersAsync_CanExecute);
                 });
 
-            // Use named collection or create in NetParameters' Registering!
-            //builder.Register(x => new ObservableCollection<ILayerParametersVM>())
-            //    .SingleInstance()
-            //    .OnActivated(x => x.Instance.CollectionChanged += x.Context.Resolve<IMainWindowVM>().LayerParametersCollection_CollectionChanged);
-
             #endregion
 
             #region StartStopVM
@@ -173,7 +168,7 @@ namespace AIDemoUI
                     x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
                     x.Instance.InitializeNetCommand = new AsyncRelayCommand(x.Instance.InitializeNetAsync, x.Instance.InitializeNetAsync_CanExecute);
                     x.Instance.ShowSampleImportWindowCommand = new AsyncRelayCommand(x.Instance.ShowSampleImportWindow, y => true);
-                    x.Instance.TrainCommand = new AsyncRelayCommand(x.Instance.TrainAsync, x.Instance.TrainAsync_CanExecute);
+                    x.Instance.TrainCommand = new ConcurrentAsyncRelayCommand(x.Instance.TrainAsync, x.Instance.TrainAsync_CanExecute);
                     x.Instance.StepCommand = new AsyncRelayCommand(x.Instance.StepAsync, x.Instance.StepAsync_CanExecute);
                 });
 

@@ -3,10 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:AIDemoUI"
         xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModels"
         xmlns:views="clr-namespace:AIDemoUI.Views"
-        xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
         mc:Ignorable="d"
         
         Title="MainWindow" Height="990" Width="1760"
@@ -17,23 +15,16 @@
         <sd:MainWindowVMSampleData/>
     </d:Window.DataContext>
 
-    <!--<Window.DataContext>
-        <vm:MainWindowVM/>
-    </Window.DataContext>-->
-    
     <Window.Resources>
-        <DataTemplate x:Key="NetParametersView">    <!-- Define DataContext here or in UserControl.Content? -->
+        <DataTemplate x:Key="NetParametersView">
             <views:NetParametersView/>
         </DataTemplate>
-        <DataTemplate x:Key="StatusView">           <!-- Define DataContext here or in UserControl.Content? -->
+        <DataTemplate x:Key="StatusView">
             <views:StatusView/>
         </DataTemplate>
-        <DataTemplate x:Key="StartStopView">        <!-- Define DataContext here or in UserControl.Content? -->
+        <DataTemplate x:Key="StartStopView">
             <views:StartStopView/>
         </DataTemplate>
-        <!--<DataTemplate DataType="{x:Type vm:SampleImportWindowVM}">
-            <views:SampleImportWindow/>
-        </DataTemplate>-->
     </Window.Resources>
 
     <Grid Name="thisRootElement">

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 
 namespace AIDemoUI.Commands
@@ -13,15 +12,12 @@ namespace AIDemoUI.Commands
 
     public class AsyncRelayCommand : IAsyncCommand
     {
-        #region IAsyncCommand fields
+        #region fields& ctor
 
-        Func<object, Task> _execute;
-        Predicate<object> _canExecute;
-        bool _isExecuting;
+        private Func<object, Task> _execute;
+        protected Predicate<object> _canExecute;
+        protected bool _isExecuting, _isConcurrentExecutionAllowed;
 
-        #endregion
-
-        #region IAsyncCommand ctor
 
         public AsyncRelayCommand(Func<object, Task> execute, Predicate<object> canExecute = default)
         {
@@ -54,11 +50,15 @@ namespace AIDemoUI.Commands
 
         #region ICommand
 
+        public void Execute(object parameter)
+        {
+            ExecuteAsync(parameter).FireAndForgetSafeAsync();
+        }
         [DebuggerStepThrough]
-        public bool CanExecute(object parameter = null)
+        public virtual bool CanExecute(object parameter = null)
         {
             return
-                !_isExecuting &&
+                (_isConcurrentExecutionAllowed || !_isExecuting) &&
                 (_canExecute?.Invoke(parameter) ?? true);
         }
         public event EventHandler CanExecuteChanged
@@ -71,10 +71,6 @@ namespace AIDemoUI.Commands
             {
                 CommandManager.RequerySuggested -= value;
             }
-        }
-        public void Execute(object parameter)
-        {
-            ExecuteAsync(parameter).FireAndForgetSafeAsync();
         }
         public void OnCanExecuteChanged()
         {

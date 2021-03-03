@@ -5,7 +5,6 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:views="clr-namespace:AIDemoUI.Views"
              xmlns:sd="clr-namespace:AIDemoUI.SampleDataViewModels"
-             xmlns:vm="clr-namespace:AIDemoUI.ViewModels"
              xmlns:conv="clr-namespace:AIDemoUI.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="1600">
@@ -15,8 +14,6 @@
     </d:UserControl.DataContext>
 
     <UserControl.Resources>
-        <conv:TestConverter x:Key="TestConverter"/>
-        <conv:BoolReversingConverter x:Key="BoolReversingConverter"/>
         <conv:LayerParametersToLayerParametersVMConverter x:Key="LayerParametersToLayerParametersVMConverter"/>
         <DataTemplate x:Key="LayerParametersView">
             <views:LayerParametersView/>
