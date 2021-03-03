@@ -47,7 +47,7 @@ namespace AIDemoUI.ViewModels
         protected ITrainerParameters _trainerParameters => _sessionContext.TrainerParameters;
         private IEnumerable<CostType> costTypes;
         private IEnumerable<WeightInitType> weightInitTypes;
-        private bool areParametersGlobal, areParametersGlobal_IsCheckboxEnabled;
+        private bool areParametersGlobal, areParametersGlobal_IsCheckboxDisabled;
         private float weightMin_Global, weightMax_Global, biasMin_Global, biasMax_Global;
         private ILayerParametersFactory _layerParametersFactory;
 
@@ -55,25 +55,17 @@ namespace AIDemoUI.ViewModels
             ILayerParametersVMFactory layerParametersVMFactory, ILayerParametersFactory layerParametersFactory)
             : base(sessionContext, mediator)
         {
-            _netParameters.LayerParametersCollection.CollectionChanged += LayerParametersCollection_CollectionChanged;   // DIC?
-
             LayerParametersVMFactory = layerParametersVMFactory;
             _layerParametersFactory = layerParametersFactory;
 
-            _mediator.Register("Token: MainWindowVM", NetParametersVMCallback);   // DIC?
-
-            SetDefaultValues();
+            RegisterEvents();
         }
 
         #region helpers
 
-        private void NetParametersVMCallback(object obj)
+        private void RegisterEvents()
         {
-            throw new NotImplementedException();
-        }
-        private void SetDefaultValues()
-        {
-            AreParametersGlobal_IsCheckboxEnabled = true;
+            _netParameters.LayerParametersCollection.CollectionChanged += LayerParametersCollection_CollectionChanged;
         }
 
         #endregion
@@ -108,14 +100,14 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public bool AreParametersGlobal_IsCheckboxEnabled// => UseGlobalParametersCommand.CanExecute(null);
+        public bool AreParametersGlobal_IsCheckboxDisabled
         {
-            get { return areParametersGlobal_IsCheckboxEnabled; }
+            get { return areParametersGlobal_IsCheckboxDisabled; }
             set
             {
-                if (areParametersGlobal_IsCheckboxEnabled != value)
+                if (areParametersGlobal_IsCheckboxDisabled != value)
                 {
-                    areParametersGlobal_IsCheckboxEnabled = value;
+                    areParametersGlobal_IsCheckboxDisabled = value;
                     OnPropertyChanged();
                 }
             }
@@ -285,7 +277,7 @@ namespace AIDemoUI.ViewModels
         {
             await Task.Run(() =>
             {
-                AreParametersGlobal_IsCheckboxEnabled = false;
+                AreParametersGlobal_IsCheckboxDisabled = true;
 
                 if (AreParametersGlobal)
                 {
@@ -294,8 +286,8 @@ namespace AIDemoUI.ViewModels
                 }
                 else
                 {
-                    // Invoke: block thread until message box is dismissed.
-                    // BeginInvoke: only block ui thread (this thread continues execution).
+                    // 'Invoke' dispatcher to block this thread until the message box is closed.
+                    // (BeginInvoke would only block the ui thread (this thread continued execution).)
                     Application.Current.Dispatcher.Invoke(() =>
                     {
                         if (MessageBox.Show(Application.Current.MainWindow, 
@@ -308,6 +300,9 @@ namespace AIDemoUI.ViewModels
                         }
                     });
                 }
+
+                AreParametersGlobal_IsCheckboxDisabled = false;
+
                 void OverrideLocalParameters()
                 {
                     foreach (var layerParameters in LayerParametersCollection)
@@ -317,7 +312,6 @@ namespace AIDemoUI.ViewModels
                         layerParameters.WeightMin = weightMin_Global;
                         layerParameters.WeightMax = weightMax_Global;
                     }
-                    areParametersGlobal_IsCheckboxEnabled = true;
                     OnAllPropertiesChanged();
                 }
             });
@@ -335,10 +329,13 @@ namespace AIDemoUI.ViewModels
 
         private void LayerParametersCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            // Change each layer's id to it's current position
+
             for (int i = 0; i < LayerParametersCollection.Count; i++)
             {
                 LayerParametersCollection[i].Id = i;
             }
+
             OnAllPropertiesChanged();
         }
         

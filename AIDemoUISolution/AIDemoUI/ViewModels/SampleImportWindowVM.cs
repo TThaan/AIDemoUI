@@ -46,11 +46,6 @@ namespace AIDemoUI.ViewModels
             : base(sessionContext, mediator)
         {
             _sampleSetSteward = sampleSetSteward;
-            _mediator.Register("Token: MainWindowVM", SampleImportWindowVMCallback);
-        }
-        private void SampleImportWindowVMCallback(object obj)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion
@@ -256,7 +251,7 @@ namespace AIDemoUI.ViewModels
                 Trainer.SampleSet = SampleSet;
             }
             IsBusy = false;
-            // Set or Notify StartStopVM...ButtonText
+            _mediator.NotifyColleagues(MediatorToken.StartStopVM_UpdateButtonTexts.ToString(), null);
         }
         public bool OkAsync_CanExecute(object parameter)
         {

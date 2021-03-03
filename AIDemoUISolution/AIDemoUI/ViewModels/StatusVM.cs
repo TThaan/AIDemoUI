@@ -23,12 +23,7 @@ namespace AIDemoUI.ViewModels
         public StatusVM(ISessionContext sessionContext, ISimpleMediator mediator)
             : base(sessionContext, mediator)
         {
-            _mediator.Register("Token: MainWindowVM", StatusVMCallback);
-        }
-
-        private void StatusVMCallback(object obj)
-        {
-            throw new NotImplementedException();
+            
         }
 
         #endregion

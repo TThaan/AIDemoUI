@@ -28,11 +28,7 @@ namespace AIDemoUI.ViewModels
         public LayerParametersVM(ISessionContext sessionContext, ISimpleMediator mediator)//
             : base(sessionContext, mediator)
         {
-            _mediator.Register("Token: MainWindowVM", LayerParametersVMCallback);
-        }
-        private void LayerParametersVMCallback(object obj)
-        {
-            throw new NotImplementedException();
+            
         }
 
         #endregion

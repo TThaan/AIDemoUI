@@ -16,6 +16,7 @@
 
     <UserControl.Resources>
         <conv:TestConverter x:Key="TestConverter"/>
+        <conv:BoolReversingConverter x:Key="BoolReversingConverter"/>
         <conv:LayerParametersToLayerParametersVMConverter x:Key="LayerParametersToLayerParametersVMConverter"/>
         <DataTemplate x:Key="LayerParametersView">
             <views:LayerParametersView/>
@@ -29,6 +30,7 @@
         </Grid.ColumnDefinitions>
 
         <!-- Column 1: 'Layer Parameters' -->
+        
         <Grid Grid.Column="0">
 
             <ListBox VerticalContentAlignment="Top" 
@@ -62,6 +64,7 @@
             <!-- Weight and Bias Parameters -->
 
             <!-- UseGlobalParameters -->
+            
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -72,7 +75,7 @@
                     <!-- behaviors:CommandBehaviors.EnablingCommand="{}" -->
                     <CheckBox Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,5,0,5" FontSize="16"                              
                               IsChecked="{Binding AreParametersGlobal, Mode=OneWay}"
-                              IsEnabled="{Binding AreParametersGlobal_IsCheckboxEnabled}">
+                              IsEnabled="{Binding AreParametersGlobal_IsCheckboxDisabled, Converter={StaticResource BoolReversingConverter}}">
                         <CheckBox.LayoutTransform>
                             <ScaleTransform ScaleX="2" ScaleY="2"/>
                         </CheckBox.LayoutTransform>
@@ -84,6 +87,7 @@
             </Border>
 
             <!-- WeightMin_Global -->
+            
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -102,6 +106,7 @@
             </Border>
 
             <!-- WeightMax_Global -->
+            
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -120,6 +125,7 @@
             </Border>
 
             <!-- BiasMin_Global -->
+            
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -138,6 +144,7 @@
             </Border>
 
             <!-- BiasMax_Global -->
+            
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -156,6 +163,7 @@
             </Border>
 
             <!-- CostTypes -->
+            
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="CostType" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>
@@ -165,6 +173,7 @@
             </Border>
 
             <!-- WeightInitTypes -->
+            
             <Border BorderBrush="LightGray" BorderThickness="1">
                 <StackPanel>
                     <TextBlock Text="WeightInitType" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,10,0,5"/>

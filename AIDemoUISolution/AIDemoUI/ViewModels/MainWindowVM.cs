@@ -41,21 +41,10 @@ namespace AIDemoUI.ViewModels
             IStatusVM statusVM, ISimpleMediator mediator)
             : base(sessionContext, mediator)
         {
-            NetParametersVM = netParametersVM;  // try xaml injection
-            StartStopVM = startStopVM;          // try xaml injection
-            StatusVM = statusVM;                // try xaml injection
-
-            _mediator.Register("Token: MainWindowVM", MainWindowVMCallback);
+            NetParametersVM = netParametersVM;
+            StartStopVM = startStopVM;
+            StatusVM = statusVM;
         }
-
-        #region helpers
-
-        private void MainWindowVMCallback(object obj)
-        {
-
-        }
-
-        #endregion
 
         #endregion
 

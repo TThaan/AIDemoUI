@@ -3,7 +3,6 @@ using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
-using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows;
@@ -45,12 +44,17 @@ namespace AIDemoUI.ViewModels
         {
             _sampleImportWindow = sampleImportWindow;
 
-            _mediator.Register("Token: MainWindowVM", StartStopVMCallback);
+            RegisterMediatorHandlers();
         }
-        private void StartStopVMCallback(object obj)
-        {
-            throw new NotImplementedException();
+
+        #region helpers
+
+        private void RegisterMediatorHandlers()
+        { 
+            _mediator.Register(MediatorToken.StartStopVM_UpdateButtonTexts.ToString(), UpdateButtonTexts); 
         }
+
+        #endregion
 
         #endregion
 
@@ -210,6 +214,18 @@ namespace AIDemoUI.ViewModels
         }
 
         #endregion
+
+        #endregion
+
+        #region mediator handlers
+
+        private void UpdateButtonTexts(object obj)
+        {
+            OnPropertyChanged(nameof(ImportSamplesButtonText));
+            OnPropertyChanged(nameof(InitializeNetButtonText));
+            OnPropertyChanged(nameof(TrainButtonText));
+            OnPropertyChanged(nameof(StepButtonText));
+        }
 
         #endregion
     }

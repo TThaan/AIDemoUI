@@ -4,7 +4,6 @@ using AIDemoUI.SampleData;
 using AIDemoUI.ViewModels;
 using AIDemoUI.Views;
 using Autofac;
-using Autofac.Features.AttributeFilters;
 using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
@@ -87,7 +86,7 @@ namespace AIDemoUI
                 .As<ILayerParameters>();
             builder.RegisterType<TrainerParameters>()
                 .SingleInstance()
-                .As<ITrainerParameters>();    // Single?
+                .As<ITrainerParameters>();
             builder.RegisterType<SampleSetSteward>()
                 .OnActivated(x =>
                 {
@@ -107,6 +106,7 @@ namespace AIDemoUI
             builder.Register(x => Initializer.GetRawTrainer()).
                 OnActivated(x =>
                 {
+                    // Reconsider:
                     x.Instance.PropertyChanged += x.Context.Resolve<ILayerParametersVM>().Any_PropertyChanged;
                     x.Instance.PropertyChanged += x.Context.Resolve<IStartStopVM>().Any_PropertyChanged;
                     x.Instance.PropertyChanged += x.Context.Resolve<IStatusVM>().Any_PropertyChanged;
@@ -168,8 +168,7 @@ namespace AIDemoUI
             builder.RegisterType<StartStopVM>()
                 .SingleInstance()
                 .As<IStartStopVM>()
-                .WithAttributeFiltering()   // redundant?
-                .OnActivated(x =>
+                .OnActivating(x =>
                 {
                     x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
                     x.Instance.InitializeNetCommand = new AsyncRelayCommand(x.Instance.InitializeNetAsync, x.Instance.InitializeNetAsync_CanExecute);
@@ -214,7 +213,8 @@ namespace AIDemoUI
             #region Mediator
 
             builder.RegisterType<SimpleMediator>()
-                .As<ISimpleMediator>();
+                .As<ISimpleMediator>()
+                .SingleInstance();
 
             #endregion
 
