@@ -1,14 +1,14 @@
 ﻿using AIDemoUI.Commands;
-using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Input;
 
 namespace AIDemoUI.ViewModels
 {
     public interface IBaseVM
     {
-        IRelayCommand UnfocusCommand { get; set; }
+        ICommand UnfocusCommand { get; set; }
         event PropertyChangedEventHandler PropertyChanged;
         void Any_PropertyChanged(object sender, PropertyChangedEventArgs e);
         void OnAllPropertiesChanged();
@@ -30,13 +30,24 @@ namespace AIDemoUI.ViewModels
         {
             _sessionContext = sessionContext;
             _mediator = mediator;
+
+            DefineCommands();
         }
+
+        #region helpers
+
+        private void DefineCommands()
+        {
+            UnfocusCommand = new SimpleRelayCommand(Unfocus);
+        }
+
+        #endregion
 
         #endregion
 
         #region Commands
 
-        public IRelayCommand UnfocusCommand { get; set; }
+        public ICommand UnfocusCommand { get; set; }
 
         #region Executes and CanExecutes
 

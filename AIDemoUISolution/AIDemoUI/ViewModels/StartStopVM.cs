@@ -1,4 +1,4 @@
-﻿using AIDemoUI.Commands;
+﻿using AIDemoUI.Commands.Async;
 using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using NeuralNetBuilder;
@@ -18,16 +18,10 @@ namespace AIDemoUI.ViewModels
         string StepButtonText { get; }
         string TrainButtonText { get; }
 
-        IAsyncCommand InitializeNetCommand { get; set; }
-        IAsyncCommand ShowSampleImportWindowCommand { get; set; }
-        IAsyncCommand TrainCommand { get; set; }
-        IAsyncCommand StepCommand { get; set; }
-        Task InitializeNetAsync(object parameter);
-        Task ShowSampleImportWindow(object parameter);
-        Task TrainAsync(object parameter);
-        Task StepAsync(object parameter);
-        bool TrainAsync_CanExecute(object parameter);
-        bool StepAsync_CanExecute(object parameter);
+        IAsyncRelayCommand InitializeNetCommand { get; }
+        IAsyncRelayCommand ShowSampleImportWindowCommand { get; }
+        IAsyncRelayCommand TrainCommand { get; }
+        IAsyncRelayCommand StepCommand { get; }
     }
 
     public class StartStopVM : BaseVM, IStartStopVM
@@ -45,13 +39,22 @@ namespace AIDemoUI.ViewModels
             _sampleImportWindow = sampleImportWindow;
 
             RegisterMediatorHandlers();
+            DefineCommands();
         }
 
         #region helpers
 
         private void RegisterMediatorHandlers()
         { 
-            _mediator.Register(MediatorToken.StartStopVM_UpdateButtonTexts.ToString(), UpdateButtonTexts); 
+            _mediator.Register(MediatorToken.StartStopVM_UpdateButtonTexts.ToString(), UpdateButtonTexts);
+        }
+        private void DefineCommands()
+        {
+            InitializeNetCommand = new AsyncRelayCommand(InitializeNetAsync, InitializeNetAsync_CanExecute);
+            ShowSampleImportWindowCommand = new SimpleAsyncRelayCommand(ShowSampleImportWindow);
+            TrainCommand = new AsyncRelayCommand(TrainAsync, TrainAsync_CanExecute)
+            { IsConcurrentExecutionAllowed = true };
+            StepCommand = new AsyncRelayCommand(StepAsync, StepAsync_CanExecute);
         }
 
         #endregion
@@ -142,14 +145,14 @@ namespace AIDemoUI.ViewModels
 
         #region Commands
 
-        public IAsyncCommand InitializeNetCommand { get; set; }
-        public IAsyncCommand ShowSampleImportWindowCommand { get; set; }
-        public IAsyncCommand TrainCommand { get; set; }
-        public IAsyncCommand StepCommand { get; set; }
+        public IAsyncRelayCommand InitializeNetCommand { get; private set; }
+        public IAsyncRelayCommand ShowSampleImportWindowCommand { get; private set; }
+        public IAsyncRelayCommand TrainCommand { get; private set; }
+        public IAsyncRelayCommand StepCommand { get; private set; }
 
         #region Executes and CanExecutes
 
-        public async Task ShowSampleImportWindow(object parameter)
+        private async Task ShowSampleImportWindow(object parameter)
         {
             await Task.Run(() =>
             {
@@ -159,7 +162,7 @@ namespace AIDemoUI.ViewModels
                 });
             });
         }
-        public async Task InitializeNetAsync(object parameter)
+        private async Task InitializeNetAsync(object parameter)
         {
             if (Net.NetStatus == NetStatus.Undefined)
             {
@@ -173,11 +176,11 @@ namespace AIDemoUI.ViewModels
             OnPropertyChanged(nameof(InitializeNetButtonText));
         }
         [DebuggerStepThrough]
-        public bool InitializeNetAsync_CanExecute(object parameter)
+        private bool InitializeNetAsync_CanExecute(object parameter)
         {
             return SampleSet != null;
         }
-        public async Task TrainAsync(object parameter)
+        private async Task TrainAsync(object parameter)
         {
             if (Trainer.TrainerStatus == TrainerStatus.Running)
                 Trainer.TrainerStatus = TrainerStatus.Paused;
@@ -190,13 +193,13 @@ namespace AIDemoUI.ViewModels
                 await Trainer.Reset();
         }
         [DebuggerStepThrough]
-        public bool TrainAsync_CanExecute(object parameter)
+        private bool TrainAsync_CanExecute(object parameter)
         {
             return SampleSet != null 
                 && Net.NetStatus != NetStatus.Undefined 
                 && Trainer.TrainerStatus != TrainerStatus.Undefined;
         }
-        public async Task StepAsync(object parameter)
+        private async Task StepAsync(object parameter)
         {
             Trainer.TrainerStatus = TrainerStatus.Paused;
             await Trainer.Train(IsLogged ? LogName : string.Empty, _sessionContext.TrainerParameters.Epochs);
@@ -206,7 +209,7 @@ namespace AIDemoUI.ViewModels
                 await Trainer.Reset();
         }
         [DebuggerStepThrough]
-        public bool StepAsync_CanExecute(object parameter)
+        private bool StepAsync_CanExecute(object parameter)
         {
             return SampleSet != null
                 && Net.NetStatus != NetStatus.Undefined 

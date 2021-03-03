@@ -1,5 +1,4 @@
 ﻿using NeuralNetBuilder;
-using System;
 using System.Windows;
 
 namespace AIDemoUI.ViewModels
@@ -21,10 +20,7 @@ namespace AIDemoUI.ViewModels
         #region fields & ctor
 
         public StatusVM(ISessionContext sessionContext, ISimpleMediator mediator)
-            : base(sessionContext, mediator)
-        {
-            
-        }
+            : base(sessionContext, mediator) { }
 
         #endregion
 

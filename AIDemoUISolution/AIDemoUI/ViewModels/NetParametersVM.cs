@@ -1,4 +1,5 @@
 ﻿using AIDemoUI.Commands;
+using AIDemoUI.Commands.Async;
 using AIDemoUI.FactoriesAndStewards;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
@@ -8,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace AIDemoUI.ViewModels
 {
@@ -29,14 +31,11 @@ namespace AIDemoUI.ViewModels
         float LearningRateChange { get; set; }
         string FileName { get; set; }
 
-        IRelayCommand AddCommand { get; set; }
-        IRelayCommand DeleteCommand { get; set; }
-        IRelayCommand MoveLeftCommand { get; set; }
-        IRelayCommand MoveRightCommand { get; set; }
-        void Add(object parameter);
-        void Delete(object parameter);
-        void MoveLeft(object parameter);
-        void MoveRight(object parameter);
+        ICommand AddCommand { get; }
+        ICommand DeleteCommand { get; }
+        ICommand MoveLeftCommand { get; }
+        ICommand MoveRightCommand { get; }
+        IAsyncRelayCommand UseGlobalParametersCommand { get; }
     }
 
     public class NetParametersVM : BaseVM, INetParametersVM
@@ -59,6 +58,7 @@ namespace AIDemoUI.ViewModels
             _layerParametersFactory = layerParametersFactory;
 
             RegisterEvents();
+            DefineCommands();
         }
 
         #region helpers
@@ -66,6 +66,14 @@ namespace AIDemoUI.ViewModels
         private void RegisterEvents()
         {
             _netParameters.LayerParametersCollection.CollectionChanged += LayerParametersCollection_CollectionChanged;
+        }
+        private void DefineCommands()
+        {
+            AddCommand = new SimpleRelayCommand(Add);
+            DeleteCommand = new SimpleRelayCommand(Delete);
+            MoveLeftCommand = new SimpleRelayCommand(MoveLeft);
+            MoveRightCommand = new SimpleRelayCommand(MoveRight);
+            UseGlobalParametersCommand = new AsyncRelayCommand(UseGlobalParametersAsync, UseGlobalParametersAsync_CanExecute);
         }
 
         #endregion
@@ -231,16 +239,16 @@ namespace AIDemoUI.ViewModels
 
         #region Commands
 
-        public IRelayCommand AddCommand { get; set; }
-        public IRelayCommand DeleteCommand { get; set; }
-        public IRelayCommand MoveLeftCommand { get; set; }
-        public IRelayCommand MoveRightCommand { get; set; }
-        public IAsyncCommand UseGlobalParametersCommand { get; set; }
+        public ICommand AddCommand { get; private set; }
+        public ICommand DeleteCommand { get; private set; }
+        public ICommand MoveLeftCommand { get; private set; }
+        public ICommand MoveRightCommand { get; private set; }
+        public IAsyncRelayCommand UseGlobalParametersCommand { get; private set; }
 
 
         #region Executes and CanExecutes
 
-        public void Add(object parameter)
+        private void Add(object parameter)
         {
             ILayerParameters lp = (parameter as ILayerParametersVM).LayerParameters;
 
@@ -248,7 +256,7 @@ namespace AIDemoUI.ViewModels
             ILayerParameters newLayerParameters = _layerParametersFactory.CloneLayerParameters(lp);
             _netParameters.LayerParametersCollection.Insert(newLayerId, newLayerParameters);
         }
-        public void Delete(object parameter)
+        private void Delete(object parameter)
         {
             ILayerParameters lp = (parameter as ILayerParametersVM).LayerParameters;
 
@@ -257,7 +265,7 @@ namespace AIDemoUI.ViewModels
                 _netParameters.LayerParametersCollection.Remove(lp);
             }
         }
-        public void MoveLeft(object parameter)
+        private void MoveLeft(object parameter)
         {
             ILayerParameters lp = (parameter as ILayerParametersVM).LayerParameters;
 
@@ -265,7 +273,7 @@ namespace AIDemoUI.ViewModels
             _netParameters.LayerParametersCollection.Move(
                 currentLayerId, currentLayerId > 0 ? currentLayerId - 1 : 0);
         }
-        public void MoveRight(object parameter)
+        private void MoveRight(object parameter)
         {
             ILayerParameters lp = (parameter as ILayerParametersVM).LayerParameters;
 
@@ -273,7 +281,7 @@ namespace AIDemoUI.ViewModels
             _netParameters.LayerParametersCollection.Move(
                 currentLayerId, currentLayerId < _netParameters.LayerParametersCollection.Count - 1 ? currentLayerId + 1 : 0);
         }
-        public async Task UseGlobalParametersAsync(object parameter)
+        private async Task UseGlobalParametersAsync(object parameter)
         {
             await Task.Run(() =>
             {
@@ -316,7 +324,7 @@ namespace AIDemoUI.ViewModels
                 }
             });
         }
-        public bool UseGlobalParametersAsync_CanExecute(object parameter)
+        private bool UseGlobalParametersAsync_CanExecute(object parameter)
         {
             return true;
         }

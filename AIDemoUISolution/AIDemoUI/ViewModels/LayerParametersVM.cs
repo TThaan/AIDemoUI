@@ -26,10 +26,7 @@ namespace AIDemoUI.ViewModels
         private IEnumerable<ActivationType> activationTypes;
 
         public LayerParametersVM(ISessionContext sessionContext, ISimpleMediator mediator)//
-            : base(sessionContext, mediator)
-        {
-            
-        }
+            : base(sessionContext, mediator) { }
 
         #endregion
 

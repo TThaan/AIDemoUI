@@ -1,55 +1,33 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Windows.Input;
 
 namespace AIDemoUI.Commands
 {
-    public interface IRelayCommand : ICommand
+    public class RelayCommand : SimpleRelayCommand
     {
-        void RaiseCanExecuteChanged();
-    }
+        #region fields & ctor
 
-    public class RelayCommand : IRelayCommand
-    {
-        #region Fields
+        protected readonly Predicate<object> _canExecute = null;
 
-        readonly Action<object> execute = null;
-        readonly Predicate<object> canExecute = null;
-
-        #endregion
-
-        #region Constructors
-
-        public RelayCommand(Action<object> execute, Predicate<object> canExecute = default)
+        public RelayCommand(Action<object> execute, Predicate<object> canExecute)
+            :base(execute)
         {
-            this.execute = execute ?? throw new ArgumentNullException("execute");
-            this.canExecute = canExecute;
+            _canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
         }
 
         #endregion
 
-        #region ICommand Members
+        #region ICommand
 
+        public override void Execute(object parameter)
+        {
+            if (CanExecute(parameter))
+            {
+                base.Execute(parameter);
+            }
+        }
         [DebuggerStepThrough]
-        public bool CanExecute(object parameter)
-        {
-            return canExecute == null ? true : canExecute(parameter);
-        }
-        public event EventHandler CanExecuteChanged
-        {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
-        }
-        //public event EventHandler CanExecuteChanged;              // Variant2
-        public void Execute(object parameter)
-        {
-            execute(parameter);
-        }
-        public void RaiseCanExecuteChanged()
-        {
-            // CanExecuteChanged?.Invoke(this, EventArgs.Empty);    // Variant2
-            CommandManager.InvalidateRequerySuggested();
-        }
+        public override bool CanExecute(object parameter) => _canExecute(parameter);
 
         #endregion
     }

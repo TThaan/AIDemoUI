@@ -1,11 +1,11 @@
-﻿using AIDemoUI.Commands;
+﻿using AIDemoUI.Commands.Async;
 using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using Microsoft.Win32;
 using NeuralNetBuilder;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
@@ -23,14 +23,10 @@ namespace AIDemoUI.ViewModels
         string Url_TrainingLabels { get; set; }
         bool UseAllAvailableTestingSamples { get; set; }
         bool UseAllAvailableTrainingSamples { get; set; }
-        bool IsBusy { get; }
+        bool IsBusy { get; set; }
         string Message { get; }
-        IAsyncCommand OkCommand { get; set; }
-        IAsyncCommand SetSamplesLocationCommand { get; set; }
-        Task OkAsync(object parameter);
-        bool OkAsync_CanExecute(object parameter);
-        Task SetSamplesLocationAsync(object parameter);
-        bool SetSamplesLocationAsync_CanExecute(object parameter);
+        IAsyncRelayCommand OkCommand { get; }
+        IAsyncRelayCommand SetSamplesLocationCommand { get; }
     }
 
     public class SampleImportWindowVM : BaseVM, ISampleImportWindowVM
@@ -46,7 +42,20 @@ namespace AIDemoUI.ViewModels
             : base(sessionContext, mediator)
         {
             _sampleSetSteward = sampleSetSteward;
+
+            DefineCommands(); 
         }
+
+        #region helpers
+
+        private void DefineCommands()
+        {
+            SetSamplesLocationCommand = new AsyncRelayCommand(SetSamplesLocationAsync, SetSamplesLocationAsync_CanExecute);
+            OkCommand = new AsyncRelayCommand(OkAsync, OkAsync_CanExecute);
+            SelectedTemplate = Templates.Values.First();
+        }
+
+        #endregion
 
         #endregion
 
@@ -199,12 +208,12 @@ namespace AIDemoUI.ViewModels
 
         #region Commands
 
-        public IAsyncCommand SetSamplesLocationCommand { get; set; }
-        public IAsyncCommand OkCommand { get; set; }
+        public IAsyncRelayCommand SetSamplesLocationCommand { get; private set; }
+        public IAsyncRelayCommand OkCommand { get; private set; }
 
         #region Executes and CanExecutes
 
-        public async Task SetSamplesLocationAsync(object parameter)
+        private async Task SetSamplesLocationAsync(object parameter)
         {
             string url = parameter as string;
 
@@ -236,14 +245,14 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public bool SetSamplesLocationAsync_CanExecute(object parameter)
+        private bool SetSamplesLocationAsync_CanExecute(object parameter)
         {
             return true;
         }
-        public async Task OkAsync(object parameter)
+        private async Task OkAsync(object parameter)
         {
             IsBusy = true;
-            SampleSet = await _sampleSetSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here? Like: _mediator.GetSampleSet_StatusChanged()..
+            SampleSet = await _sampleSetSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here.. ?
             (parameter as SampleImportWindow)?.Hide();
 
             if (Trainer.TrainerStatus != TrainerStatus.Undefined)
@@ -253,7 +262,7 @@ namespace AIDemoUI.ViewModels
             IsBusy = false;
             _mediator.NotifyColleagues(MediatorToken.StartStopVM_UpdateButtonTexts.ToString(), null);
         }
-        public bool OkAsync_CanExecute(object parameter)
+        private bool OkAsync_CanExecute(object parameter)
         {
             //if (string.IsNullOrEmpty(Url_TrainingLabels) ||
             //    string.IsNullOrEmpty(Url_TrainingImages) ||

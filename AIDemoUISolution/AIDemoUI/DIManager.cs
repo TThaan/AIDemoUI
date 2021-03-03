@@ -1,5 +1,4 @@
-﻿using AIDemoUI.Commands;
-using AIDemoUI.FactoriesAndStewards;
+﻿using AIDemoUI.FactoriesAndStewards;
 using AIDemoUI.SampleData;
 using AIDemoUI.ViewModels;
 using AIDemoUI.Views;
@@ -8,76 +7,63 @@ using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
 using System.ComponentModel;
-using System.Linq;
 using IContainer = Autofac.IContainer;
 
 namespace AIDemoUI
 {
     public class DIManager
     {
-        #region fields
-
         IContainer container;
-
-        #endregion
-
-        #region public
-
         public IContainer Container => container ?? (container = GetContainer());
-
-        #endregion
-
-        #region helpers
 
         private IContainer GetContainer()
         {
             var builder = new ContainerBuilder();
 
-            #region MainWindow (View Model and View)
+            #region Windows/Views
 
             builder.RegisterType<MainWindowVM>()
                 .SingleInstance()
-                .As<IMainWindowVM>()
-                .OnActivated(x =>
-                {
-                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
-                    x.Instance.ExitCommand = new RelayCommand(x.Instance.Exit, y => true);
-                    x.Instance.LoadParametersCommand = new AsyncRelayCommand(x.Instance.LoadParametersAsync, y => true);
-                    x.Instance.SaveParametersCommand = new AsyncRelayCommand(x.Instance.SaveParametersAsync, y => true);
-                    x.Instance.LoadInitializedNetCommand = new AsyncRelayCommand(x.Instance.LoadInitializedNetAsync, y => true);
-                    x.Instance.SaveInitializedNetCommand = new AsyncRelayCommand(x.Instance.SaveInitializedNetAsync, y => true);
-                    x.Instance.EnterLogNameCommand = new AsyncRelayCommand(x.Instance.EnterLogNameAsync, y => true);
-                });
-            builder.Register(x => new MainWindow()
+                .As<IMainWindowVM>();
+
+            builder.Register(x => new SampleImportWindow()
             {
-                DataContext = x.Resolve<IMainWindowVM>()
-                .SetDefaultValues(x.Resolve<ISessionContext>())
-            })
-                .SingleInstance();
-
-            #endregion
-
-            #region Sample Import (View Model and View)
-
-            builder.RegisterType<SampleImportWindowVM>()
-                .SingleInstance()
-                .As<ISampleImportWindowVM>()
-                .OnActivated(x =>
-                {
-                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
-                    x.Instance.SetSamplesLocationCommand = new AsyncRelayCommand(x.Instance.SetSamplesLocationAsync, x.Context.Resolve<ISampleImportWindowVM>().SetSamplesLocationAsync_CanExecute);
-                    x.Instance.OkCommand = new AsyncRelayCommand(x.Instance.OkAsync, x.Context.Resolve<ISampleImportWindowVM>().OkAsync_CanExecute);
-                    x.Instance.SelectedTemplate = x.Instance.Templates.Values.First();
-                });
-            builder.Register(x => new SampleImportWindow() 
-            { 
                 DataContext = x.Resolve<ISampleImportWindowVM>()
             })
                 .SingleInstance();
 
             #endregion
 
-            #region Libraries' Containers/ServiceProviders
+            #region View Models
+
+            builder.Register(x => new MainWindow()
+            {
+                DataContext = x.Resolve<IMainWindowVM>()
+                .SetDefaultValues(x.Resolve<ISessionContext>())
+            })
+                .SingleInstance();
+            builder.RegisterType<NetParametersVM>()
+                .SingleInstance()
+                .As<INetParametersVM>();
+
+            builder.RegisterType<LayerParametersVM>()
+                .As<ILayerParametersVM>();
+
+            builder.RegisterType<StartStopVM>()
+                .SingleInstance()
+                .As<IStartStopVM>();
+
+            builder.RegisterType<SampleImportWindowVM>()
+                .SingleInstance()
+                .As<ISampleImportWindowVM>();
+
+            builder.RegisterType<StatusVM>()
+                .As<IStatusVM>()
+                .SingleInstance();
+
+            #endregion
+
+            #region Data/Model classes
 
             builder.RegisterType<NetParameters>()
                 .As<INetParameters>()
@@ -87,16 +73,6 @@ namespace AIDemoUI
             builder.RegisterType<TrainerParameters>()
                 .SingleInstance()
                 .As<ITrainerParameters>();
-            builder.RegisterType<SampleSetSteward>()
-                .OnActivated(x =>
-                {
-                    x.Instance.EventHandlers = new PropertyChangedEventHandler[]
-                    { 
-                        x.Context.Resolve<ISampleImportWindowVM>().Any_PropertyChanged
-                    };
-                })
-                .As<ISampleSetSteward>()
-                .SingleInstance();
             builder.RegisterType<SampleSetParameters>()
                 .As<ISampleSetParameters>();
 
@@ -116,112 +92,42 @@ namespace AIDemoUI
 
             #endregion
 
-            #region SessionContext
-
-            builder.RegisterType<SessionContext>()
-                .As<ISessionContext>()
-                .SingleInstance();
-
-            #endregion
-
-            #region LayerParametersVMFactory
-
-            builder.RegisterType<LayerParametersVMFactory>().As<ILayerParametersVMFactory>();
-
-            #endregion
-
-            #region LayerParametersVM
-
-            builder.RegisterType<LayerParametersVM>()
-                .As<ILayerParametersVM>()
-                .OnActivated(x =>
-                {
-                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive.. better in BaseVM ctor ?
-                }); ;
-
-            #endregion
-
-            #region NetParametersVM
-
-            builder.RegisterType<NetParametersVM>()
-                .SingleInstance()
-                .As<INetParametersVM>()
-                .OnActivated(x =>
-                {
-                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
-                    x.Instance.AddCommand = new RelayCommand(x.Instance.Add, y => true);
-                    x.Instance.DeleteCommand = new RelayCommand(x.Instance.Delete, y => true);
-                    x.Instance.MoveLeftCommand = new RelayCommand(x.Instance.MoveLeft, y => true);
-                    x.Instance.MoveRightCommand = new RelayCommand(x.Instance.MoveRight, y => true);
-                    x.Instance.UseGlobalParametersCommand = new AsyncRelayCommand(x.Instance.UseGlobalParametersAsync, x.Instance.UseGlobalParametersAsync_CanExecute);
-                });
-
-            #endregion
-
-            #region StartStopVM
-
-            builder.RegisterType<StartStopVM>()
-                .SingleInstance()
-                .As<IStartStopVM>()
-                .OnActivating(x =>
-                {
-                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
-                    x.Instance.InitializeNetCommand = new AsyncRelayCommand(x.Instance.InitializeNetAsync, x.Instance.InitializeNetAsync_CanExecute);
-                    x.Instance.ShowSampleImportWindowCommand = new AsyncRelayCommand(x.Instance.ShowSampleImportWindow, y => true);
-                    x.Instance.TrainCommand = new ConcurrentAsyncRelayCommand(x.Instance.TrainAsync, x.Instance.TrainAsync_CanExecute);
-                    x.Instance.StepCommand = new AsyncRelayCommand(x.Instance.StepAsync, x.Instance.StepAsync_CanExecute);
-                });
-
-            #endregion
-
-            #region StatusVM
-
-            builder.RegisterType<StatusVM>()
-                .As<IStatusVM>()
-                .SingleInstance()
-                .OnActivated(x =>
-                {
-                    x.Instance.UnfocusCommand = new RelayCommand(x.Instance.Unfocus, y => true);    // repetitive..
-                });
-
-            #endregion
-
             #region Factories and Stewards
 
             builder.RegisterType<LayerParametersVMFactory>()
                 .As<ILayerParametersVMFactory>();
             builder.RegisterType<LayerParametersFactory>()
                 .As<ILayerParametersFactory>();
-            //builder.RegisterType<SamplesSteward>()
-            //    .As<ISamplesSteward>();
             builder.RegisterType<SampleSetParametersSteward>()
                 .As<ISampleSetParametersSteward>();
+            builder.RegisterType<SampleSetSteward>()
+                .OnActivated(x =>
+                {
+                    x.Instance.EventHandlers = new PropertyChangedEventHandler[]
+                    {
+                        x.Context.Resolve<ISampleImportWindowVM>().Any_PropertyChanged
+                    };
+                })
+                .As<ISampleSetSteward>()
+                .SingleInstance();
 
             #endregion
 
-            #region Sample Data
+            #region Others
 
-            builder.RegisterType<RawData>();
-
-            #endregion
-
-            #region Mediator
+            builder.RegisterType<SessionContext>()
+                .As<ISessionContext>()
+                .SingleInstance();
 
             builder.RegisterType<SimpleMediator>()
                 .As<ISimpleMediator>()
                 .SingleInstance();
 
-            #endregion
-
-            #region DefaultValuesInitializer
-
-            // builder.RegisterType<DefaultValuesInitializer>();
+            builder.RegisterType<RawData>();
 
             #endregion
 
             return builder.Build();
         }
-
-        #endregion
     }
 }

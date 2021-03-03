@@ -1,4 +1,5 @@
 ﻿using AIDemoUI.Commands;
+using AIDemoUI.Commands.Async;
 using Microsoft.Win32;
 using NeuralNetBuilder;
 using System;
@@ -6,6 +7,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Input;
 
 namespace AIDemoUI.ViewModels
 {
@@ -15,18 +17,12 @@ namespace AIDemoUI.ViewModels
         IStartStopVM StartStopVM { get; set; }
         IStatusVM StatusVM { get; set; }
 
-        IAsyncCommand EnterLogNameCommand { get; set; }
-        IAsyncCommand LoadParametersCommand { get; set; }
-        IAsyncCommand SaveParametersCommand { get; set; }
-        IAsyncCommand LoadInitializedNetCommand { get; set; }
-        IAsyncCommand SaveInitializedNetCommand { get; set; }
-        IRelayCommand ExitCommand { get; set; }
-        Task EnterLogNameAsync(object parameter);
-        Task LoadParametersAsync(object parameter);
-        Task SaveParametersAsync(object parameter);
-        Task LoadInitializedNetAsync(object parameter);
-        Task SaveInitializedNetAsync(object parameter);
-        void Exit(object parameter);
+        IAsyncRelayCommand EnterLogNameCommand { get; }
+        IAsyncRelayCommand LoadParametersCommand { get; }
+        IAsyncRelayCommand SaveParametersCommand { get; }
+        IAsyncRelayCommand LoadInitializedNetCommand { get; }
+        IAsyncRelayCommand SaveInitializedNetCommand { get; }
+        ICommand ExitCommand { get; }
     }
 
     public class MainWindowVM : BaseVM, IMainWindowVM
@@ -44,7 +40,23 @@ namespace AIDemoUI.ViewModels
             NetParametersVM = netParametersVM;
             StartStopVM = startStopVM;
             StatusVM = statusVM;
+
+            DefineCommands();
         }
+
+        #region helpers
+
+        private void DefineCommands()
+        {
+            ExitCommand = new SimpleRelayCommand(Exit);
+            LoadParametersCommand = new SimpleAsyncRelayCommand(LoadParametersAsync);
+            SaveParametersCommand = new SimpleAsyncRelayCommand(SaveParametersAsync);
+            LoadInitializedNetCommand = new SimpleAsyncRelayCommand(LoadInitializedNetAsync);
+            SaveInitializedNetCommand = new SimpleAsyncRelayCommand(SaveInitializedNetAsync);
+            EnterLogNameCommand = new SimpleAsyncRelayCommand(EnterLogNameAsync);
+        }
+
+        #endregion
 
         #endregion
 
@@ -91,16 +103,16 @@ namespace AIDemoUI.ViewModels
 
         #region Commands
 
-        public IAsyncCommand EnterLogNameCommand { get; set; }
-        public IAsyncCommand LoadParametersCommand { get; set; }
-        public IAsyncCommand SaveParametersCommand { get; set; }
-        public IAsyncCommand LoadInitializedNetCommand { get; set; }
-        public IAsyncCommand SaveInitializedNetCommand { get; set; }
-        public IRelayCommand ExitCommand { get; set; }
+        public IAsyncRelayCommand EnterLogNameCommand { get; private set; }
+        public IAsyncRelayCommand LoadParametersCommand { get; private set; }
+        public IAsyncRelayCommand SaveParametersCommand { get; private set; }
+        public IAsyncRelayCommand LoadInitializedNetCommand { get; private set; }
+        public IAsyncRelayCommand SaveInitializedNetCommand { get; private set; }
+        public ICommand ExitCommand { get; private set; }
 
         #region Executes
 
-        public async Task EnterLogNameAsync(object parameter)
+        private async Task EnterLogNameAsync(object parameter)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Enter LogName";
@@ -118,7 +130,7 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public async Task LoadParametersAsync(object parameter)
+        private async Task LoadParametersAsync(object parameter)
         {
             await Task.Run(() =>
             {
@@ -141,7 +153,7 @@ namespace AIDemoUI.ViewModels
                 }
             });
         }
-        public async Task SaveParametersAsync(object parameter)
+        private async Task SaveParametersAsync(object parameter)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Save Parameters";
@@ -173,7 +185,7 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public async Task LoadInitializedNetAsync(object parameter)
+        private async Task LoadInitializedNetAsync(object parameter)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "Load Initialized Net";
@@ -196,7 +208,7 @@ namespace AIDemoUI.ViewModels
                 });
             }
         }
-        public async Task SaveInitializedNetAsync(object parameter)
+        private async Task SaveInitializedNetAsync(object parameter)
         {
             if (_sessionContext.Net == null)
             {
@@ -219,7 +231,7 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        public void Exit(object parameter)
+        private void Exit(object parameter)
         {
             Application.Current.Shutdown();
         }
