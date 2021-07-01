@@ -20,6 +20,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="2*"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Get Samples Button -->
@@ -36,12 +37,16 @@
 
         <!-- Train/Step Buttons -->
 
-        <Button Grid.Row="2" Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
+        <Button Name="DebuggedObject" Grid.Row="2" Grid.Column="0" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
                 Content="{Binding TrainButtonText}"
                 Command="{Binding TrainCommand}"/>
         <Button Grid.Row="2" Grid.Column="1" MinHeight="50" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" FontSize="20" 
                 Content="{Binding StepButtonText}"
                 Command="{Binding StepCommand}"/>
 
+        <!-- Debug -->
+        
+        <!--<Button Grid.Row="3" Grid.ColumnSpan="2" FontSize="16"
+                Content="{Binding ElementName=DebuggedObject, Path=CommandTarget, Converter={StaticResource TestConverter}}"/>-->
     </Grid>
 </UserControl>

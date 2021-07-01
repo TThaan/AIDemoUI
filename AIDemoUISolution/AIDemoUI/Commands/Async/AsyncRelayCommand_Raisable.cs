@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace AIDemoUI.Commands.Async
 {
-    public class AsyncRelayCommand_Raisable : AsyncRelayCommand, IRaisableCommand
+    public class AsyncRelayCommand_Raisable : AsyncRelayCommand, IAsyncRaisableCommand
     {
         #region ctor
 
@@ -19,7 +19,12 @@ namespace AIDemoUI.Commands.Async
         #endregion
 
         #region IRelayCommand_Raisable
-
+        public override bool CanExecute(object parameter)
+        {
+            return
+                base.CanExecute(parameter) &&
+                (_canExecute?.Invoke(parameter) ?? true);
+        }
         public void RaiseCanExecuteChanged()
         {
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);

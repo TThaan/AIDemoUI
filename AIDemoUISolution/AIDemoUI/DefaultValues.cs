@@ -10,14 +10,9 @@ namespace AIDemoUI
     {
         public static IMainWindowVM SetDefaultValues(this IMainWindowVM mainWindowVM, ISessionContext sessionContext)
         {
-            return LoadAndSetDefaultSerializedParameters(mainWindowVM, sessionContext);
-        }
-
-        private static IMainWindowVM LoadAndSetDefaultSerializedParameters(IMainWindowVM mainWindowVM, ISessionContext sessionContext)
-        {
             Stream stream = File.Open(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "DefaultParameters.par"), FileMode.Open);
             BinaryFormatter b = new BinaryFormatter();
-            SerializedParameters sp = (SerializedParameters)b.Deserialize(stream);
+            ISerializedParameters sp = (ISerializedParameters)b.Deserialize(stream);
 
             try
             {
@@ -39,7 +34,5 @@ namespace AIDemoUI
 
             return mainWindowVM;
         }
-
-
     }
 }

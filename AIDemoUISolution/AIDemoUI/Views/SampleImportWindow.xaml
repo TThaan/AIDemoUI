@@ -16,7 +16,7 @@
     </d:Window.DataContext>
 
     <Window.Resources>
-        <conv:SampleSetParametersToTemplateNameConverter x:Key="SampleSetParametersToTemplateNameConverter"/>
+        <conv:SampleSetParametersToSampleSetNamesConverter x:Key="SampleSetParametersToSampleSetNamesConverter"/>
     </Window.Resources>
 
     <StackPanel Name="thisRootElement" IsEnabled="{Binding IsBusy, Converter={StaticResource BoolReversingConverter}}">
@@ -34,8 +34,8 @@
         
         <ComboBox Name="SampleTemplates" Grid.Row="0" MinHeight="50" Margin="0,0,0,0"
                   VerticalContentAlignment="Center" HorizontalContentAlignment="Center" FontSize="16"
-                  ItemsSource="{Binding TemplateNames}"
-                  SelectedItem="{Binding SelectedTemplate, Mode=OneWay, Converter={StaticResource SampleSetParametersToTemplateNameConverter}}">
+                  ItemsSource="{Binding Templates, Converter={StaticResource SampleSetParametersToSampleSetNamesConverter}}"
+                  SelectedItem="{Binding SelectedTemplate}">
         </ComboBox>
 
         <!-- Amount of Samples -->

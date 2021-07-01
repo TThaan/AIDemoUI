@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace AIDemoUI.Commands.Async
 {
-    public class SimpleAsyncRelayCommand : IAsyncRelayCommand
+    public class SimpleAsyncRelayCommand : IAsyncCommand
     {
         #region fields& ctor
 

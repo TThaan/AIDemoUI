@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace AIDemoUI
 {
     public static class ExtensionMethods
-    {
+    {        
         internal static List<T> ToList<T>(this Array arr)
         {
             var result = new List<T>();

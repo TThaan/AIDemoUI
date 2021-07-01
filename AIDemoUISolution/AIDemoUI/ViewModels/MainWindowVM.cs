@@ -8,6 +8,8 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Newtonsoft.Json;
+using System.Linq;
 
 namespace AIDemoUI.ViewModels
 {
@@ -17,11 +19,11 @@ namespace AIDemoUI.ViewModels
         IStartStopVM StartStopVM { get; set; }
         IStatusVM StatusVM { get; set; }
 
-        IAsyncRelayCommand EnterLogNameCommand { get; }
-        IAsyncRelayCommand LoadParametersCommand { get; }
-        IAsyncRelayCommand SaveParametersCommand { get; }
-        IAsyncRelayCommand LoadInitializedNetCommand { get; }
-        IAsyncRelayCommand SaveInitializedNetCommand { get; }
+        IAsyncCommand EnterLogNameCommand { get; }
+        IAsyncCommand LoadParametersCommand { get; }
+        IAsyncCommand SaveParametersCommand { get; }
+        IAsyncCommand LoadInitializedNetCommand { get; }
+        IAsyncCommand SaveInitializedNetCommand { get; }
         ICommand ExitCommand { get; }
     }
 
@@ -103,11 +105,11 @@ namespace AIDemoUI.ViewModels
 
         #region Commands
 
-        public IAsyncRelayCommand EnterLogNameCommand { get; private set; }
-        public IAsyncRelayCommand LoadParametersCommand { get; private set; }
-        public IAsyncRelayCommand SaveParametersCommand { get; private set; }
-        public IAsyncRelayCommand LoadInitializedNetCommand { get; private set; }
-        public IAsyncRelayCommand SaveInitializedNetCommand { get; private set; }
+        public IAsyncCommand EnterLogNameCommand { get; private set; }
+        public IAsyncCommand LoadParametersCommand { get; private set; }
+        public IAsyncCommand SaveParametersCommand { get; private set; }
+        public IAsyncCommand LoadInitializedNetCommand { get; private set; }
+        public IAsyncCommand SaveInitializedNetCommand { get; private set; }
         public ICommand ExitCommand { get; private set; }
 
         #region Executes
@@ -142,7 +144,7 @@ namespace AIDemoUI.ViewModels
                 {
                     try
                     {
-                        SerializedParameters sp = GetSerializedParameters(openFileDialog.OpenFile());
+                        ISerializedParameters sp = GetSerializedParameters(openFileDialog.OpenFile());
                         SetLoadedValues(sp);
                     }
                     catch (Exception e)
@@ -162,7 +164,7 @@ namespace AIDemoUI.ViewModels
 
             if (saveFileDialog.ShowDialog() == true)
             {
-                SerializedParameters sp = new SerializedParameters()
+                ISerializedParameters sp = new SerializedParameters()
                 {
                     NetParameters = _sessionContext.NetParameters,
                     TrainerParameters = _sessionContext.TrainerParameters,
@@ -182,6 +184,11 @@ namespace AIDemoUI.ViewModels
                         b.Serialize(stream, sp);
                         stream.Close();
                     });
+
+                    // Json Alternative:
+                    var check = saveFileDialog.SafeFileName;
+                    var jsonString = JsonConvert.SerializeObject(sp, Formatting.Indented);
+                    await File.WriteAllTextAsync(saveFileDialog.FileName.Split('.').First() + ".txt", jsonString);
                 }
             }
         }
@@ -229,6 +236,8 @@ namespace AIDemoUI.ViewModels
                         Serialize(_sessionContext.Net, NetParametersVM.FileName);
                     });
                 }
+
+                await SerializeAsJsonASync(_sessionContext.Net, NetParametersVM.FileName);
             }
         }
         private void Exit(object parameter)
@@ -238,13 +247,13 @@ namespace AIDemoUI.ViewModels
 
         #region helpers
 
-        private SerializedParameters GetSerializedParameters(Stream stream)
+        private ISerializedParameters GetSerializedParameters(Stream stream)
         {
             BinaryFormatter b = new BinaryFormatter();
-            SerializedParameters sp = (SerializedParameters)b.Deserialize(stream);
+            ISerializedParameters sp = (ISerializedParameters)b.Deserialize(stream);
             return sp;
         }
-        private void SetLoadedValues(SerializedParameters sp)
+        private void SetLoadedValues(ISerializedParameters sp)
         {
             try
             {
@@ -272,6 +281,13 @@ namespace AIDemoUI.ViewModels
                 BinaryFormatter bf = new BinaryFormatter();
                 bf.Serialize(stream, target);
             }
+        }
+        private async Task SerializeAsJsonASync(object obj, string fileName)
+        {
+            var jsonString = JsonConvert.SerializeObject(obj);
+            var tmpPath = Path.GetTempPath();
+            var path = Path.Combine(tmpPath, fileName);
+            await File.WriteAllTextAsync(path, jsonString);
         }
         private T DeSerialize<T>(string name)
         {

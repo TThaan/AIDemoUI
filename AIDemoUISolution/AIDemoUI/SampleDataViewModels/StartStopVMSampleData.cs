@@ -7,7 +7,7 @@ namespace AIDemoUI.SampleDataViewModels
     public class StartStopVMSampleData : StartStopVM
     {
         public StartStopVMSampleData()
-            : base(new MockSessionContext(), RawMediator, RawSampleImportWindow)
+            : base(new MockSessionContext(), RawMediator, RawDelegateFactory)
         {
         }
     }

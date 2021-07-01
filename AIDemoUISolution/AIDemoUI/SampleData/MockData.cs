@@ -34,9 +34,9 @@ namespace AIDemoUI.SampleData.MockData
             };
             set => throw new NotImplementedException();
         }
-        public IMatrix Output => throw new NotImplementedException();
+        public float[] Output => throw new NotImplementedException();
         public string LoggableName => throw new NotImplementedException();
-        public Task FeedForwardAsync(IMatrix input)
+        public Task FeedForwardAsync(float[] input)
         {
             throw new NotImplementedException();
         }
@@ -61,15 +61,16 @@ namespace AIDemoUI.SampleData.MockData
 
         public int Id { get; set; }
         public int N { get; set; }
-        public IMatrix Input { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public IMatrix Output { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public IMatrix Weights { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public IMatrix Biases { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public float[] Input { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public float[] Output { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public float[,] Weights { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public float[,] WeightsTransposed { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public float[] Biases { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ActivationFunction ActivationFunction { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ILayer ReceptiveField { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public ILayer ProjectiveField { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         public string LoggableName => throw new NotImplementedException();
-        public void ProcessInput(IMatrix originalInput = null)
+        public void ProcessInput(float[] originalInput = null)
         {
             throw new NotImplementedException();
         }
@@ -146,6 +147,8 @@ namespace AIDemoUI.SampleData.MockData
         public string Message { get => "Training..."; set => throw new NotImplementedException(); }
 
         public event PropertyChangedEventHandler PropertyChanged;
+        public event TrainerStatusChangedEventHandler TrainerStatusChanged;
+
         public void Dispose()
         {
             throw new NotImplementedException();

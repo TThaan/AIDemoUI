@@ -1,11 +1,11 @@
 ﻿using AIDemoUI.Commands.Async;
-using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using NeuralNetBuilder;
 using NeuralNetBuilder.FactoriesAndParameters;
-using System.Diagnostics;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
+using AIDemoUI.FactoriesAndStewards;
 
 namespace AIDemoUI.ViewModels
 {
@@ -18,10 +18,11 @@ namespace AIDemoUI.ViewModels
         string StepButtonText { get; }
         string TrainButtonText { get; }
 
-        IAsyncRelayCommand InitializeNetCommand { get; }
-        IAsyncRelayCommand ShowSampleImportWindowCommand { get; }
-        IAsyncRelayCommand TrainCommand { get; }
-        IAsyncRelayCommand StepCommand { get; }
+        IAsyncCommand ShowSampleImportWindowCommand { get; }
+        IAsyncRaisableCommand InitializeNetCommand { get; }
+        IAsyncRaisableCommand TrainCommand { get; }
+        IAsyncRaisableCommand StepCommand { get; }
+        void Trainer_TrainerStatusChanged(object sender, TrainerStatusChangedEventArgs e);
     }
 
     public class StartStopVM : BaseVM, IStartStopVM
@@ -30,13 +31,13 @@ namespace AIDemoUI.ViewModels
 
         private bool isLogged;
         private string logName;
-        private readonly SampleImportWindow _sampleImportWindow;
+        private readonly Func<bool?> _showSampleImportWindow;
 
         public StartStopVM(ISessionContext sessionContext, ISimpleMediator mediator, 
-            SampleImportWindow sampleImportWindow)
+            IDelegateFactory delegateFactory)
             : base(sessionContext, mediator)
         {
-            _sampleImportWindow = sampleImportWindow;
+            _showSampleImportWindow = delegateFactory.ShowSampleImportWindow();
 
             RegisterMediatorHandlers();
             DefineCommands();
@@ -46,15 +47,15 @@ namespace AIDemoUI.ViewModels
 
         private void RegisterMediatorHandlers()
         { 
-            _mediator.Register(MediatorToken.StartStopVM_UpdateButtonTexts.ToString(), UpdateButtonTexts);
+            _mediator.Register(MediatorToken.StartStopVM_OnSampleSetInitialized.ToString(), OnSampleSetInitialized);
         }
         private void DefineCommands()
         {
-            InitializeNetCommand = new AsyncRelayCommand(InitializeNetAsync, InitializeNetAsync_CanExecute);
             ShowSampleImportWindowCommand = new SimpleAsyncRelayCommand(ShowSampleImportWindow);
-            TrainCommand = new AsyncRelayCommand(TrainAsync, TrainAsync_CanExecute)
+            InitializeNetCommand = new AsyncRelayCommand_Raisable(InitializeNetAsync, InitializeNetAsync_CanExecute);
+            TrainCommand = new AsyncRelayCommand_Raisable(TrainAsync, TrainAsync_CanExecute)
             { IsConcurrentExecutionAllowed = true };
-            StepCommand = new AsyncRelayCommand(StepAsync, StepAsync_CanExecute);
+            StepCommand = new AsyncRelayCommand_Raisable(StepAsync, StepAsync_CanExecute);
         }
 
         #endregion
@@ -145,10 +146,10 @@ namespace AIDemoUI.ViewModels
 
         #region Commands
 
-        public IAsyncRelayCommand InitializeNetCommand { get; private set; }
-        public IAsyncRelayCommand ShowSampleImportWindowCommand { get; private set; }
-        public IAsyncRelayCommand TrainCommand { get; private set; }
-        public IAsyncRelayCommand StepCommand { get; private set; }
+        public IAsyncCommand ShowSampleImportWindowCommand { get; private set; }
+        public IAsyncRaisableCommand InitializeNetCommand { get; private set; }
+        public IAsyncRaisableCommand TrainCommand { get; private set; }
+        public IAsyncRaisableCommand StepCommand { get; private set; }
 
         #region Executes and CanExecutes
 
@@ -158,7 +159,7 @@ namespace AIDemoUI.ViewModels
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    _sampleImportWindow.ShowDialog(); // use delegate?
+                    _showSampleImportWindow();
                 });
             });
         }
@@ -173,9 +174,9 @@ namespace AIDemoUI.ViewModels
             {
                 Trainer = await Task.Run(() => Initializer.InitializeTrainer(Trainer, Net.GetCopy(), TrainerParameters, SampleSet)); 
             }
-            OnPropertyChanged(nameof(InitializeNetButtonText));
+
+            OnNetInitialized();
         }
-        [DebuggerStepThrough]
         private bool InitializeNetAsync_CanExecute(object parameter)
         {
             return SampleSet != null;
@@ -183,16 +184,19 @@ namespace AIDemoUI.ViewModels
         private async Task TrainAsync(object parameter)
         {
             if (Trainer.TrainerStatus == TrainerStatus.Running)
+            {
                 Trainer.TrainerStatus = TrainerStatus.Paused;
-            else Trainer.TrainerStatus = TrainerStatus.Running;
-                
+                return;
+            }
+
             await Trainer.Train(IsLogged ? LogName : string.Empty, _sessionContext.TrainerParameters.Epochs);
             Net = Trainer.TrainedNet.GetCopy();
 
             if (Trainer.TrainerStatus == TrainerStatus.Finished)
+            { 
                 await Trainer.Reset();
+            }
         }
-        [DebuggerStepThrough]
         private bool TrainAsync_CanExecute(object parameter)
         {
             return SampleSet != null 
@@ -208,7 +212,6 @@ namespace AIDemoUI.ViewModels
             if (Trainer.TrainerStatus == TrainerStatus.Finished)
                 await Trainer.Reset();
         }
-        [DebuggerStepThrough]
         private bool StepAsync_CanExecute(object parameter)
         {
             return SampleSet != null
@@ -222,12 +225,34 @@ namespace AIDemoUI.ViewModels
 
         #region mediator handlers
 
-        private void UpdateButtonTexts(object obj)
+        private void OnSampleSetInitialized(object obj)
         {
             OnPropertyChanged(nameof(ImportSamplesButtonText));
             OnPropertyChanged(nameof(InitializeNetButtonText));
             OnPropertyChanged(nameof(TrainButtonText));
             OnPropertyChanged(nameof(StepButtonText));
+
+            InitializeNetCommand.RaiseCanExecuteChanged();
+        }
+
+        #endregion
+
+        #region helpers
+
+        public void Trainer_TrainerStatusChanged(object sender, TrainerStatusChangedEventArgs e)
+        {
+            OnPropertyChanged(nameof(TrainButtonText));
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                TrainCommand.RaiseCanExecuteChanged();
+                StepCommand.RaiseCanExecuteChanged();
+            });
+        }
+        private void OnNetInitialized()
+        {
+            OnPropertyChanged(nameof(InitializeNetButtonText));
+            TrainCommand.RaiseCanExecuteChanged();
+            StepCommand.RaiseCanExecuteChanged();
         }
 
         #endregion

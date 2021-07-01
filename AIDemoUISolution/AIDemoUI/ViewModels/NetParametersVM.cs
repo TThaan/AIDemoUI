@@ -35,7 +35,7 @@ namespace AIDemoUI.ViewModels
         ICommand DeleteCommand { get; }
         ICommand MoveLeftCommand { get; }
         ICommand MoveRightCommand { get; }
-        IAsyncRelayCommand UseGlobalParametersCommand { get; }
+        IAsyncCommand UseGlobalParametersCommand { get; }
     }
 
     public class NetParametersVM : BaseVM, INetParametersVM
@@ -73,7 +73,7 @@ namespace AIDemoUI.ViewModels
             DeleteCommand = new SimpleRelayCommand(Delete);
             MoveLeftCommand = new SimpleRelayCommand(MoveLeft);
             MoveRightCommand = new SimpleRelayCommand(MoveRight);
-            UseGlobalParametersCommand = new AsyncRelayCommand(UseGlobalParametersAsync, UseGlobalParametersAsync_CanExecute);
+            UseGlobalParametersCommand = new SimpleAsyncRelayCommand(UseGlobalParametersAsync);
         }
 
         #endregion
@@ -243,7 +243,7 @@ namespace AIDemoUI.ViewModels
         public ICommand DeleteCommand { get; private set; }
         public ICommand MoveLeftCommand { get; private set; }
         public ICommand MoveRightCommand { get; private set; }
-        public IAsyncRelayCommand UseGlobalParametersCommand { get; private set; }
+        public IAsyncCommand UseGlobalParametersCommand { get; private set; }
 
 
         #region Executes and CanExecutes
@@ -323,10 +323,6 @@ namespace AIDemoUI.ViewModels
                     OnAllPropertiesChanged();
                 }
             });
-        }
-        private bool UseGlobalParametersAsync_CanExecute(object parameter)
-        {
-            return true;
         }
 
         #endregion

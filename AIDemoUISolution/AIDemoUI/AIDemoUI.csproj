@@ -10,7 +10,7 @@
     <PackageReference Include="Autofac" Version="6.1.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +24,7 @@
       <HintPath>..\..\..\MatrixHelper\MatrixHelperSolution\MatrixHelper\bin\Debug\netcoreapp3.1\MatrixHelper.dll</HintPath>
     </Reference>
     <Reference Include="NeuralNetBuilder">
-      <HintPath>..\..\..\NeuralNetBuilder\NeuralNetBuilderSolution\NeuralNetBuilder\bin\Debug\netcoreapp3.1\NeuralNetBuilder.dll</HintPath>
+      <HintPath>..\..\..\NeuralNetBuilder2\NeuralNetBuilderSolution\NeuralNetBuilder\bin\Debug\netcoreapp3.1\NeuralNetBuilder.dll</HintPath>
     </Reference>
   </ItemGroup>
 

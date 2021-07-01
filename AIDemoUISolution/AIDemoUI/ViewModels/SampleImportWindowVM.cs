@@ -3,9 +3,9 @@ using AIDemoUI.Views;
 using DeepLearningDataProvider;
 using Microsoft.Win32;
 using NeuralNetBuilder;
+using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace AIDemoUI.ViewModels
@@ -13,7 +13,6 @@ namespace AIDemoUI.ViewModels
     public interface ISampleImportWindowVM : IBaseVM
     {
         Dictionary<SetName, ISampleSetParameters> Templates { get; }
-        ObservableCollection<SetName> TemplateNames { get; }
         ISampleSetParameters SelectedTemplate { get; set; }
         int TestingSamples { get; set; }
         int TrainingSamples { get; set; }
@@ -25,8 +24,8 @@ namespace AIDemoUI.ViewModels
         bool UseAllAvailableTrainingSamples { get; set; }
         bool IsBusy { get; set; }
         string Message { get; }
-        IAsyncRelayCommand OkCommand { get; }
-        IAsyncRelayCommand SetSamplesLocationCommand { get; }
+        IAsyncCommand OkCommand { get; }
+        IAsyncCommand SetSamplesLocationCommand { get; }
     }
 
     public class SampleImportWindowVM : BaseVM, ISampleImportWindowVM
@@ -43,16 +42,15 @@ namespace AIDemoUI.ViewModels
         {
             _sampleSetSteward = sampleSetSteward;
 
-            DefineCommands(); 
+            DefineCommands();
         }
 
         #region helpers
 
         private void DefineCommands()
         {
-            SetSamplesLocationCommand = new AsyncRelayCommand(SetSamplesLocationAsync, SetSamplesLocationAsync_CanExecute);
-            OkCommand = new AsyncRelayCommand(OkAsync, OkAsync_CanExecute);
-            SelectedTemplate = Templates.Values.First();
+            SetSamplesLocationCommand = new SimpleAsyncRelayCommand(SetSamplesLocationAsync);
+            OkCommand = new SimpleAsyncRelayCommand(OkAsync);
         }
 
         #endregion
@@ -69,7 +67,6 @@ namespace AIDemoUI.ViewModels
         private ITrainer Trainer => _sessionContext.Trainer;
 
         public Dictionary<SetName, ISampleSetParameters> Templates => _sampleSetSteward.DefaultSampleSetParameters;
-        public ObservableCollection<SetName> TemplateNames => Templates.Keys.ToObservableCollection();
         public ISampleSetParameters SelectedTemplate
         {
             get { return selectedSampleSetParameters ?? Templates[SetName.FourPixelCamera]; }
@@ -78,7 +75,8 @@ namespace AIDemoUI.ViewModels
                 if (selectedSampleSetParameters?.Name != value?.Name)
                 {
                     selectedSampleSetParameters = value;
-                    OnPropertyChanged();
+                    // Notify Url_TrainingLabels, Url_TrainingImages, TrainingSamples etc.
+                    OnAllPropertiesChanged();
                 }
             }
         }
@@ -208,8 +206,8 @@ namespace AIDemoUI.ViewModels
 
         #region Commands
 
-        public IAsyncRelayCommand SetSamplesLocationCommand { get; private set; }
-        public IAsyncRelayCommand OkCommand { get; private set; }
+        public IAsyncCommand SetSamplesLocationCommand { get; private set; }
+        public IAsyncCommand OkCommand { get; private set; }
 
         #region Executes and CanExecutes
 
@@ -245,33 +243,31 @@ namespace AIDemoUI.ViewModels
                 }
             }
         }
-        private bool SetSamplesLocationAsync_CanExecute(object parameter)
-        {
-            return true;
-        }
         private async Task OkAsync(object parameter)
         {
+            // Json Serialize:
+            var jsonString = JsonConvert.SerializeObject(SelectedTemplate, Formatting.Indented);
+            var path = @"C:\Users\Jan_PC\Documents\_NeuralNetApp\Saves\ConsoleApi_SampleSetParameters.txt";
+            await File.WriteAllTextAsync(path, jsonString);
+
+
+
             IsBusy = true;
-            SampleSet = await _sampleSetSteward.CreateSampleSetAsync(SelectedTemplate);   // Use mediator here.. ?
-            (parameter as SampleImportWindow)?.Hide();
+            SampleSet = await _sampleSetSteward.CreateSampleSetAsync(SelectedTemplate);
+
+            // Json Serialize:
+            jsonString = JsonConvert.SerializeObject(SampleSet, Formatting.Indented);
+            path = @"C:\Users\Jan_PC\Documents\_NeuralNetApp\Saves\ConsoleApi_SampleSet.txt";
+            await File.WriteAllTextAsync(path, jsonString);
+
+            (parameter as SampleImportWindow)?.Hide();  // via DelegateFactory?
 
             if (Trainer.TrainerStatus != TrainerStatus.Undefined)
             {
                 Trainer.SampleSet = SampleSet;
             }
             IsBusy = false;
-            _mediator.NotifyColleagues(MediatorToken.StartStopVM_UpdateButtonTexts.ToString(), null);
-        }
-        private bool OkAsync_CanExecute(object parameter)
-        {
-            //if (string.IsNullOrEmpty(Url_TrainingLabels) ||
-            //    string.IsNullOrEmpty(Url_TrainingImages) ||
-            //    string.IsNullOrEmpty(Url_TestingLabels) ||
-            //    string.IsNullOrEmpty(Url_TestingImages))
-            //{
-            //    return false;
-            //}
-            return true;
+            _mediator.NotifyColleagues(MediatorToken.StartStopVM_OnSampleSetInitialized.ToString(), null);
         }
 
         #endregion

@@ -2,6 +2,6 @@
 {
     enum MediatorToken
     {
-        StartStopVM_UpdateButtonTexts
+        StartStopVM_OnSampleSetInitialized
     }
 }

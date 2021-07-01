@@ -5,7 +5,9 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace AIDemoUI.Converters
 {
@@ -18,7 +20,7 @@ namespace AIDemoUI.Converters
             // throw new System.ArgumentException($"value = null: {value == null}\n");
             
             if (value == null) return "value is null";
-            return (((Visibility)value)).ToString();
+            return (((ICommand)value) == null).ToString();
             // return "value type: " + value.GetType().Name;
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -23,9 +23,9 @@ namespace AIDemoUI.SampleData
         public RawData(
             ISessionContext sessionContext, ILayerParameters layerParameters,
             IMainWindowVM mainWindowVM, INetParametersVM netParametersVM, IStartStopVM startStopVM, IStatusVM statusVM,
-            ILayerParametersVMFactory layerParametersVMFactory, ILayerParametersFactory layerParametersFactory, ISampleSetSteward sampleSetSteward,
-            SampleImportWindow sampleImportWindow, ISimpleMediator mediator,
-            INet net)
+            ILayerParametersVMFactory layerParametersVMFactory, ILayerParametersFactory layerParametersFactory, 
+            ISampleSetSteward sampleSetSteward, IDelegateFactory delegateFactory,
+            ISimpleMediator mediator, INet net)
         {
             RawSessionContext = sessionContext;
             RawMainWindowVM = mainWindowVM;
@@ -35,9 +35,9 @@ namespace AIDemoUI.SampleData
             RawNetParametersVM = netParametersVM;
             RawStartStopVM = startStopVM;
             RawStatusVM = statusVM;
-            RawSampleImportWindow = sampleImportWindow;
             RawMediator = mediator;
             RawSampleSetSteward = sampleSetSteward;
+            RawDelegateFactory = delegateFactory;
             RawNet = net;
         }
 
@@ -51,11 +51,11 @@ namespace AIDemoUI.SampleData
         public static INetParametersVM RawNetParametersVM { get; set; }
         public static IStartStopVM RawStartStopVM { get; set; }
         public static IStatusVM RawStatusVM { get; set; }
-        public static SampleImportWindow RawSampleImportWindow { get; set; }  // use a adelegate?
         public static ISimpleMediator RawMediator { get; set; }
         public static ILayerParametersVMFactory RawLayerParametersVMFactory { get; set; }
         public static ILayerParametersFactory RawLayerParametersFactory { get; set; }
         public static ISampleSetSteward RawSampleSetSteward { get; set; }
+        public static IDelegateFactory RawDelegateFactory { get; set; }
         public static INet RawNet { get; set; }
 
         #endregion

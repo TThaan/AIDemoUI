@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace AIDemoUI.Commands.Async
 {
-    public interface IAsyncRelayCommand : ICommand
+    public interface IAsyncCommand : ICommand
     {
         Task ExecuteAsync(object parameter);
         bool IsConcurrentExecutionAllowed { get; set; }
